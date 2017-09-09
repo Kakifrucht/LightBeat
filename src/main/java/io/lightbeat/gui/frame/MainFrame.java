@@ -169,6 +169,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
         advancedPanel.setVisible(showAdvancedCheckbox.isSelected());
 
+        urlLabel.setText("v" + LightBeat.getVersion() + " | " + urlLabel.getText());
         urlLabel.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -209,7 +210,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         }, 5, TimeUnit.SECONDS);
 
-        drawFrame(mainPanel, "v" + version);
+        drawFrame(mainPanel, "");
     }
 
     @Override
