@@ -129,6 +129,10 @@ public class StrobeEffect extends AbstractRandomEffect {
     @Override
     void executeEffectOnceRandomly() {
 
+        if (lightUpdate.isBrightnessChange()) {
+            return;
+        }
+
         // strobe all lights but one
         List<PHLight> lights = lightUpdate.getLights();
         List<PHLight> lightsToStrobe = new ArrayList<>();

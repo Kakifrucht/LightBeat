@@ -48,8 +48,8 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
         hueSDK.getNotificationManager().registerSDKListener(new HueSDKListener(this));
 
         Config config = componentHolder.getConfig();
-        String bridgeUsername = config.get(ConfigNode.BRIDGE_USERNAME, null);
-        String bridgeIP = config.get(ConfigNode.BRIDGE_IPADDRESS, null);
+        String bridgeUsername = config.get(ConfigNode.BRIDGE_USERNAME);
+        String bridgeIP = config.get(ConfigNode.BRIDGE_IPADDRESS);
         if (bridgeUsername != null && bridgeIP != null) {
             PHAccessPoint accessPoint = new PHAccessPoint();
             accessPoint.setUsername(bridgeUsername);

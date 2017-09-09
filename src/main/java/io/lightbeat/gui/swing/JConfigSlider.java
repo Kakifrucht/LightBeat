@@ -23,13 +23,13 @@ public class JConfigSlider extends JSlider {
     private int minDifference;
 
 
-    public JConfigSlider(Config config, ConfigNode nodeToChange, int def) {
-        this.def = def;
+    public JConfigSlider(Config config, ConfigNode nodeToChange) {
+        this.def = config.getDefaultInt(nodeToChange);
 
         // temporary until UI designer overwrites value
         setMaximum(Integer.MAX_VALUE);
 
-        lastValue = config.getInt(nodeToChange, def);
+        lastValue = config.getInt(nodeToChange);
         setValue(lastValue);
 
         addMouseListener(new MouseAdapter() {

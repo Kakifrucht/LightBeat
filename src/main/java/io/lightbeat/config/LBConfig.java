@@ -3,29 +3,34 @@ package io.lightbeat.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
  * Configuration handler for application. Access data via various get methods.
+ * Also contains static default values if no other value is stored.
  */
 public class LBConfig implements Config {
 
     private static final Logger logger = LoggerFactory.getLogger(LBConfig.class);
 
     private final Preferences preferences;
+    private final Map<ConfigNode, Integer> defaultInts = new HashMap<>();
 
 
     public LBConfig() {
         preferences = Preferences.userNodeForPackage(getClass());
         preferences.addPreferenceChangeListener(evt -> logger.info("Set {} to value {}", evt.getKey(), evt.getNewValue()));
+
+        defaultInts.put(ConfigNode.BEAT_SENSITIVITY, 5);
+        defaultInts.put(ConfigNode.BEAT_MIN_TIME_BETWEEN, 200);
+        defaultInts.put(ConfigNode.BRIGHTNESS_MAX, 254);
+        defaultInts.put(ConfigNode.BRIGHTNESS_SENSITIVITY, 20);
     }
 
     @Override
-    public String get(ConfigNode node, String def) {
-        return preferences.get(node.getKey(), def);
+    public String get(ConfigNode node) {
+        return preferences.get(node.getKey(), null);
     }
 
     @Override
@@ -34,8 +39,13 @@ public class LBConfig implements Config {
     }
 
     @Override
-    public int getInt(ConfigNode node, int def) {
-        return preferences.getInt(node.getKey(), def);
+    public int getInt(ConfigNode node) {
+        return preferences.getInt(node.getKey(), getDefaultInt(node));
+    }
+
+    @Override
+    public int getDefaultInt(ConfigNode node) {
+        return defaultInts.getOrDefault(node, 0);
     }
 
     @Override
@@ -44,8 +54,8 @@ public class LBConfig implements Config {
     }
 
     @Override
-    public long getLong(ConfigNode node, long def) {
-        return preferences.getLong(node.getKey(), def);
+    public long getLong(ConfigNode node) {
+        return preferences.getLong(node.getKey(), 0);
     }
 
     @Override
@@ -54,8 +64,8 @@ public class LBConfig implements Config {
     }
 
     @Override
-    public boolean getBoolean(ConfigNode node, boolean def) {
-        return preferences.getBoolean(node.getKey(), def);
+    public boolean getBoolean(ConfigNode node) {
+        return preferences.getBoolean(node.getKey(), false);
     }
 
     @Override

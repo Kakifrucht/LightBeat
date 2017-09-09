@@ -68,7 +68,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                             .map(mixer -> mixer.getMixerInfo().getName())
                             .collect(Collectors.toList());
 
-                    String lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE, null);
+                    String lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE);
                     if (lastSource != null) {
                         for (String mixerName : mixerNames) {
                             if (mixerName.equals(lastSource)) {
@@ -161,7 +161,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             }
         });
 
-        showAdvancedCheckbox.setSelected(config.getBoolean(ConfigNode.SHOW_ADVANCED_SETTINGS, false));
+        showAdvancedCheckbox.setSelected(config.getBoolean(ConfigNode.SHOW_ADVANCED_SETTINGS));
         showAdvancedCheckbox.addActionListener((e) -> {
             boolean isSelected = showAdvancedCheckbox.isSelected();
             config.putBoolean(ConfigNode.SHOW_ADVANCED_SETTINGS, isSelected);
@@ -179,7 +179,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         String version = LightBeat.getVersion();
         componentHolder.getExecutorService().schedule(() -> {
 
-            long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, 0);
+            long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
             if (updateDisableNotificationTime + 172800 > (System.currentTimeMillis() / 1000)) {
                 // only show update notification every two days
                 return;
@@ -223,13 +223,13 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         bannerLabel = new JIconLabel("banner.png", "bannerflash.png");
 
-        minBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MIN, 0);
-        maxBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MAX, 254);
-        sensitivitySlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_SENSITIVITY, 20);
+        minBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MIN);
+        maxBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MAX);
+        sensitivitySlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_SENSITIVITY);
 
-        beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY, 5);
-        beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN, 350);
-        transitionTimeSlider = new JConfigSlider(config, ConfigNode.LIGHTS_TRANSITION_TIME, 0);
+        beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
+        beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
+        transitionTimeSlider = new JConfigSlider(config, ConfigNode.LIGHTS_TRANSITION_TIME);
     }
 
     @Override

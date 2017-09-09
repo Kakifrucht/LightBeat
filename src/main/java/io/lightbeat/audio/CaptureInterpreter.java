@@ -35,8 +35,8 @@ class CaptureInterpreter {
 
 
     CaptureInterpreter(Config config) {
-        this.beatThresholdReductionMultiplier = config.getInt(ConfigNode.BEAT_SENSITIVITY, 5) / 1000.0d;
-        this.timeBetweenBeatsMillis = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN, 350);
+        this.beatThresholdReductionMultiplier = config.getInt(ConfigNode.BEAT_SENSITIVITY) / 1000.0d;
+        this.timeBetweenBeatsMillis = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN);
     }
 
     @Nullable
