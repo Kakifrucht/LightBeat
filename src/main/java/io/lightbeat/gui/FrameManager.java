@@ -1,8 +1,8 @@
 package io.lightbeat.gui;
 
-import io.lightbeat.gui.frame.MainFrame;
 import io.lightbeat.gui.frame.ConnectFrame;
 import io.lightbeat.gui.frame.HueFrame;
+import io.lightbeat.gui.frame.MainFrame;
 import io.lightbeat.hue.HueStateObserver;
 
 import javax.swing.*;
@@ -46,10 +46,9 @@ public class FrameManager {
 
     private void disposeCurrentWindow() {
         if (currentFrame != null) {
-            HueFrame currentFrameLocal = currentFrame;
-            lastX = currentFrameLocal.getJFrame().getBounds().x;
-            lastY = currentFrameLocal.getJFrame().getBounds().y;
-            SwingUtilities.invokeLater(currentFrameLocal::dispose);
+            lastX = currentFrame.getJFrame().getBounds().x;
+            lastY = currentFrame.getJFrame().getBounds().y;
+            SwingUtilities.invokeLater(currentFrame::dispose);
         }
     }
 }

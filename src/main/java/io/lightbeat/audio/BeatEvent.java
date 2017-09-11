@@ -28,7 +28,7 @@ public class BeatEvent {
         return triggeringAmplitude;
     }
 
-    public double getAverage() {
+    double getAverage() {
         return average;
     }
 }

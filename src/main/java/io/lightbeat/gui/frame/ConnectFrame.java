@@ -30,7 +30,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
 
     public ConnectFrame(int x, int y) {
-        super(x, y);
+        super("- Connect", x, y);
 
         selectBridgeBox.addActionListener(e -> {
             boolean setVisible = false;
@@ -65,8 +65,11 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             }
         });
 
-        drawFrame(mainPanel, "- Connect");
+        drawFrame(mainPanel);
     }
+
+    @Override
+    public void onWindowClose() {}
 
     @Override
     public void isScanningForBridges(boolean connectFailed) {
@@ -92,12 +95,14 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     public void requestPushlink() {
 
         pushlinkProgressTask = executorService.scheduleAtFixedRate(() -> {
+
             int currentValue = pushlinkProgressBar.getValue();
             if (currentValue > 0) {
-                pushlinkProgressBar.setValue(currentValue - 1);
+                runOnSwingThread(() -> pushlinkProgressBar.setValue(currentValue - 1));
             } else {
                 pushlinkProgressTask.cancel(false);
             }
+
         }, 1, 1, TimeUnit.SECONDS);
 
         runOnSwingThread(() -> {
@@ -121,9 +126,6 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             toggleButtonAndDropdown(true, "Pushlinking timed out");
         });
     }
-
-    @Override
-    public void onWindowClose() {}
 
     private void toggleButtonAndDropdown(boolean setEnabled, String labelText) {
         runOnSwingThread(() -> {

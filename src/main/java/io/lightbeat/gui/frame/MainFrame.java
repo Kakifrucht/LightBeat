@@ -16,6 +16,7 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -59,32 +60,29 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     public MainFrame(int x, int y) {
         super(x, y);
+
         audioReader = componentHolder.getAudioReader();
 
         // add mixer names to dropdown
-        runOnSwingThread(
-                () -> {
-                    List<String> mixerNames = audioReader.getSupportedMixers().stream()
-                            .map(mixer -> mixer.getMixerInfo().getName())
-                            .collect(Collectors.toList());
+        List<String> mixerNames = audioReader.getSupportedMixers().stream()
+                .map(mixer -> mixer.getMixerInfo().getName())
+                .collect(Collectors.toList());
 
-                    String lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE);
-                    if (lastSource != null) {
-                        for (String mixerName : mixerNames) {
-                            if (mixerName.equals(lastSource)) {
-                                deviceSelectComboBox.addItem(mixerName);
-                                break;
-                            }
-                        }
-                    }
-
-                    for (String mixerName : mixerNames) {
-                        if (!mixerName.equals(lastSource)) {
-                            deviceSelectComboBox.addItem(mixerName);
-                        }
-                    }
+        String lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE);
+        if (lastSource != null) {
+            for (String mixerName : mixerNames) {
+                if (mixerName.equals(lastSource)) {
+                    deviceSelectComboBox.addItem(mixerName);
+                    break;
                 }
-        );
+            }
+        }
+
+        for (String mixerName : mixerNames) {
+            if (!mixerName.equals(lastSource)) {
+                deviceSelectComboBox.addItem(mixerName);
+            }
+        }
 
         restoreBrightnessButton.addActionListener(e -> {
             minBrightnessSlider.restoreDefault();
@@ -97,31 +95,29 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         // setup lights disable panel
         List<PHLight> allLights = getHueManager().getAllLights();
         List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-        runOnSwingThread(() -> {
-            for (PHLight light : allLights) {
+        for (PHLight light : allLights) {
 
-                JCheckBox checkBox = new JCheckBox();
-                checkBox.setText(light.getName());
-                if (!disabledLights.contains(light.getUniqueId())) {
-                    checkBox.setSelected(true);
+            JCheckBox checkBox = new JCheckBox();
+            checkBox.setText(light.getName());
+            if (!disabledLights.contains(light.getUniqueId())) {
+                checkBox.setSelected(true);
+            }
+
+            lightsPanel.add(checkBox);
+
+            checkBox.addActionListener(e -> {
+
+                List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+
+                if (((JCheckBox) e.getSource()).isSelected()) {
+                    disabledLightsList.remove(light.getUniqueId());
+                } else {
+                    disabledLightsList.add(light.getUniqueId());
                 }
 
-                lightsPanel.add(checkBox);
-
-                checkBox.addActionListener(e -> {
-
-                    List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-
-                    if (((JCheckBox) e.getSource()).isSelected()) {
-                        disabledLightsList.remove(light.getUniqueId());
-                    } else {
-                        disabledLightsList.add(light.getUniqueId());
-                    }
-
-                    config.putStringList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
-                });
-            }
-        });
+                config.putStringList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
+            });
+        }
 
         restoreAdvancedButton.addActionListener(e -> {
             beatSensitivitySlider.restoreDefault();
@@ -198,7 +194,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                             "Update found",
                             JOptionPane.YES_NO_OPTION);
                     if (answerCode == 0) {
-                        openInBrowser("https://lightbeat.io");
+                        openInBrowser("https://lightbeat.io/?downloads");
                     } else {
                         config.putLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, (int) (System.currentTimeMillis() / 1000));
                     }
@@ -210,7 +206,28 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         }, 5, TimeUnit.SECONDS);
 
-        drawFrame(mainPanel, "");
+        drawFrame(mainPanel);
+
+        long locationStore = config.getLong(ConfigNode.WINDOW_LOCATION);
+        if (locationStore > 0) {
+            ByteBuffer locationBuffer = ByteBuffer.allocate(8).putLong(locationStore);
+            int storedX = locationBuffer.getInt(0);
+            int storedY = locationBuffer.getInt(4);
+
+            // check if in bounds
+            Rectangle newBounds = new Rectangle(storedX, storedY, frame.getMinimumSize().width, frame.getMinimumSize().height);
+            Rectangle screenBounds = new Rectangle(0, 0, 0, 0);
+
+            GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice[] screenDevices = graphicsEnvironment.getScreenDevices();
+            for (GraphicsDevice device : screenDevices) {
+                screenBounds.add(device.getDefaultConfiguration().getBounds());
+            }
+
+            if (screenBounds.contains(newBounds)) {
+                runOnSwingThread(() -> frame.setBounds(newBounds));
+            }
+        }
     }
 
     @Override
@@ -218,6 +235,14 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         audioReader.stop();
         componentHolder.getAudioEventManager().unregisterBeatObserver(this);
         getHueManager().recoverOriginalState();
+
+        // store last location of window in long if moved
+        long locationStore = ByteBuffer.allocate(8)
+                .putInt(frame.getX())
+                .putInt(frame.getY())
+                .getLong(0);
+
+        config.putLong(ConfigNode.WINDOW_LOCATION, locationStore);
     }
 
     public void createUIComponents() {

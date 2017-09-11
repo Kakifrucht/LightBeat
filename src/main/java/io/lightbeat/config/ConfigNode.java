@@ -16,7 +16,8 @@ public enum ConfigNode {
     UPDATE_DISABLE_NOTIFICATION("frame.updatedisablenotification"),
     LIGHTS_DISABLED("lights.disabled"),
     LIGHTS_TRANSITION_TIME("lights.transitiontime"),
-    SHOW_ADVANCED_SETTINGS("frame.showadvanced");
+    SHOW_ADVANCED_SETTINGS("frame.showadvanced"),
+    WINDOW_LOCATION("window.location");
 
     private final String key;
 

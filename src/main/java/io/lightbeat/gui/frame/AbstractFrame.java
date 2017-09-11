@@ -1,8 +1,8 @@
 package io.lightbeat.gui.frame;
 
 import io.lightbeat.ComponentHolder;
-import io.lightbeat.config.Config;
 import io.lightbeat.LightBeat;
+import io.lightbeat.config.Config;
 import io.lightbeat.hue.HueManager;
 
 import javax.swing.*;
@@ -22,21 +22,28 @@ public abstract class AbstractFrame implements HueFrame {
     final Config config = componentHolder.getConfig();
     final ScheduledExecutorService executorService = componentHolder.getExecutorService();
 
-    JFrame frame;
+    JFrame frame = new JFrame();;
 
+    private final String frameTitle;
     private final int x;
     private final int y;
 
+
     AbstractFrame(int x, int y) {
+        this("", x, y);
+    }
+
+    AbstractFrame(String frameTitle, int x, int y) {
+        this.frameTitle = "LightBeat " + frameTitle;
         this.x = x;
         this.y = y;
     }
 
-    void drawFrame(Container toDraw, String frameTitle) {
-        frame = new JFrame();
-        SwingUtilities.invokeLater(() -> {
-            frame.setTitle("LightBeat " + frameTitle);
-            frame.setContentPane(toDraw);
+    void drawFrame(Container mainContainer) {
+        runOnSwingThread(() -> {
+
+            frame.setTitle(frameTitle);
+            frame.setContentPane(mainContainer);
 
             // load icons
             List<Image> icons = new ArrayList<>();
@@ -48,8 +55,8 @@ public abstract class AbstractFrame implements HueFrame {
             ToolTipManager.sharedInstance().setInitialDelay(150);
             ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
 
-            int widthWindow = toDraw.getPreferredSize().width;
-            int heightWindow = toDraw.getPreferredSize().height;
+            int widthWindow = mainContainer.getMinimumSize().width;
+            int heightWindow = mainContainer.getMinimumSize().height;
             frame.setBounds(x, y, widthWindow, heightWindow);
 
             frame.addWindowListener(new WindowAdapter() {
@@ -60,8 +67,8 @@ public abstract class AbstractFrame implements HueFrame {
                 }
             });
 
-            frame.setVisible(true);
             frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            frame.setVisible(true);
         });
     }
 
