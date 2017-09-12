@@ -6,6 +6,7 @@ import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.ConfigNode;
+import io.lightbeat.gui.swing.JConfigCheckBox;
 import io.lightbeat.gui.swing.JConfigSlider;
 import io.lightbeat.gui.swing.JIconLabel;
 import io.lightbeat.util.URLConnectionReader;
@@ -41,19 +42,21 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private JPanel lightsPanel;
 
+    private JRadioButton randomRadioButton;
+    private JRadioButton comingSoonRadioButton;
+
     private JPanel advancedPanel;
     private JButton restoreAdvancedButton;
+    private JConfigSlider beatSensitivitySlider;
+    private JConfigSlider beatTimeBetweenSlider;
+    private JConfigSlider transitionTimeSlider;
 
     private JButton startButton;
-    private JCheckBox showAdvancedCheckbox;
+    private JConfigCheckBox showAdvancedCheckbox;
+    private JConfigCheckBox autoStartCheckBox;
 
     private JLabel urlLabel;
     private JLabel infoLabel;
-    private JRadioButton randomRadioButton;
-    private JConfigSlider beatSensitivitySlider;
-    private JConfigSlider beatTimeBetweenSlider;
-    private JRadioButton comingSoonRadioButton;
-    private JConfigSlider transitionTimeSlider;
 
     private boolean isRunning = false;
 
@@ -127,43 +130,18 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         startButton.addActionListener(e -> {
 
-            if (!isRunning) { // start
-                String selectedMixerName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
-                List<Mixer> supportedMixers = audioReader.getSupportedMixers();
-                for (Mixer supportedMixer : supportedMixers) {
-                    String mixerName = supportedMixer.getMixerInfo().getName();
-                    if (mixerName.equals(selectedMixerName)) {
-                        config.put(ConfigNode.LAST_AUDIO_SOURCE, mixerName);
-
-                        isRunning = getHueManager().initializeLights();
-                        if (isRunning) {
-                            audioReader.start(supportedMixer);
-                            startButton.setText("Stop");
-                            infoLabel.setText("Running");
-                            componentHolder.getAudioEventManager().registerBeatObserver(this);
-                        } else {
-                            infoLabel.setText("No lights were selected");
-                        }
-
-                        break;
-                    }
-                }
-
-            } else { // stop
+            if (isRunning) {
+                // stop
                 startButton.setText("Start");
                 infoLabel.setText("Idle");
                 onWindowClose();
                 isRunning = false;
+            } else {
+                startBeatDetection();
             }
         });
 
-        showAdvancedCheckbox.setSelected(config.getBoolean(ConfigNode.SHOW_ADVANCED_SETTINGS));
-        showAdvancedCheckbox.addActionListener((e) -> {
-            boolean isSelected = showAdvancedCheckbox.isSelected();
-            config.putBoolean(ConfigNode.SHOW_ADVANCED_SETTINGS, isSelected);
-            advancedPanel.setVisible(isSelected);
-        });
-        advancedPanel.setVisible(showAdvancedCheckbox.isSelected());
+        showAdvancedCheckbox.setToRunOnChange(() -> advancedPanel.setVisible(showAdvancedCheckbox.isSelected()));
 
         urlLabel.setText("v" + LightBeat.getVersion() + " | " + urlLabel.getText());
         urlLabel.addMouseListener(new MouseInputAdapter() {
@@ -228,6 +206,10 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 runOnSwingThread(() -> frame.setBounds(newBounds));
             }
         }
+
+        if (config.getBoolean(ConfigNode.AUTOSTART)) {
+            runOnSwingThread(this::startBeatDetection);
+        }
     }
 
     @Override
@@ -256,6 +238,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
         beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
         transitionTimeSlider = new JConfigSlider(config, ConfigNode.LIGHTS_TRANSITION_TIME);
+
+        showAdvancedCheckbox = new JConfigCheckBox(config, ConfigNode.SHOW_ADVANCED_SETTINGS);
+        autoStartCheckBox = new JConfigCheckBox(config, ConfigNode.AUTOSTART);
     }
 
     @Override
@@ -269,6 +254,34 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     @Override
     public void silenceDetected() {}
+
+    private void startBeatDetection() {
+        String selectedMixerName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
+        List<Mixer> supportedMixers = audioReader.getSupportedMixers();
+        for (Mixer supportedMixer : supportedMixers) {
+            String mixerName = supportedMixer.getMixerInfo().getName();
+            if (mixerName.equals(selectedMixerName)) {
+                config.put(ConfigNode.LAST_AUDIO_SOURCE, mixerName);
+
+                isRunning = getHueManager().initializeLights();
+                if (isRunning) {
+                    boolean startedSuccessfully = audioReader.start(supportedMixer);
+                    if (startedSuccessfully) {
+                        startButton.setText("Stop");
+                        infoLabel.setText("Running");
+                        componentHolder.getAudioEventManager().registerBeatObserver(this);
+                        return;
+                    }
+
+                } else {
+                    infoLabel.setText("No lights were selected");
+                    return;
+                }
+            }
+        }
+
+        infoLabel.setText("Selected audio source is no longer available");
+    }
 
     private void openInBrowser(String url) {
         Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;

@@ -29,7 +29,7 @@ class CaptureInterpreter {
     private double beatThreshold;
     private boolean isSilent = true;
 
-    private final TimeThreshold nextBeatThreshold = new TimeThreshold(1000L); // adds calibration phase
+    private final TimeThreshold nextBeatThreshold = new TimeThreshold(1000L); // add calibration phase
     private final TimeThreshold noBeatThreshold = new TimeThreshold();
     private final TimeThreshold silenceThreshold = new TimeThreshold();
 

@@ -52,7 +52,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     }
 
     @Override
-    public void start(Mixer mixer) {
+    public boolean start(Mixer mixer) {
 
         if (dataLine != null && dataLine.isOpen()) {
             stop();
@@ -64,8 +64,8 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
             dataLine.start();
         } catch (LineUnavailableException e) {
             dataLine = null;
-            logger.error("Could not start audio capture thread, as selected audio mixer is not supported", e);
-            return;
+            logger.warn("Could not start audio capture thread, as selected audio mixer is not supported", e);
+            return false;
         }
 
         captureInterpreter = new CaptureInterpreter(config);
@@ -86,7 +86,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
 
                 while (dataLine.read(audioInputBuffer, 0, frameSize) > 0) {
 
-                    // convert bytes to complex numbers
+                    // convert to normalized values (2 bytes per sample)
                     double[] complexAudioBuffer = new double[frameSize];
                     for (int i = 0, s = 0; s < frameSize; i++) {
                         short sample = 0;
@@ -100,21 +100,18 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
                     DoubleFFT_1D fft = new DoubleFFT_1D(frameSize / 2);
                     fft.realForwardFull(complexAudioBuffer);
 
-                    int frequencyThreshold = (int) Math.round(frameSize * 0.04d);
-                    for (int i = frequencyThreshold * 2; i < complexAudioBuffer.length; i++) {
+                    for (int i = 4; i < complexAudioBuffer.length; i++) {
                         // remove frequencies above threshold
                         complexAudioBuffer[i] = 0.0d;
                     }
 
-                    // there is probably a more efficient way than converting via fft -> removing values -> inverse fft -> rms (help?)
+                    // there is most likely a more efficient way than converting via fft -> removing values -> inverse fft -> rms
                     fft.complexInverse(complexAudioBuffer, true);
 
                     // calculate root mean square and use value as amplitude
                     double sum = 0;
                     for (int i = 0; i < frameSize / 2; i++) {
-                        double re = complexAudioBuffer[i * 2];
-                        double im = complexAudioBuffer[(i * 2) + 1];
-                        sum += Math.pow(Math.abs(re) + Math.abs(im), 2);
+                        sum += Math.pow(complexAudioBuffer[i * 2], 2);
                     }
 
                     sum /= frameSize;
@@ -137,6 +134,8 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
                 }
             }
         }, 8L, 8L, TimeUnit.MILLISECONDS);
+
+        return true;
     }
 
     @Override

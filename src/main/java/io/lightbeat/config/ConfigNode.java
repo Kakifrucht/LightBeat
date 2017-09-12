@@ -5,6 +5,7 @@ package io.lightbeat.config;
  */
 public enum ConfigNode {
 
+    AUTOSTART("autostart"),
     BEAT_MIN_TIME_BETWEEN("beat.mintimebetween"),
     BEAT_SENSITIVITY("beat.sensitivity"),
     BRIDGE_USERNAME("bridge.userName"),

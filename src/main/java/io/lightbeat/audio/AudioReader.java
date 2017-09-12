@@ -17,14 +17,15 @@ public interface AudioReader {
     List<Mixer> getSupportedMixers();
 
     /**
-     * Starts the audio read thread on the selected mixer.
+     * Start reading and interpreting audio data on the selected mixer.
      *
      * @param mixer to read audio data from
+     * @return whether the audio read thread was successfully started
      */
-    void start(Mixer mixer);
+    boolean start(Mixer mixer);
 
     /**
-     * Stops the audio data read thread.
+     * Stop reading and interpreting audio data.
      */
     void stop();
 }

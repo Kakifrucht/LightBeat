@@ -66,12 +66,12 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
     @Override
     void initializeEffect() {
         int baseHue = rnd.nextInt(65535);
-        int oneThird = 21845;
+        int differenceToNextHue = rnd.nextInt(16845) + 5000;
 
         hues = new int[3];
         this.hues[0] = baseHue;
-        this.hues[1] = (baseHue + oneThird) % 65535;
-        this.hues[2] = (baseHue + (oneThird * 2)) % 65535;
+        this.hues[1] = (baseHue + differenceToNextHue) % 65535;
+        this.hues[2] = (baseHue + (differenceToNextHue * 2)) % 65535;
 
         lightFlipDirection = new HashMap<>();
         hueIndex = 0;
