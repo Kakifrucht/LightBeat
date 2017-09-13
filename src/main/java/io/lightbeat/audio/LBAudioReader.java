@@ -87,40 +87,39 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
                 while (dataLine.read(audioInputBuffer, 0, frameSize) > 0) {
 
                     // convert to normalized values (2 bytes per sample)
-                    double[] complexAudioBuffer = new double[frameSize];
+                    double[] normalizedAudioBuffer = new double[frameSize / 2];
                     for (int i = 0, s = 0; s < frameSize; i++) {
                         short sample = 0;
 
                         sample |= audioInputBuffer[s++] << 8;
                         sample |= audioInputBuffer[s++] & 0xFF;
 
-                        complexAudioBuffer[i] = sample / (double) Short.MAX_VALUE;
+                        normalizedAudioBuffer[i] = sample / (double) Short.MAX_VALUE;
                     }
 
                     DoubleFFT_1D fft = new DoubleFFT_1D(frameSize / 2);
-                    fft.realForwardFull(complexAudioBuffer);
+                    fft.realForward(normalizedAudioBuffer);
 
                     // filter frequencies
-                    for (int i = 4; i < complexAudioBuffer.length - 2; i++) {
-                        complexAudioBuffer[i] = 0.0d;
+                    for (int i = 4; i < normalizedAudioBuffer.length; i++) {
+                        normalizedAudioBuffer[i] = 0.0d;
                     }
 
                     // there is most likely a more efficient way than converting via fft -> removing values -> inverse fft -> rms
-                    fft.complexInverse(complexAudioBuffer, true);
+                    fft.realInverse(normalizedAudioBuffer, true);
 
                     // calculate root mean square and use value as amplitude
-                    int samples = frameSize / 2;
                     double average = 0d;
-                    for (int i = 0; i < frameSize; i += 2) {
-                        average += complexAudioBuffer[i];
+                    for (int i = 0; i < normalizedAudioBuffer.length; i += 2) {
+                        average += normalizedAudioBuffer[i];
                     }
-                    average /= samples;
+                    average /= normalizedAudioBuffer.length;
 
                     double averageMeanSquare = 0;
-                    for (int i = 0; i < frameSize; i += 2) {
-                        averageMeanSquare += Math.pow(complexAudioBuffer[i] - average, 2d);
+                    for (int i = 0; i < normalizedAudioBuffer.length; i += 2) {
+                        averageMeanSquare += Math.pow(normalizedAudioBuffer[i] - average, 2d);
                     }
-                    averageMeanSquare /= samples;
+                    averageMeanSquare /= normalizedAudioBuffer.length;
                     averageMeanSquare = Math.sqrt(averageMeanSquare);
 
                     double amplitude = averageMeanSquare;
