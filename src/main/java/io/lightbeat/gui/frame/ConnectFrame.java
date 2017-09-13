@@ -109,7 +109,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             pushlinkProgressBar.setValue(30);
             pushlinkProgressBar.setVisible(true);
             pushlinkImageLabel.setVisible(true);
-            toggleButtonAndDropdown(false, "Please press the pushlink button");
+            toggleButtonAndDropdown(false, "Please press the pushlink button on your bridge");
         });
     }
 
@@ -123,7 +123,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
         runOnSwingThread(() -> {
             pushlinkProgressBar.setVisible(false);
             pushlinkImageLabel.setVisible(false);
-            toggleButtonAndDropdown(true, "Pushlinking timed out");
+            toggleButtonAndDropdown(true, "Pushlinking timed out, please try again");
         });
     }
 

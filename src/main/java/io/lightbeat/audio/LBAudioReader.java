@@ -100,8 +100,8 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
                     DoubleFFT_1D fft = new DoubleFFT_1D(frameSize / 2);
                     fft.realForwardFull(complexAudioBuffer);
 
-                    for (int i = 4; i < complexAudioBuffer.length; i++) {
-                        // remove frequencies above threshold
+                    // filter frequencies
+                    for (int i = 4; i < complexAudioBuffer.length - 2; i++) {
                         complexAudioBuffer[i] = 0.0d;
                     }
 
@@ -109,14 +109,21 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
                     fft.complexInverse(complexAudioBuffer, true);
 
                     // calculate root mean square and use value as amplitude
-                    double sum = 0;
-                    for (int i = 0; i < frameSize / 2; i++) {
-                        sum += Math.pow(complexAudioBuffer[i * 2], 2);
+                    int samples = frameSize / 2;
+                    double average = 0d;
+                    for (int i = 0; i < frameSize; i += 2) {
+                        average += complexAudioBuffer[i];
                     }
+                    average /= samples;
 
-                    sum /= frameSize;
-                    double amplitude = Math.sqrt(sum);
+                    double averageMeanSquare = 0;
+                    for (int i = 0; i < frameSize; i += 2) {
+                        averageMeanSquare += Math.pow(complexAudioBuffer[i] - average, 2d);
+                    }
+                    averageMeanSquare /= samples;
+                    averageMeanSquare = Math.sqrt(averageMeanSquare);
 
+                    double amplitude = averageMeanSquare;
                     if (amplitude < 0.005d) {
                         amplitude = 0d;
                     }

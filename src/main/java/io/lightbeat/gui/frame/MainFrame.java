@@ -143,7 +143,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         showAdvancedCheckbox.setToRunOnChange(() -> advancedPanel.setVisible(showAdvancedCheckbox.isSelected()));
 
-        urlLabel.setText("v" + LightBeat.getVersion() + " | " + urlLabel.getText());
+        String version = LightBeat.getVersion();
+        urlLabel.setText("v" + version + " | " + urlLabel.getText());
         urlLabel.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -151,7 +152,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             }
         });
 
-        String version = LightBeat.getVersion();
+        // schedule updater task
         componentHolder.getExecutorService().schedule(() -> {
 
             long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
@@ -186,6 +187,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         drawFrame(mainPanel);
 
+        // restore last windows location
         long locationStore = config.getLong(ConfigNode.WINDOW_LOCATION);
         if (locationStore > 0) {
             ByteBuffer locationBuffer = ByteBuffer.allocate(8).putLong(locationStore);
@@ -218,7 +220,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         componentHolder.getAudioEventManager().unregisterBeatObserver(this);
         getHueManager().recoverOriginalState();
 
-        // store last location of window in long if moved
+        // store last location of window
         long locationStore = ByteBuffer.allocate(8)
                 .putInt(frame.getX())
                 .putInt(frame.getY())

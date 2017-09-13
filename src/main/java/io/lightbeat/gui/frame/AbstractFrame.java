@@ -22,7 +22,7 @@ public abstract class AbstractFrame implements HueFrame {
     final Config config = componentHolder.getConfig();
     final ScheduledExecutorService executorService = componentHolder.getExecutorService();
 
-    JFrame frame = new JFrame();;
+    final JFrame frame = new JFrame();
 
     private final String frameTitle;
     private final int x;

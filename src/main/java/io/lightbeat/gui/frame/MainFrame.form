@@ -59,7 +59,7 @@
             </constraints>
             <properties>
               <maximum value="254"/>
-              <toolTipText value="Define the minimum brightness level when the music is currently less intense than average."/>
+              <toolTipText value="Define the minimum brightness level, reached when the music is currently less intense than on average."/>
             </properties>
           </component>
           <component id="58e34" class="javax.swing.JLabel">
@@ -84,7 +84,7 @@
             </constraints>
             <properties>
               <maximum value="254"/>
-              <toolTipText value="Define the maximum brightness level when the music is currently more intense than average."/>
+              <toolTipText value="Define the maximum brightness level, reached when the music is currently more intense than on average."/>
             </properties>
           </component>
           <component id="96897" class="javax.swing.JLabel">
@@ -219,7 +219,7 @@
             <properties>
               <maximum value="1000"/>
               <minimum value="100"/>
-              <toolTipText value="Minimum time in milliseconds until the next beat can be detected.&lt;br&gt;Setting this value too low might cause network congestion and additional latency, setting it too high might skip beats."/>
+              <toolTipText value="Minimum time in milliseconds until the next beat can be detected.&lt;br&gt;Setting this value too low might cause network congestion and additional latency, setting it too high might skip beats.&lt;br&gt;The best setting is dependant on your individual setup."/>
             </properties>
           </component>
           <component id="bc99b" class="javax.swing.JLabel">

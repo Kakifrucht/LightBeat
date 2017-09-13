@@ -87,5 +87,8 @@ public class JConfigSlider extends JSlider {
 
         String customText = toolTipText + "<br><br>Current Value: " + getValue() + " | Default: " + def + "</html>";
         setToolTipText(customText);
+        if (!toolTipIsSet) {
+            toolTipIsSet = true;
+        }
     }
 }
