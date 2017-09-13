@@ -102,6 +102,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
             JCheckBox checkBox = new JCheckBox();
             checkBox.setText(light.getName());
+            checkBox.setBackground(Color.WHITE);
             if (!disabledLights.contains(light.getUniqueId())) {
                 checkBox.setSelected(true);
             }
