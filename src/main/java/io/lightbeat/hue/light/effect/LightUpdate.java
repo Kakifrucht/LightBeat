@@ -20,17 +20,19 @@ public class LightUpdate {
     private final double brightnessPercentage;
     private final boolean doBrightnessChange;
     private final int transitionTime;
+    private final long timeSinceLastBeat;
 
     private final Map<PHLight, LightStateBuilder> builders;
 
 
-    public LightUpdate(List<PHLight> lights, BrightnessCalibrator.BrightnessData brightnessData) {
+    public LightUpdate(List<PHLight> lights, BrightnessCalibrator.BrightnessData brightnessData, long timeSinceLastBeat) {
 
         this.lights = lights;
         this.brightness = brightnessData.getBrightness();
         this.brightnessPercentage = brightnessData.getBrightnessPercentage();
         this.doBrightnessChange = brightnessData.isBrightnessChange();
         this.transitionTime = brightnessData.getTransitionTime();
+        this.timeSinceLastBeat = timeSinceLastBeat;
 
         this.builders = new HashMap<>();
         for (PHLight light : lights) {
@@ -76,6 +78,10 @@ public class LightUpdate {
 
     int getTransitionTime() {
         return transitionTime;
+    }
+
+    long getTimeSinceLastBeat() {
+        return timeSinceLastBeat;
     }
 
     LightStateBuilder getBuilder(PHLight light) {

@@ -23,6 +23,7 @@ public class HueBeatObserver implements BeatObserver {
     private final List<LightEffect> effectPipe;
 
     private final DoubleAverageBuffer amplitudeHistory = new DoubleAverageBuffer(75, false);
+    private long lastBeatTimeStamp = System.currentTimeMillis();
 
 
     public HueBeatObserver(HueManager hueManager, Config config) {
@@ -46,16 +47,18 @@ public class HueBeatObserver implements BeatObserver {
         double amplitudeDifference = event.getTriggeringAmplitude() - amplitudeHistory.getCurrentAverage();
         BrightnessCalibrator.BrightnessData data = brightnessCalibrator.getBrightness(amplitudeDifference);
 
-        LightUpdate lightUpdate = new LightUpdate(hueManager.getLights(true), data);
+        LightUpdate lightUpdate = new LightUpdate(hueManager.getLights(true), data, getTimeSinceLastBeat());
 
         effectPipe.forEach(effect -> effect.beatReceived(lightUpdate));
         lightUpdate.doLightUpdates();
+
+        lastBeatTimeStamp = System.currentTimeMillis();
     }
 
     @Override
     public void noBeatReceived() {
         BrightnessCalibrator.BrightnessData data = brightnessCalibrator.getLowestBrightnessData();
-        LightUpdate lightUpdate = new LightUpdate(hueManager.getLights(true), data);
+        LightUpdate lightUpdate = new LightUpdate(hueManager.getLights(true), data, getTimeSinceLastBeat());
 
         effectPipe.forEach(effect -> effect.noBeatReceived(lightUpdate));
         lightUpdate.doLightUpdates();
@@ -66,5 +69,9 @@ public class HueBeatObserver implements BeatObserver {
         noBeatReceived();
         brightnessCalibrator.clearHistory();
         amplitudeHistory.clear();
+    }
+
+    private long getTimeSinceLastBeat() {
+        return System.currentTimeMillis() - lastBeatTimeStamp;
     }
 }
