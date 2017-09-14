@@ -141,13 +141,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
 
         startButton.addActionListener(e -> {
-
             if (audioReaderIsRunning) {
-                // stop
-                startButton.setText("Start");
-                infoLabel.setText("Idle");
-                onWindowClose();
-                audioReaderIsRunning = false;
+                stopBeatDetection();
             } else {
                 startBeatDetection();
             }
@@ -240,9 +235,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             selectionFrame.dispose();
         }
 
-        audioReader.stop();
-        componentHolder.getAudioEventManager().unregisterBeatObserver(this);
-        getHueManager().recoverOriginalState();
+        stopBeatDetection();
 
         // store last location of window
         long locationStore = ByteBuffer.allocate(8)
@@ -282,6 +275,11 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     public void silenceDetected() {}
 
     private void startBeatDetection() {
+
+        if (audioReaderIsRunning) {
+            return;
+        }
+
         String selectedMixerName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
         List<Mixer> supportedMixers = audioReader.getSupportedMixers();
         for (Mixer supportedMixer : supportedMixers) {
@@ -307,6 +305,17 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
 
         infoLabel.setText("Selected audio source is no longer available");
+    }
+
+    private void stopBeatDetection() {
+        if (audioReaderIsRunning) {
+            startButton.setText("Start");
+            infoLabel.setText("Idle");
+            audioReader.stop();
+            componentHolder.getAudioEventManager().unregisterBeatObserver(this);
+            getHueManager().recoverOriginalState();
+            audioReaderIsRunning = false;
+        }
     }
 
     private void openInBrowser(String url) {
