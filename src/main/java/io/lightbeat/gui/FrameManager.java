@@ -3,7 +3,7 @@ package io.lightbeat.gui;
 import io.lightbeat.gui.frame.ConnectFrame;
 import io.lightbeat.gui.frame.HueFrame;
 import io.lightbeat.gui.frame.MainFrame;
-import io.lightbeat.hue.HueStateObserver;
+import io.lightbeat.hue.bridge.HueStateObserver;
 
 import javax.swing.*;
 

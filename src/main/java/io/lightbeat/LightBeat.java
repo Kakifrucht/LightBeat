@@ -4,10 +4,10 @@ import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEventManager;
 import io.lightbeat.config.Config;
 import io.lightbeat.gui.FrameManager;
-import io.lightbeat.hue.LBHueManager;
+import io.lightbeat.hue.bridge.LBHueManager;
 import io.lightbeat.audio.LBAudioReader;
 import io.lightbeat.config.LBConfig;
-import io.lightbeat.hue.HueManager;
+import io.lightbeat.hue.bridge.HueManager;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

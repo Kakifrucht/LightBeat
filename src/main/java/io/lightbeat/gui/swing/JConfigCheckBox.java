@@ -29,6 +29,6 @@ public class JConfigCheckBox extends JCheckBox {
 
     public void setToRunOnChange(Runnable toRunOnChange) {
         this.toRunOnChange = toRunOnChange;
-        toRunOnChange.run();
+        SwingUtilities.invokeLater(toRunOnChange);
     }
 }

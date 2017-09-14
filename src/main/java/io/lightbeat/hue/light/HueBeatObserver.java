@@ -3,7 +3,7 @@ package io.lightbeat.hue.light;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.Config;
-import io.lightbeat.hue.HueManager;
+import io.lightbeat.hue.bridge.HueManager;
 import io.lightbeat.hue.light.effect.*;
 import io.lightbeat.util.DoubleAverageBuffer;
 

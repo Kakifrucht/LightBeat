@@ -3,7 +3,7 @@ package io.lightbeat.gui.frame;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.LightBeat;
 import io.lightbeat.config.Config;
-import io.lightbeat.hue.HueManager;
+import io.lightbeat.hue.bridge.HueManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +23,8 @@ public abstract class AbstractFrame implements HueFrame {
     final ScheduledExecutorService executorService = componentHolder.getExecutorService();
 
     final JFrame frame = new JFrame();
+    Dimension minimumSize;
+    Dimension preferredSize;
 
     private final String frameTitle;
     private final int x;
@@ -30,16 +32,16 @@ public abstract class AbstractFrame implements HueFrame {
 
 
     AbstractFrame(int x, int y) {
-        this("", x, y);
+        this(null, x, y);
     }
 
     AbstractFrame(String frameTitle, int x, int y) {
-        this.frameTitle = "LightBeat " + frameTitle;
+        this.frameTitle = "LightBeat" + (frameTitle != null ? (" - " + frameTitle) : "" );
         this.x = x;
         this.y = y;
     }
 
-    void drawFrame(Container mainContainer) {
+    void drawFrame(Container mainContainer, boolean isMainFrame) {
         runOnSwingThread(() -> {
 
             frame.setTitle(frameTitle);
@@ -55,15 +57,24 @@ public abstract class AbstractFrame implements HueFrame {
             ToolTipManager.sharedInstance().setInitialDelay(150);
             ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
 
-            int widthWindow = mainContainer.getMinimumSize().width;
-            int heightWindow = mainContainer.getMinimumSize().height;
-            frame.setBounds(x, y, widthWindow, heightWindow);
+            // store, because frame.pack() overwrites these
+            minimumSize = frame.getMinimumSize();
+            preferredSize = frame.getPreferredSize();
+            frame.setBounds(x, y, minimumSize.width, minimumSize.height);
+
+            if (!isMainFrame) {
+                frame.setType(Window.Type.UTILITY);
+            }
+
+            frame.pack();
 
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     dispose();
-                    componentHolder.getHueManager().shutdown();
+                    if (isMainFrame) {
+                        componentHolder.getHueManager().shutdown();
+                    }
                 }
             });
 

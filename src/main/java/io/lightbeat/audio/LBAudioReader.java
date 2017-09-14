@@ -75,7 +75,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
         }
 
 
-        future = executorService.scheduleAtFixedRate(new Runnable() {
+        future = executorService.scheduleWithFixedDelay(new Runnable() {
 
             private final int frameSize = 512;
             private final byte[] audioInputBuffer = new byte[frameSize];

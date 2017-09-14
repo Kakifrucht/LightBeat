@@ -57,8 +57,11 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private JLabel urlLabel;
     private JLabel infoLabel;
+    private JButton addCustomColorsButton;
+    private JButton deleteSelectedButton;
 
-    private boolean isRunning = false;
+    private boolean audioReaderIsRunning = false;
+    private HueFrame selectionFrame = null;
 
 
     public MainFrame(int x, int y) {
@@ -123,6 +126,14 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             });
         }
 
+        addCustomColorsButton.addActionListener(e -> {
+            if (!isSelectionFrameActive()) {
+                selectionFrame = new ColorSelectionFrame(frame.getX() + 10, frame.getY() + 10);
+            } else {
+                selectionFrame.getJFrame().requestFocus();
+            }
+        });
+
         restoreAdvancedButton.addActionListener(e -> {
             beatSensitivitySlider.restoreDefault();
             beatTimeBetweenSlider.restoreDefault();
@@ -131,18 +142,16 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         startButton.addActionListener(e -> {
 
-            if (isRunning) {
+            if (audioReaderIsRunning) {
                 // stop
                 startButton.setText("Start");
                 infoLabel.setText("Idle");
                 onWindowClose();
-                isRunning = false;
+                audioReaderIsRunning = false;
             } else {
                 startBeatDetection();
             }
         });
-
-        showAdvancedCheckbox.setToRunOnChange(() -> advancedPanel.setVisible(showAdvancedCheckbox.isSelected()));
 
         String version = LightBeat.getVersion();
         urlLabel.setText("v" + version + " | " + urlLabel.getText());
@@ -186,7 +195,13 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         }, 5, TimeUnit.SECONDS);
 
-        drawFrame(mainPanel);
+        drawFrame(mainPanel, true);
+
+        showAdvancedCheckbox.setToRunOnChange(() -> {
+            advancedPanel.setVisible(showAdvancedCheckbox.isSelected());
+            // change window size on panel toggle
+            frame.setSize(showAdvancedCheckbox.isSelected() ? super.preferredSize : super.minimumSize);
+        });
 
         // restore last windows location
         long locationStore = config.getLong(ConfigNode.WINDOW_LOCATION);
@@ -196,7 +211,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             int storedY = locationBuffer.getInt(4);
 
             // check if in bounds
-            Rectangle newBounds = new Rectangle(storedX, storedY, frame.getMinimumSize().width, frame.getMinimumSize().height);
+            Rectangle newBounds = new Rectangle(storedX, storedY, 100, 100);
             Rectangle screenBounds = new Rectangle(0, 0, 0, 0);
 
             GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -206,7 +221,10 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             }
 
             if (screenBounds.contains(newBounds)) {
-                runOnSwingThread(() -> frame.setBounds(newBounds));
+                runOnSwingThread(() -> {
+                    newBounds.setSize(frame.getSize());
+                    frame.setBounds(newBounds);
+                });
             }
         }
 
@@ -217,6 +235,11 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     @Override
     protected void onWindowClose() {
+
+        if (isSelectionFrameActive()) {
+            selectionFrame.dispose();
+        }
+
         audioReader.stop();
         componentHolder.getAudioEventManager().unregisterBeatObserver(this);
         getHueManager().recoverOriginalState();
@@ -266,8 +289,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             if (mixerName.equals(selectedMixerName)) {
                 config.put(ConfigNode.LAST_AUDIO_SOURCE, mixerName);
 
-                isRunning = getHueManager().initializeLights();
-                if (isRunning) {
+                audioReaderIsRunning = getHueManager().initializeLights();
+                if (audioReaderIsRunning) {
                     boolean startedSuccessfully = audioReader.start(supportedMixer);
                     if (startedSuccessfully) {
                         startButton.setText("Stop");
@@ -293,5 +316,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 desktop.browse(new URI(url));
             } catch (Exception ignored) {}
         }
+    }
+
+    private boolean isSelectionFrameActive() {
+        return selectionFrame != null && selectionFrame.getJFrame().isDisplayable();
     }
 }
