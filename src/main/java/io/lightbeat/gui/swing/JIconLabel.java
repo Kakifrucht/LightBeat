@@ -16,11 +16,11 @@ public class JIconLabel extends JLabel {
 
 
     public JIconLabel(String resourceName, @Nullable String secondResourceName) {
-        this.icon = new ImageIcon(getClass().getResource("/" + resourceName));
+        this.icon = getImageIcon(resourceName);
         setIcon(icon);
 
         if (secondResourceName != null) {
-            this.secondIcon = new ImageIcon(getClass().getResource("/" + secondResourceName));
+            this.secondIcon = getImageIcon(secondResourceName);
         } else {
             secondIcon = null;
         }
@@ -31,5 +31,9 @@ public class JIconLabel extends JLabel {
             setIcon(firstIconSelected ? secondIcon : icon);
             firstIconSelected = !firstIconSelected;
         }
+    }
+
+    private ImageIcon getImageIcon(String resourceName) {
+        return new ImageIcon(getClass().getResource(resourceName));
     }
 }

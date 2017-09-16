@@ -42,8 +42,10 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private JPanel lightsPanel;
 
-    private JRadioButton randomRadioButton;
-    private JRadioButton comingSoonRadioButton;
+    private JButton addCustomColorsButton;
+    private JButton deleteCustomColorsButton;
+    private JPanel colorSelectPanel;
+    private ButtonGroup colorButtonGroup;
 
     private JPanel advancedPanel;
     private JButton restoreAdvancedButton;
@@ -57,8 +59,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private JLabel urlLabel;
     private JLabel infoLabel;
-    private JButton addCustomColorsButton;
-    private JButton deleteSelectedButton;
 
     private boolean audioReaderIsRunning = false;
     private HueFrame selectionFrame = null;
@@ -122,17 +122,45 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                     disabledLightsList.add(light.getUniqueId());
                 }
 
-                config.putStringList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
+                config.putList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
             });
         }
 
         addCustomColorsButton.addActionListener(e -> {
             if (!isSelectionFrameActive()) {
-                selectionFrame = new ColorSelectionFrame(frame.getX() + 10, frame.getY() + 10);
+                selectionFrame = new ColorSelectionFrame(this, frame.getX() + 10, frame.getY() + 10);
             } else {
                 selectionFrame.getJFrame().requestFocus();
             }
         });
+
+        deleteCustomColorsButton.addActionListener(e -> {
+
+            String selected = setAndGetSelectedButton().getText();
+            if (selected.equals("Random")) {
+                JOptionPane.showMessageDialog(frame,
+                        "You cannot delete this color set.",
+                        "Cannot Delete",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            int answerCode = JOptionPane.showConfirmDialog(
+                    frame,
+                    "Are you sure you want to delete color set " + selected + "?",
+                    "Confirm Set Deletion",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (answerCode == 0) {
+                List<String> sets = config.getStringList(ConfigNode.COLOR_SET_LIST);
+                sets.remove(selected);
+                config.putList(ConfigNode.COLOR_SET_LIST, sets);
+                config.remove(ConfigNode.getCustomNode("color.sets." + selected));
+                refreshColorSets();
+            }
+        });
+
+        refreshColorSets();
 
         restoreAdvancedButton.addActionListener(e -> {
             beatSensitivitySlider.restoreDefault();
@@ -248,7 +276,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     public void createUIComponents() {
 
-        bannerLabel = new JIconLabel("banner.png", "bannerflash.png");
+        bannerLabel = new JIconLabel("/png/banner.png", "/png/bannerflash.png");
 
         minBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MIN);
         maxBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MAX);
@@ -260,6 +288,51 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         showAdvancedCheckbox = new JConfigCheckBox(config, ConfigNode.SHOW_ADVANCED_SETTINGS);
         autoStartCheckBox = new JConfigCheckBox(config, ConfigNode.AUTOSTART);
+    }
+
+    void refreshColorSets() {
+
+        colorSelectPanel.removeAll();
+        colorButtonGroup.clearSelection();
+
+        addRadioButton("Random");
+        config.getStringList(ConfigNode.COLOR_SET_LIST).forEach(this::addRadioButton);
+
+        JRadioButton selectedSetButton = setAndGetSelectedButton();
+        if (!selectedSetButton.getText().equals(config.get(ConfigNode.COLOR_SET_SELECTED))) {
+            config.put(ConfigNode.COLOR_SET_SELECTED, selectedSetButton.getText());
+        }
+
+        colorSelectPanel.updateUI();
+    }
+
+    private void addRadioButton(String setName) {
+        JRadioButton radioButton = new JRadioButton(setName);
+        radioButton.setBackground(Color.WHITE);
+        radioButton.addActionListener(e -> config.put(ConfigNode.COLOR_SET_SELECTED, setName));
+
+        colorSelectPanel.add(radioButton);
+        colorButtonGroup.add(radioButton);
+    }
+
+    private JRadioButton setAndGetSelectedButton() {
+
+        JRadioButton toReturn = null;
+        String selectedButton = config.get(ConfigNode.COLOR_SET_SELECTED);
+        for (Component radioButton : colorSelectPanel.getComponents()) {
+            JRadioButton button = (JRadioButton) radioButton;
+            if (button.getText().equals(selectedButton)) {
+                toReturn = button;
+                break;
+            }
+        }
+
+        if (toReturn == null) {
+            toReturn = (JRadioButton) colorSelectPanel.getComponents()[0];
+        }
+
+        toReturn.setSelected(true);
+        return toReturn;
     }
 
     @Override

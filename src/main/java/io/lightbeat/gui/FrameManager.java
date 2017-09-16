@@ -25,15 +25,6 @@ public class FrameManager {
         } catch (Exception ignored) {}
     }
 
-    public void showMainFrame() {
-        if (currentFrame instanceof MainFrame) {
-            return;
-        }
-
-        disposeCurrentWindow();
-        currentFrame = new MainFrame(lastX, lastY);
-    }
-
     public HueStateObserver showConnectFrame() {
         if (currentFrame instanceof ConnectFrame) {
             return (HueStateObserver) currentFrame;
@@ -42,6 +33,15 @@ public class FrameManager {
         disposeCurrentWindow();
         currentFrame = new ConnectFrame(lastX, lastY);
         return (HueStateObserver) currentFrame;
+    }
+
+    public void showMainFrame() {
+        if (currentFrame instanceof MainFrame) {
+            return;
+        }
+
+        disposeCurrentWindow();
+        currentFrame = new MainFrame(lastX, lastY);
     }
 
     private void disposeCurrentWindow() {

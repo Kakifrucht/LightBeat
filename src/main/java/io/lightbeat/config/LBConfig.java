@@ -85,21 +85,26 @@ public class LBConfig implements Config {
     }
 
     @Override
-    public void putStringList(ConfigNode node, List<String> list) {
+    public void putList(ConfigNode node, List<?> list) {
 
         if (list.isEmpty()) {
-            preferences.remove(node.getKey());
+            remove(node);
             return;
         }
 
         StringBuilder listToString = new StringBuilder();
-        for (String lightString : list) {
-            listToString.append(lightString).append("■");
+        for (Object listEntry : list) {
+            listToString.append(String.valueOf(listEntry)).append("■");
         }
         if (listToString.length() > 0) {
             listToString.setLength(listToString.length() - 1);
         }
 
         preferences.put(node.getKey(), listToString.toString());
+    }
+
+    @Override
+    public void remove(ConfigNode node) {
+        preferences.remove(node.getKey());
     }
 }

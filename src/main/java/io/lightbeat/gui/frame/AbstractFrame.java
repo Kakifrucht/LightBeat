@@ -50,7 +50,7 @@ public abstract class AbstractFrame implements HueFrame {
             // load icons
             List<Image> icons = new ArrayList<>();
             for (int i = 16; i <= 64; i += 16) {
-                icons.add(new ImageIcon(getClass().getResource("/icon_" + i + ".png")).getImage());
+                icons.add(new ImageIcon(getClass().getResource("/png/icon_" + i + ".png")).getImage());
             }
             frame.setIconImages(icons);
 

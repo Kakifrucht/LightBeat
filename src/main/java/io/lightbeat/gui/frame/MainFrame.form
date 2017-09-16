@@ -341,7 +341,7 @@
                   <font size="16"/>
                 </border>
                 <children>
-                  <grid id="1a4ca" binding="lightsPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                  <grid id="1a4ca" binding="lightsPanel" layout-manager="GridBagLayout">
                     <constraints>
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                     </constraints>
@@ -361,7 +361,7 @@
                   </component>
                 </children>
               </grid>
-              <grid id="defca" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="defca" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -373,43 +373,44 @@
                   <font size="16"/>
                 </border>
                 <children>
-                  <component id="51b78" class="javax.swing.JRadioButton" binding="randomRadioButton" default-binding="true">
+                  <grid id="5decf" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                    <margin top="0" left="0" bottom="0" right="0"/>
                     <constraints>
-                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <background color="-1"/>
-                      <enabled value="false"/>
-                      <selected value="true"/>
-                      <text value="Random"/>
                     </properties>
-                  </component>
-                  <component id="bb218" class="javax.swing.JRadioButton" binding="comingSoonRadioButton" default-binding="true">
+                    <border type="none"/>
+                    <children>
+                      <component id="d1b52" class="javax.swing.JButton" binding="addCustomColorsButton" default-binding="true">
+                        <constraints>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties>
+                          <text value="New Color Set..."/>
+                        </properties>
+                      </component>
+                      <component id="42bcf" class="javax.swing.JButton" binding="deleteCustomColorsButton" default-binding="true">
+                        <constraints>
+                          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties>
+                          <text value="Delete Selected"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                  <grid id="2958d" binding="colorSelectPanel" layout-manager="GridBagLayout">
                     <constraints>
-                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <background color="-1"/>
-                      <enabled value="false"/>
-                      <text value="Coming soon"/>
                     </properties>
-                  </component>
-                  <component id="d1b52" class="javax.swing.JButton" binding="addCustomColorsButton" default-binding="true">
-                    <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <text value="New Color Set"/>
-                    </properties>
-                  </component>
-                  <component id="42bcf" class="javax.swing.JButton" binding="deleteSelectedButton" default-binding="true">
-                    <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <text value="Delete Selected"/>
-                    </properties>
-                  </component>
+                    <border type="none"/>
+                    <children/>
+                  </grid>
                 </children>
               </grid>
               <vspacer id="1bdd5">
@@ -424,7 +425,7 @@
     </children>
   </grid>
   <buttonGroups>
-    <group name="colorButtonGroup">
+    <group name="colorButtonGroup" bound="true">
       <member id="51b78"/>
       <member id="bb218"/>
     </group>

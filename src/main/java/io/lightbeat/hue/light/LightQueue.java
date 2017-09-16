@@ -35,7 +35,7 @@ public class LightQueue {
 
         @Override
         public void onError(int code, String message) {
-            logger.warn("Error ocurred during update of light, code {} - {}", code, message);
+            logger.warn("Error ocurred during update of light {}, code {} - {}", currentWork.light.getName(), code, message);
             next();
         }
 

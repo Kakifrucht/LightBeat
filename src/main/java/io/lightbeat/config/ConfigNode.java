@@ -13,6 +13,9 @@ public enum ConfigNode {
     BRIGHTNESS_MIN("brightness.min"),
     BRIGHTNESS_MAX("brightness.max"),
     BRIGHTNESS_SENSITIVITY("brightness.sensitivity"),
+    CUSTOM(null),
+    COLOR_SET_LIST("color.set.list"),
+    COLOR_SET_SELECTED("color.set.selected"),
     LAST_AUDIO_SOURCE("frame.lastaudiosource"),
     UPDATE_DISABLE_NOTIFICATION("frame.updatedisablenotification"),
     LIGHTS_DISABLED("lights.disabled"),
@@ -20,7 +23,8 @@ public enum ConfigNode {
     SHOW_ADVANCED_SETTINGS("frame.showadvanced"),
     WINDOW_LOCATION("window.location");
 
-    private final String key;
+
+    private String key;
 
     ConfigNode(String key) {
         this.key = key;
@@ -28,5 +32,17 @@ public enum ConfigNode {
 
     public String getKey() {
         return key;
+    }
+
+    private void setKey(String key) {
+        if (CUSTOM.equals(this)) {
+            this.key = key;
+        }
+    }
+
+    public static ConfigNode getCustomNode(String key) {
+        ConfigNode node = CUSTOM;
+        node.setKey(key);
+        return node;
     }
 }

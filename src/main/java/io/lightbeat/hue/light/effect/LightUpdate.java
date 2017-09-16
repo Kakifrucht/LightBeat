@@ -3,6 +3,7 @@ package io.lightbeat.hue.light.effect;
 import com.philips.lighting.model.PHLight;
 import io.lightbeat.hue.light.BrightnessCalibrator;
 import io.lightbeat.hue.light.LightStateBuilder;
+import io.lightbeat.hue.light.color.ColorSet;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,8 @@ import java.util.Map;
 public class LightUpdate {
 
     private final List<PHLight> lights;
+    private final ColorSet colorSet;
+
     private final int brightness;
     private final double brightnessPercentage;
     private final boolean doBrightnessChange;
@@ -25,9 +28,12 @@ public class LightUpdate {
     private final Map<PHLight, LightStateBuilder> builders;
 
 
-    public LightUpdate(List<PHLight> lights, BrightnessCalibrator.BrightnessData brightnessData, long timeSinceLastBeat) {
+    public LightUpdate(List<PHLight> lights, ColorSet colorSet,
+                       BrightnessCalibrator.BrightnessData brightnessData, long timeSinceLastBeat) {
 
         this.lights = lights;
+        this.colorSet = colorSet;
+
         this.brightness = brightnessData.getBrightness();
         this.brightnessPercentage = brightnessData.getBrightnessPercentage();
         this.doBrightnessChange = brightnessData.isBrightnessChange();
@@ -62,6 +68,10 @@ public class LightUpdate {
 
     List<PHLight> getLights() {
         return lights;
+    }
+
+    ColorSet getColorSet() {
+        return colorSet;
     }
 
     int getBrightness() {

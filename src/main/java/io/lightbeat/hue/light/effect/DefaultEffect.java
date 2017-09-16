@@ -26,7 +26,7 @@ public class DefaultEffect extends AbstractEffect {
         }
 
         for (PHLight light : lightsToChange) {
-            lightUpdate.getBuilder(light).setRandomHue();
+            lightUpdate.getBuilder(light).setRandomHue(lightUpdate.getColorSet());
         }
     }
 

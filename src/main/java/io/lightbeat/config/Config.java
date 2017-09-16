@@ -27,5 +27,7 @@ public interface Config {
 
     List<String> getStringList(ConfigNode node);
 
-    void putStringList(ConfigNode node, List<String> list);
+    void putList(ConfigNode node, List<?> list);
+
+    void remove(ConfigNode node);
 }
