@@ -1,6 +1,7 @@
 package io.lightbeat.gui.frame;
 
 import io.lightbeat.config.ConfigNode;
+import io.lightbeat.gui.swing.JColorPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,7 +19,7 @@ public class ColorSelectionFrame extends AbstractFrame {
 
     private JPanel mainPanel;
 
-    private JSlider colorSlider;
+    private JColorPanel colorSelectorPanel;
     private JPanel currentColorPanel;
     private JButton addColorButton;
 
@@ -57,10 +58,38 @@ public class ColorSelectionFrame extends AbstractFrame {
     private ColorSelectionFrame(String title, MainFrame mainFrame) {
         super(title, mainFrame.getJFrame().getX() + 10, mainFrame.getJFrame().getY() + 10);
 
-        colorSlider.addChangeListener(e -> {
-            int color = Color.HSBtoRGB((float) colorSlider.getValue() / 1000f, 1.0f, 1.0f);
-            currentColorPanel.setBackground(new Color(color));
-        });
+        MouseAdapter selectorEvent = new MouseAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                updateCurrentColorPanel(e.getX(), e.getY());
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                updateCurrentColorPanel(e.getX(), e.getY());
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                updateCurrentColorPanel(e.getX(), e.getY());
+            }
+
+            private void updateCurrentColorPanel(int x, int y) {
+                int width = colorSelectorPanel.getWidth();
+                int height = colorSelectorPanel.getHeight();
+                if (x > width || x < 0 || y > height || y < 0) {
+                    return;
+                }
+
+                float hueValue = (float) x / width;
+                int color = Color.HSBtoRGB(hueValue, 1.0f, 1.0f);
+                currentColorPanel.setBackground(new Color(color));
+            }
+        };
+
+        colorSelectorPanel.addMouseListener(selectorEvent);
+        colorSelectorPanel.addMouseMotionListener(selectorEvent);
 
         addColorButton.addActionListener(e -> {
             addColoredPanel(currentColorPanel.getBackground());

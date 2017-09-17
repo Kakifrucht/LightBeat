@@ -14,8 +14,9 @@ import java.util.List;
 public class CustomColorSet implements ColorSet {
 
     private final List<Color> colors = new ArrayList<>();
-    private Queue<Color> colorQueue;
 
+    private Queue<Color> colorQueue;
+    private Set<Color> colorsAtQueueEnd;
 
     public CustomColorSet(Config config, String setName) {
         for (String colorString : config.getStringList(ConfigNode.getCustomNode("color.sets." + setName))) {
@@ -28,7 +29,25 @@ public class CustomColorSet implements ColorSet {
     public Color getNextColor() {
 
         if (colorQueue == null || colorQueue.isEmpty()) {
+
             Collections.shuffle(colors);
+
+            // add color at the end if it was at the end of previous queue (no color duplication)
+            if (colorsAtQueueEnd != null) {
+                for (int i = 0; i < 3; i++) {
+                    Color colorAt = colors.get(i);
+                    if (colorsAtQueueEnd.contains(colorAt)) {
+                        colors.remove(i);
+                        colors.add(colorAt);
+                    }
+                }
+            }
+
+            colorsAtQueueEnd = new HashSet<>();
+            for (int i = colors.size() - 1; i >= colors.size() - 3; i--) {
+                colorsAtQueueEnd.add(colors.get(i));
+            }
+
             colorQueue = new LinkedList<>(colors);
         }
 

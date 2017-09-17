@@ -11,6 +11,8 @@ public class RandomColorSet implements ColorSet {
 
     private Queue<Color> randomColors;
 
+    private float currentColor = 0f;
+
 
     @Override
     public Color getNextColor() {
@@ -19,7 +21,6 @@ public class RandomColorSet implements ColorSet {
 
             List<Color> randomColors = new ArrayList<>();
             Random rnd = new Random();
-            float currentColor = 0f;
 
             for (int i = 0; i < 16; i++) {
                 currentColor += rnd.nextFloat() / 4f;
