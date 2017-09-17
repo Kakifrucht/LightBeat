@@ -31,10 +31,21 @@ public class ColorSelectionFrame extends AbstractFrame {
     private boolean isEditing;
 
 
+    /**
+     * Constructor to create a new set.
+     *
+     * @param mainFrame will receive a callback upon saving to refresh it's contents
+     */
     ColorSelectionFrame(MainFrame mainFrame) {
         this("New Color Set", mainFrame);
     }
 
+    /**
+     * Constructor to edit a set. Loads color data and makes name unchangeable.
+     *
+     * @param mainFrame will receive a callback upon saving to refresh it's contents
+     * @param setNameToEdit name of set to edit
+     */
     ColorSelectionFrame(MainFrame mainFrame, String setNameToEdit) {
         this("Edit Color Set", mainFrame);
 
@@ -49,9 +60,9 @@ public class ColorSelectionFrame extends AbstractFrame {
         for (String rgbString : colorSetString) {
             Color storedColor = new Color(Integer.parseInt(rgbString));
             addColoredPanel(storedColor);
-            selectedColorsPanel.updateUI();
         }
 
+        selectedColorsPanel.updateUI();
         updateSaveButton();
     }
 
@@ -156,6 +167,7 @@ public class ColorSelectionFrame extends AbstractFrame {
         JPanel coloredPanel = new JPanel();
         coloredPanel.setVisible(true);
         coloredPanel.setBackground(color);
+        coloredPanel.setPreferredSize(new Dimension(20, 20));
         coloredPanel.setToolTipText("Click to remove");
 
         coloredPanel.addMouseListener(new MouseAdapter() {
