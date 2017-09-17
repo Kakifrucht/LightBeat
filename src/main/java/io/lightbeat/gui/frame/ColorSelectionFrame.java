@@ -27,9 +27,35 @@ public class ColorSelectionFrame extends AbstractFrame {
     private JFormattedTextField colorSetNameField;
     private JButton saveButton;
 
+    private boolean isEditing;
 
-    ColorSelectionFrame(MainFrame mainFrame, int x, int y) {
-        super("New Color Set", x, y);
+
+    ColorSelectionFrame(MainFrame mainFrame) {
+        this("New Color Set", mainFrame);
+    }
+
+    ColorSelectionFrame(MainFrame mainFrame, String setNameToEdit) {
+        this("Edit Color Set", mainFrame);
+
+        this.isEditing = true;
+
+        colorSetNameField.setText(setNameToEdit);
+        colorSetNameField.setEnabled(false);
+
+        saveButton.setText("Edit Color Set");
+
+        List<String> colorSetString = config.getStringList(ConfigNode.getCustomNode("color.sets." + setNameToEdit));
+        for (String rgbString : colorSetString) {
+            Color storedColor = new Color(Integer.parseInt(rgbString));
+            addColoredPanel(storedColor);
+            selectedColorsPanel.updateUI();
+        }
+
+        updateSaveButton();
+    }
+
+    private ColorSelectionFrame(String title, MainFrame mainFrame) {
+        super(title, mainFrame.getJFrame().getX() + 10, mainFrame.getJFrame().getY() + 10);
 
         colorSlider.addChangeListener(e -> {
             int color = Color.HSBtoRGB((float) colorSlider.getValue() / 1000f, 1.0f, 1.0f);
@@ -37,21 +63,7 @@ public class ColorSelectionFrame extends AbstractFrame {
         });
 
         addColorButton.addActionListener(e -> {
-            JPanel coloredPanel = new JPanel();
-            coloredPanel.setVisible(true);
-            coloredPanel.setBackground(currentColorPanel.getBackground());
-            coloredPanel.setToolTipText("Click to remove");
-
-            coloredPanel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    selectedColorsPanel.remove(coloredPanel);
-                    selectedColorsPanel.updateUI();
-
-                    updateSaveButton();
-                }
-            });
-            selectedColorsPanel.add(coloredPanel);
+            addColoredPanel(currentColorPanel.getBackground());
             selectedColorsPanel.updateUI();
 
             updateSaveButton();
@@ -73,22 +85,25 @@ public class ColorSelectionFrame extends AbstractFrame {
 
             String setName = colorSetNameField.getText().replaceAll(" ", "");
 
-            String random = "Random";
-            List<String> storedPresets = config.getStringList(ConfigNode.COLOR_SET_LIST);
-            storedPresets.add(random);
-            for (String storedPreset : storedPresets) {
-                if (storedPreset.equalsIgnoreCase(setName)) {
-                    JOptionPane.showMessageDialog(frame,
-                            "A color set with given name already exists.",
-                            "Name Already Taken",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
+            // if not editing, check for duplicate name and add to color list
+            if (!isEditing) {
+                String random = "Random";
+                List<String> storedPresets = config.getStringList(ConfigNode.COLOR_SET_LIST);
+                storedPresets.add(random);
+                for (String storedPreset : storedPresets) {
+                    if (storedPreset.equalsIgnoreCase(setName)) {
+                        JOptionPane.showMessageDialog(frame,
+                                "A color set with given name already exists.",
+                                "Name Already Taken",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
                 }
-            }
-            storedPresets.remove(random);
+                storedPresets.remove(random);
 
-            storedPresets.add(setName);
-            config.putList(ConfigNode.COLOR_SET_LIST, storedPresets);
+                storedPresets.add(setName);
+                config.putList(ConfigNode.COLOR_SET_LIST, storedPresets);
+            }
 
             List<Integer> colorList = new ArrayList<>();
             for (Component component : selectedColorsPanel.getComponents()) {
@@ -108,10 +123,28 @@ public class ColorSelectionFrame extends AbstractFrame {
         drawFrame(mainPanel, false);
     }
 
-    @Override
-    protected void onWindowClose() {}
+    private void addColoredPanel(Color color) {
+        JPanel coloredPanel = new JPanel();
+        coloredPanel.setVisible(true);
+        coloredPanel.setBackground(color);
+        coloredPanel.setToolTipText("Click to remove");
+
+        coloredPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                selectedColorsPanel.remove(coloredPanel);
+                selectedColorsPanel.updateUI();
+
+                updateSaveButton();
+            }
+        });
+        selectedColorsPanel.add(coloredPanel);
+    }
 
     private void updateSaveButton() {
         saveButton.setEnabled(selectedColorsPanel.getComponentCount() >= 8 && colorSetNameField.getText().length() > 0);
     }
+
+    @Override
+    protected void onWindowClose() {}
 }

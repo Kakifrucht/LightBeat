@@ -1,6 +1,7 @@
 package io.lightbeat.gui.frame;
 
 import com.philips.lighting.model.PHLight;
+import com.sun.istack.internal.Nullable;
 import io.lightbeat.LightBeat;
 import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
@@ -59,6 +60,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private JLabel urlLabel;
     private JLabel infoLabel;
+    private JButton editSelectedButton;
 
     private boolean audioReaderIsRunning = false;
     private HueFrame selectionFrame = null;
@@ -126,12 +128,20 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             });
         }
 
-        addCustomColorsButton.addActionListener(e -> {
-            if (!isSelectionFrameActive()) {
-                selectionFrame = new ColorSelectionFrame(this, frame.getX() + 10, frame.getY() + 10);
-            } else {
-                selectionFrame.getJFrame().requestFocus();
+        addCustomColorsButton.addActionListener(e -> openColorSelectionFrame(null));
+
+        editSelectedButton.addActionListener(e -> {
+
+            String selectedSetName = setAndGetSelectedButton().getText();
+            if (selectedSetName.equals("Random")) {
+                JOptionPane.showMessageDialog(frame,
+                        "You cannot edit this set.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
             }
+
+            openColorSelectionFrame(selectedSetName);
         });
 
         deleteCustomColorsButton.addActionListener(e -> {
@@ -402,5 +412,19 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private boolean isSelectionFrameActive() {
         return selectionFrame != null && selectionFrame.getJFrame().isDisplayable();
+    }
+
+    private void openColorSelectionFrame(@Nullable String setName) {
+
+        if (isSelectionFrameActive()) {
+            JOptionPane.showMessageDialog(frame,
+                    "Color set editor is already open.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            selectionFrame.getJFrame().requestFocus();
+        } else {
+            boolean showEditPanel = setName != null;
+            selectionFrame = showEditPanel ? new ColorSelectionFrame(this, setName) : new ColorSelectionFrame(this);
+        }
     }
 }
