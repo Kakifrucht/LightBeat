@@ -94,7 +94,8 @@ public class ColorSelectionFrame extends AbstractFrame {
                 }
 
                 float hueValue = (float) x / width;
-                int color = Color.HSBtoRGB(hueValue, 1.0f, 1.0f);
+                float satValue = (float) (height - y) / height;
+                int color = Color.HSBtoRGB(hueValue, satValue, 1.0f);
                 currentColorPanel.setBackground(new Color(color));
             }
         };

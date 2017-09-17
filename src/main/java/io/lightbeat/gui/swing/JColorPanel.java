@@ -7,7 +7,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
 
 /**
- * A panel that draws a color palette in it's background.
+ * A panel that draws a color palette for hue and sat selection in it's background.
+ * x-axis represents hue value, y-axis saturation (0 is highest sat value)
  */
 public class JColorPanel extends JPanel {
 
@@ -15,7 +16,6 @@ public class JColorPanel extends JPanel {
 
 
     public JColorPanel() {
-
         createCanvas();
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -43,8 +43,9 @@ public class JColorPanel extends JPanel {
         canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         for (int x = 0; x < width; x++) {
-            int rgb = Color.HSBtoRGB((float) x / width, 1.0f, 1.0f);
+            float hue = (float) x / width;
             for (int y = 0; y < height; y++) {
+                int rgb = Color.HSBtoRGB(hue, (float) (height - y) / height, 1.0f);
                 canvas.setRGB(x, y, rgb);
             }
         }
