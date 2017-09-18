@@ -202,7 +202,7 @@ public class ColorSelectionFrame extends AbstractFrame {
 
         coloredPanel.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
                 selectedColorsPanel.remove(coloredPanel);
                 selectedColorsPanel.updateUI();
 

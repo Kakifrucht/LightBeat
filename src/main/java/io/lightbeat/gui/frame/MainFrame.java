@@ -399,11 +399,15 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private void stopBeatDetection() {
         if (audioReaderIsRunning) {
             startButton.setText("Start");
+            startButton.setEnabled(false);
             infoLabel.setText("Idle");
             audioReader.stop();
             componentHolder.getAudioEventManager().unregisterBeatObserver(this);
             getHueManager().recoverOriginalState();
             audioReaderIsRunning = false;
+
+            // re-enable with small delay
+            executorService.schedule(() -> runOnSwingThread(() -> startButton.setEnabled(true)), 1, TimeUnit.SECONDS);
         }
     }
 
