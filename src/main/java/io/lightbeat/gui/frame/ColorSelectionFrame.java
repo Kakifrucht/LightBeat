@@ -2,14 +2,17 @@ package io.lightbeat.gui.frame;
 
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.gui.swing.JColorPanel;
+import io.lightbeat.gui.swing.JColorTile;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,7 +65,7 @@ public class ColorSelectionFrame extends AbstractFrame {
         List<String> colorSetString = config.getStringList(ConfigNode.getCustomNode("color.sets." + setNameToEdit));
         for (String rgbString : colorSetString) {
             Color storedColor = new Color(Integer.parseInt(rgbString));
-            addColoredPanel(storedColor);
+            addColorTile(storedColor);
         }
 
         updateSaveButton(-1);
@@ -108,14 +111,14 @@ public class ColorSelectionFrame extends AbstractFrame {
         colorSelectorPanel.addMouseMotionListener(selectorEvent);
 
         addColorButton.addActionListener(e -> {
-            addColoredPanel(currentColorPanel.getBackground());
+            addColorTile(currentColorPanel.getBackground());
 
             updateSaveButton(-1);
         });
 
         addRandomColorsToButton.addActionListener(e -> {
             int rgb = Color.HSBtoRGB((float) Math.random(), selectedSaturation, 1.0f);
-            addColoredPanel(new Color(rgb));
+            addColorTile(new Color(rgb));
         });
 
         // restrict max input length
@@ -192,24 +195,20 @@ public class ColorSelectionFrame extends AbstractFrame {
         drawFrame(mainPanel, false);
     }
 
-    private void addColoredPanel(Color color) {
-        JPanel coloredPanel = new JPanel();
-        coloredPanel.setVisible(true);
-        coloredPanel.setBackground(color);
-        coloredPanel.setPreferredSize(new Dimension(20, 20));
-        coloredPanel.setToolTipText("Click to remove");
-        coloredPanel.setBorder(new LineBorder(Color.BLACK));
+    private void addColorTile(Color color) {
 
-        coloredPanel.addMouseListener(new MouseAdapter() {
+        JColorTile tile = new JColorTile(color);
+        tile.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                selectedColorsPanel.remove(coloredPanel);
+                selectedColorsPanel.remove(tile);
                 selectedColorsPanel.updateUI();
 
                 updateSaveButton(-1);
             }
         });
-        selectedColorsPanel.add(coloredPanel);
+
+        selectedColorsPanel.add(tile);
         selectedColorsPanel.updateUI();
     }
 
