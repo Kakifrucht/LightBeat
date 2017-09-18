@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="io.lightbeat.gui.frame.MainFrame">
-  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="4" left="4" bottom="0" right="4"/>
     <constraints>
       <xy x="21" y="43" width="874" height="542"/>
@@ -13,7 +13,7 @@
       <grid id="92e39" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <background color="-1"/>
@@ -48,7 +48,7 @@
       <grid id="3e392" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <background color="-1"/>
@@ -157,108 +157,6 @@
                   </component>
                 </children>
               </grid>
-              <grid id="2d76b" binding="advancedPanel" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-                <margin top="0" left="0" bottom="0" right="0"/>
-                <constraints>
-                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <background color="-1"/>
-                </properties>
-                <border type="etched" title="Advanced" title-position="2">
-                  <font size="16"/>
-                </border>
-                <children>
-                  <component id="bf495" class="javax.swing.JLabel">
-                    <constraints>
-                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <text value="Beat Detection Sensitivity"/>
-                    </properties>
-                  </component>
-                  <component id="33417" class="javax.swing.JLabel">
-                    <constraints>
-                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <text value="Minimum Beat Delay (millis)"/>
-                    </properties>
-                  </component>
-                  <component id="449f0" class="io.lightbeat.gui.swing.JConfigSlider" binding="beatSensitivitySlider" custom-create="true">
-                    <constraints>
-                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <background color="-1"/>
-                      <maximum value="10"/>
-                      <minimum value="1"/>
-                      <toolTipText value="Setting this value higher will cause more beats to get detected."/>
-                    </properties>
-                  </component>
-                  <component id="e96dd" class="io.lightbeat.gui.swing.JConfigSlider" binding="beatTimeBetweenSlider" custom-create="true">
-                    <constraints>
-                      <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <background color="-1"/>
-                      <maximum value="1000"/>
-                      <minimum value="100"/>
-                      <toolTipText value="Minimum time in milliseconds until the next beat can be detected.&lt;br&gt;Setting this value too low might cause network congestion and additional latency, setting it too high might skip beats.&lt;br&gt;The best setting is dependant on your individual setup."/>
-                    </properties>
-                  </component>
-                  <component id="bc99b" class="javax.swing.JLabel">
-                    <constraints>
-                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <text value="Transition Time"/>
-                    </properties>
-                  </component>
-                  <component id="3aa89" class="io.lightbeat.gui.swing.JConfigSlider" binding="transitionTimeSlider" custom-create="true">
-                    <constraints>
-                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <background color="-1"/>
-                      <maximum value="4"/>
-                      <toolTipText value="Transition time for light updates in 100ms increments.&lt;br&gt;Increasing this value will cause light updates to appear slower and less aggressive."/>
-                    </properties>
-                  </component>
-                  <grid id="2b0b9" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-                    <margin top="0" left="0" bottom="0" right="0"/>
-                    <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <background color="-1"/>
-                    </properties>
-                    <border type="none"/>
-                    <children>
-                      <component id="a8cf6" class="javax.swing.JButton" binding="readdColorSetPresetsButton" default-binding="true">
-                        <constraints>
-                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <background color="-1"/>
-                          <text value="Readd Color Presets"/>
-                          <toolTipText value="Readd the default color sets to the color selector. Only deleted sets will be readded."/>
-                        </properties>
-                      </component>
-                      <component id="f22ac" class="javax.swing.JButton" binding="restoreAdvancedButton" default-binding="true">
-                        <constraints>
-                          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                        </constraints>
-                        <properties>
-                          <background color="-1"/>
-                          <text value="Restore Defaults"/>
-                          <toolTipText value="Restores advanced settings defaults."/>
-                        </properties>
-                      </component>
-                    </children>
-                  </grid>
-                </children>
-              </grid>
               <grid id="defca" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
@@ -330,7 +228,7 @@
               </grid>
             </children>
           </grid>
-          <grid id="11e73" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="11e73" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -451,11 +349,108 @@
                   </component>
                 </children>
               </grid>
-              <vspacer id="d1740">
+            </children>
+          </grid>
+        </children>
+      </grid>
+      <grid id="2d76b" binding="advancedPanel" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-1"/>
+        </properties>
+        <border type="etched" title="Advanced" title-position="2">
+          <font size="16"/>
+        </border>
+        <children>
+          <component id="bf495" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Beat Detection Sensitivity"/>
+            </properties>
+          </component>
+          <component id="33417" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Minimum Beat Delay (millis)"/>
+            </properties>
+          </component>
+          <component id="449f0" class="io.lightbeat.gui.swing.JConfigSlider" binding="beatSensitivitySlider" custom-create="true">
+            <constraints>
+              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-1"/>
+              <maximum value="10"/>
+              <minimum value="1"/>
+              <toolTipText value="Setting this value higher will cause more beats to get detected."/>
+            </properties>
+          </component>
+          <component id="e96dd" class="io.lightbeat.gui.swing.JConfigSlider" binding="beatTimeBetweenSlider" custom-create="true">
+            <constraints>
+              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-1"/>
+              <maximum value="1000"/>
+              <minimum value="100"/>
+              <toolTipText value="Minimum time in milliseconds until the next beat can be detected.&lt;br&gt;Setting this value too low might cause network congestion and additional latency, setting it too high might skip beats.&lt;br&gt;The best setting is dependant on your individual setup."/>
+            </properties>
+          </component>
+          <component id="bc99b" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Transition Time"/>
+            </properties>
+          </component>
+          <component id="3aa89" class="io.lightbeat.gui.swing.JConfigSlider" binding="transitionTimeSlider" custom-create="true">
+            <constraints>
+              <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-1"/>
+              <maximum value="4"/>
+              <toolTipText value="Transition time for light updates in 100ms increments.&lt;br&gt;Increasing this value will cause light updates to appear slower and less aggressive."/>
+            </properties>
+          </component>
+          <grid id="2b0b9" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-1"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="a8cf6" class="javax.swing.JButton" binding="readdColorSetPresetsButton" default-binding="true">
                 <constraints>
-                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
-              </vspacer>
+                <properties>
+                  <background color="-1"/>
+                  <text value="Readd Color Presets"/>
+                  <toolTipText value="Readd the default color sets to the color selector. Only deleted sets will be readded."/>
+                </properties>
+              </component>
+              <component id="f22ac" class="javax.swing.JButton" binding="restoreAdvancedButton" default-binding="true">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <background color="-1"/>
+                  <text value="Restore Defaults"/>
+                  <toolTipText value="Restores advanced settings defaults."/>
+                </properties>
+              </component>
             </children>
           </grid>
         </children>
