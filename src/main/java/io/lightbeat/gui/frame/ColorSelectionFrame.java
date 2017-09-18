@@ -9,10 +9,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +23,7 @@ public class ColorSelectionFrame extends AbstractFrame {
     private JColorPanel colorSelectorPanel;
     private JPanel currentColorPanel;
     private JButton addColorButton;
+    private JButton addRandomColorsToButton;
 
     private JPanel selectedColorsPanel;
 
@@ -34,6 +32,7 @@ public class ColorSelectionFrame extends AbstractFrame {
 
     private boolean isEditing;
     private String originalName;
+    private float selectedSaturation = 1f;
 
 
     /**
@@ -66,7 +65,6 @@ public class ColorSelectionFrame extends AbstractFrame {
             addColoredPanel(storedColor);
         }
 
-        selectedColorsPanel.updateUI();
         updateSaveButton(-1);
     }
 
@@ -99,8 +97,8 @@ public class ColorSelectionFrame extends AbstractFrame {
                 int boundedY = Math.min(height, Math.max(y, 0));
 
                 float hue = (float) boundedX / width;
-                float saturation = (float) (height - boundedY) / height;
-                int color = Color.HSBtoRGB(hue, saturation, 1.0f);
+                selectedSaturation = (float) (height - boundedY) / height;
+                int color = Color.HSBtoRGB(hue, selectedSaturation, 1.0f);
 
                 currentColorPanel.setBackground(new Color(color));
             }
@@ -111,9 +109,13 @@ public class ColorSelectionFrame extends AbstractFrame {
 
         addColorButton.addActionListener(e -> {
             addColoredPanel(currentColorPanel.getBackground());
-            selectedColorsPanel.updateUI();
 
             updateSaveButton(-1);
+        });
+
+        addRandomColorsToButton.addActionListener(e -> {
+            int rgb = Color.HSBtoRGB((float) Math.random(), selectedSaturation, 1.0f);
+            addColoredPanel(new Color(rgb));
         });
 
         // restrict max input length
@@ -208,6 +210,7 @@ public class ColorSelectionFrame extends AbstractFrame {
             }
         });
         selectedColorsPanel.add(coloredPanel);
+        selectedColorsPanel.updateUI();
     }
 
     private void updateSaveButton(int textFieldLength) {
