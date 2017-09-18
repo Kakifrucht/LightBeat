@@ -17,7 +17,6 @@ public class StrobeEffect extends AbstractRandomEffect {
     private final Set<String> lightsStrobing = Collections.synchronizedSet(new HashSet<>());
 
     private int nextLightInBeats;
-    private long lastBeatTimeStamp;
 
 
     public StrobeEffect() {
@@ -102,23 +101,15 @@ public class StrobeEffect extends AbstractRandomEffect {
 
             if (!lightsToStrobe.isEmpty()) {
                 // strobe on beat, at least for 250 ms and at max for 500 ms
-                long strobeDelay = System.currentTimeMillis() - lastBeatTimeStamp;
-                while (strobeDelay > 500) {
-                    strobeDelay /= 2;
-                }
-                strobeDelay = Math.max(strobeDelay, 250L);
-                runStrobeThread(lightsToStrobe, strobeDelay, -1);
+                runStrobeThread(lightsToStrobe, -1);
             }
         }
-
-        lastBeatTimeStamp = System.currentTimeMillis();
     }
 
     @Override
     void initializeEffect() {
         light = null;
         nextLightInBeats = 0;
-        lastBeatTimeStamp = Long.MAX_VALUE;
     }
 
     @Override
@@ -128,6 +119,10 @@ public class StrobeEffect extends AbstractRandomEffect {
 
     @Override
     void executeEffectOnceRandomly() {
+
+        if (lightUpdate.isBrightnessChange()) {
+            return;
+        }
 
         // strobe all lights but one
         List<PHLight> lights = lightUpdate.getLights();
@@ -140,16 +135,22 @@ public class StrobeEffect extends AbstractRandomEffect {
             }
         }
 
-        runStrobeThread(lightsToStrobe, 350L, lightUpdate.getBrightness());
+        runStrobeThread(lightsToStrobe, lightUpdate.getBrightness());
     }
 
-    private void runStrobeThread(List<PHLight> lightsToStrobe, long strobeDelay, int brightness) {
+    private void runStrobeThread(List<PHLight> lightsToStrobe, int brightness) {
 
         synchronized (lightsStrobing) {
             lightsToStrobe.stream()
                     .map(PHLight::getUniqueId)
                     .forEach(lightsStrobing::add);
         }
+
+        long strobeDelay = lightUpdate.getTimeSinceLastBeat();
+        while (strobeDelay > 500) {
+            strobeDelay /= 2;
+        }
+        strobeDelay = Math.max(strobeDelay, 250L);
 
         executorService.schedule(() -> {
             boolean setOn = brightness >= 0;

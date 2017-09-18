@@ -1,9 +1,9 @@
 package io.lightbeat.gui;
 
-import io.lightbeat.gui.frame.MainFrame;
 import io.lightbeat.gui.frame.ConnectFrame;
 import io.lightbeat.gui.frame.HueFrame;
-import io.lightbeat.hue.HueStateObserver;
+import io.lightbeat.gui.frame.MainFrame;
+import io.lightbeat.hue.bridge.HueStateObserver;
 
 import javax.swing.*;
 
@@ -20,18 +20,9 @@ public class FrameManager {
 
     public FrameManager() {
         try {
-            // set system look and feel
+            // system look and feel by default
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ignored) {}
-    }
-
-    public void showMainFrame() {
-        if (currentFrame instanceof MainFrame) {
-            return;
-        }
-
-        disposeCurrentWindow();
-        currentFrame = new MainFrame(lastX, lastY);
     }
 
     public HueStateObserver showConnectFrame() {
@@ -44,12 +35,20 @@ public class FrameManager {
         return (HueStateObserver) currentFrame;
     }
 
+    public void showMainFrame() {
+        if (currentFrame instanceof MainFrame) {
+            return;
+        }
+
+        disposeCurrentWindow();
+        currentFrame = new MainFrame(lastX, lastY);
+    }
+
     private void disposeCurrentWindow() {
         if (currentFrame != null) {
-            HueFrame currentFrameLocal = currentFrame;
-            lastX = currentFrameLocal.getJFrame().getBounds().x;
-            lastY = currentFrameLocal.getJFrame().getBounds().y;
-            SwingUtilities.invokeLater(currentFrameLocal::dispose);
+            lastX = currentFrame.getJFrame().getBounds().x;
+            lastY = currentFrame.getJFrame().getBounds().y;
+            SwingUtilities.invokeLater(currentFrame::dispose);
         }
     }
 }

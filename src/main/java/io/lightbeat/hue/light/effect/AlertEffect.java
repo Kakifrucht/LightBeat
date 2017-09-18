@@ -10,7 +10,7 @@ import io.lightbeat.util.TimeThreshold;
  */
 public class AlertEffect extends AbstractRandomEffect {
 
-    private final static long ALERT_THRESHOLD_MILLIS = 500L;
+    private static final long ALERT_THRESHOLD_MILLIS = 500L;
 
     private TimeThreshold alertThreshold;
 

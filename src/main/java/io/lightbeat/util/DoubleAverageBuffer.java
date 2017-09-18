@@ -3,7 +3,8 @@ package io.lightbeat.util;
 import java.util.Arrays;
 
 /**
- * QueueFast lookup for average and
+ * Efficient ring buffer that calculates the average directly (O(1)) and can
+ * determine the max element in the buffer.
  */
 public class DoubleAverageBuffer {
 

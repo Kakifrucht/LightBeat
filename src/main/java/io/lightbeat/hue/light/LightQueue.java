@@ -8,7 +8,7 @@ import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.lightbeat.hue.HueManager;
+import io.lightbeat.hue.bridge.HueManager;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class LightQueue {
 
-    private final static Logger logger = LoggerFactory.getLogger(LightQueue.class);
+    private static final Logger logger = LoggerFactory.getLogger(LightQueue.class);
 
     private final HueManager hueManager;
     private final Queue<QueueEntry> queue;
@@ -35,7 +35,7 @@ public class LightQueue {
 
         @Override
         public void onError(int code, String message) {
-            logger.warn("Error ocurred during update of light, code {} - {}", code, message);
+            logger.warn("Error ocurred during update of light {}, code {} - {}", currentWork.light.getName(), code, message);
             next();
         }
 

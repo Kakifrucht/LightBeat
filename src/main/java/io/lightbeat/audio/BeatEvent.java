@@ -9,12 +9,12 @@ public class BeatEvent {
     private final double average;
 
 
-    // silence
+    // silence constructor
     BeatEvent() {
         this(0d, 0d);
     }
 
-    // no beat
+    // no beat constructor
     BeatEvent(double average) {
         this(0d, average);
     }
@@ -28,7 +28,7 @@ public class BeatEvent {
         return triggeringAmplitude;
     }
 
-    public double getAverage() {
+    double getAverage() {
         return average;
     }
 }

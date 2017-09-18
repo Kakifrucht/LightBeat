@@ -13,8 +13,8 @@ import io.lightbeat.util.DoubleAverageBuffer;
  */
 public class BrightnessCalibrator {
 
-    private final static double HISTORY_STARTING_VALUE = 0.2d;
-    private final static long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
+    private static final double HISTORY_STARTING_VALUE = 0.2d;
+    private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
 
     private final int minBrightness;
     private final int maxBrightness;
@@ -30,14 +30,14 @@ public class BrightnessCalibrator {
 
 
     BrightnessCalibrator(Config config) {
-        minBrightness = config.getInt(ConfigNode.BRIGHTNESS_MIN, 0);
-        maxBrightness = config.getInt(ConfigNode.BRIGHTNESS_MAX, 254);
+        minBrightness = config.getInt(ConfigNode.BRIGHTNESS_MIN);
+        maxBrightness = config.getInt(ConfigNode.BRIGHTNESS_MAX);
         medianBrightness = (maxBrightness + minBrightness) / 2;
 
-        transitionTime = config.getInt(ConfigNode.LIGHTS_TRANSITION_TIME, 0);
+        transitionTime = config.getInt(ConfigNode.LIGHTS_TRANSITION_TIME);
 
         brightnessChangeThreshold = (maxBrightness - minBrightness) / 6;
-        brightnessMultiplier = 1.0d + (config.getInt(ConfigNode.BRIGHTNESS_SENSITIVITY, 20)  / 100.0d);
+        brightnessMultiplier = 1.0d + (config.getInt(ConfigNode.BRIGHTNESS_SENSITIVITY)  / 100.0d);
 
         amplitudeDifferenceHistory.add(HISTORY_STARTING_VALUE);
     }

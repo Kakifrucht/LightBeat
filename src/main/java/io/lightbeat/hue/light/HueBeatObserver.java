@@ -3,7 +3,8 @@ package io.lightbeat.hue.light;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.Config;
-import io.lightbeat.hue.HueManager;
+import io.lightbeat.hue.bridge.HueManager;
+import io.lightbeat.hue.light.color.ColorSet;
 import io.lightbeat.hue.light.effect.*;
 import io.lightbeat.util.DoubleAverageBuffer;
 
@@ -21,8 +22,10 @@ public class HueBeatObserver implements BeatObserver {
     private final HueManager hueManager;
     private final BrightnessCalibrator brightnessCalibrator;
     private final List<LightEffect> effectPipe;
+    private final ColorSet colorSet;
 
     private final DoubleAverageBuffer amplitudeHistory = new DoubleAverageBuffer(75, false);
+    private long lastBeatTimeStamp = System.currentTimeMillis();
 
 
     public HueBeatObserver(HueManager hueManager, Config config) {
@@ -36,6 +39,8 @@ public class HueBeatObserver implements BeatObserver {
         effectPipe.add(new SameColorEffect());
         effectPipe.add(new ColorFlipEffect());
         effectPipe.add(new StrobeEffect());
+
+        colorSet = hueManager.getColorSet();
     }
 
     @Override
@@ -46,16 +51,17 @@ public class HueBeatObserver implements BeatObserver {
         double amplitudeDifference = event.getTriggeringAmplitude() - amplitudeHistory.getCurrentAverage();
         BrightnessCalibrator.BrightnessData data = brightnessCalibrator.getBrightness(amplitudeDifference);
 
-        LightUpdate lightUpdate = new LightUpdate(hueManager.getLights(true), data);
+        LightUpdate lightUpdate = getNewLightUpdate(data);
 
         effectPipe.forEach(effect -> effect.beatReceived(lightUpdate));
         lightUpdate.doLightUpdates();
+
+        lastBeatTimeStamp = System.currentTimeMillis();
     }
 
     @Override
     public void noBeatReceived() {
-        BrightnessCalibrator.BrightnessData data = brightnessCalibrator.getLowestBrightnessData();
-        LightUpdate lightUpdate = new LightUpdate(hueManager.getLights(true), data);
+        LightUpdate lightUpdate = getNewLightUpdate(brightnessCalibrator.getLowestBrightnessData());
 
         effectPipe.forEach(effect -> effect.noBeatReceived(lightUpdate));
         lightUpdate.doLightUpdates();
@@ -66,5 +72,13 @@ public class HueBeatObserver implements BeatObserver {
         noBeatReceived();
         brightnessCalibrator.clearHistory();
         amplitudeHistory.clear();
+    }
+
+    private LightUpdate getNewLightUpdate(BrightnessCalibrator.BrightnessData data) {
+        return new LightUpdate(hueManager.getLights(true), colorSet, data, getTimeSinceLastBeat());
+    }
+
+    private long getTimeSinceLastBeat() {
+        return System.currentTimeMillis() - lastBeatTimeStamp;
     }
 }

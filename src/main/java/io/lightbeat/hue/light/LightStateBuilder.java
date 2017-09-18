@@ -2,29 +2,28 @@ package io.lightbeat.hue.light;
 
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
+import io.lightbeat.LightBeat;
+import io.lightbeat.hue.light.color.ColorSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.lightbeat.LightBeat;
 
-import java.util.Random;
+import java.awt.*;
 
 /**
  * Builder class to create {@link PHLightState}'s. Also used to send built states to the {@link LightQueue}.
  */
+@SuppressWarnings("UnusedReturnValue")
 public class LightStateBuilder {
 
-    private final static int MAX_HUE = 65535;
-
-    private final static Logger logger = LoggerFactory.getLogger(LightStateBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(LightStateBuilder.class);
 
     public static LightStateBuilder create() {
         return new LightStateBuilder();
     }
 
-
     private int transitionTime = Integer.MIN_VALUE;
     private int brightness = Integer.MIN_VALUE;
-    private int hue = Integer.MIN_VALUE;
+    private Color color = null;
     private Boolean setOn;
     private PHLight.PHLightAlertMode alert;
 
@@ -41,13 +40,13 @@ public class LightStateBuilder {
         return this;
     }
 
-    public LightStateBuilder setHue(int hue) {
-        this.hue = hue;
+    public LightStateBuilder setColor(Color color) {
+        this.color = color;
         return this;
     }
 
-    public LightStateBuilder setRandomHue() {
-        hue = new Random().nextInt(MAX_HUE);
+    public LightStateBuilder setRandomHue(ColorSet colorSet) {
+        color = colorSet.getNextColor();
         return this;
     }
 
@@ -67,7 +66,7 @@ public class LightStateBuilder {
             LightBeat.getComponentHolder().getHueManager().getQueue().addUpdate(lightToUpdate, newState);
 
             String mode = newState.getAlertMode().equals(PHLight.PHLightAlertMode.ALERT_UNKNOWN) ? "null" : newState.getAlertMode().toString();
-            logger.info("Updated light {} to bri {} | hue {}/{} | mode {} | on {}",
+            logger.info("Updated light {} to bri {} | color {}/{} | mode {} | on {}",
                     lightToUpdate.getName(), newState.getBrightness(), newState.getHue(),
                     newState.getSaturation(), mode, newState.isOn()
             );
@@ -89,8 +88,8 @@ public class LightStateBuilder {
             this.brightness = copyFrom.brightness;
         }
 
-        if (copyFrom.hue != Integer.MIN_VALUE) {
-            this.hue = copyFrom.hue;
+        if (copyFrom.color != null) {
+            this.color = copyFrom.color;
         }
 
         if (copyFrom.setOn != null) {
@@ -116,9 +115,10 @@ public class LightStateBuilder {
             newLightState.setBrightness(brightness);
         }
 
-        if (hue != Integer.MIN_VALUE) {
-            newLightState.setSaturation(254);
-            newLightState.setHue(hue);
+        if (color != null) {
+            float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
+            newLightState.setHue((int) (hsb[0] * 65535));
+            newLightState.setSaturation((int) (hsb[1] * 254));
         }
 
         if (setOn != null) {
@@ -135,7 +135,7 @@ public class LightStateBuilder {
     private boolean isDefault() {
         return transitionTime <= 0
                 && brightness == Integer.MIN_VALUE
-                && hue == Integer.MIN_VALUE
+                && color == null
                 && setOn == null
                 && alert == null;
     }

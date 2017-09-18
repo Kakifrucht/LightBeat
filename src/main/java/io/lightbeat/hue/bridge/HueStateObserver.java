@@ -1,4 +1,4 @@
-package io.lightbeat.hue;
+package io.lightbeat.hue.bridge;
 
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 

@@ -1,11 +1,14 @@
 package io.lightbeat.gui.frame;
 
 import com.philips.lighting.model.PHLight;
+import com.sun.istack.internal.Nullable;
 import io.lightbeat.LightBeat;
 import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.ConfigNode;
+import io.lightbeat.gui.swing.JColorPanel;
+import io.lightbeat.gui.swing.JConfigCheckBox;
 import io.lightbeat.gui.swing.JConfigSlider;
 import io.lightbeat.gui.swing.JIconLabel;
 import io.lightbeat.util.URLConnectionReader;
@@ -16,6 +19,7 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -40,51 +44,56 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private JPanel lightsPanel;
 
+    private JButton addCustomColorsButton;
+    private JButton deleteCustomColorsButton;
+    private JPanel colorSelectPanel;
+    private ButtonGroup colorButtonGroup;
+
     private JPanel advancedPanel;
+    private JButton readdColorSetPresetsButton;
     private JButton restoreAdvancedButton;
+    private JConfigSlider beatSensitivitySlider;
+    private JConfigSlider beatTimeBetweenSlider;
+    private JConfigSlider transitionTimeSlider;
 
     private JButton startButton;
-    private JCheckBox showAdvancedCheckbox;
+    private JConfigCheckBox showAdvancedCheckbox;
+    private JConfigCheckBox autoStartCheckBox;
 
     private JLabel urlLabel;
     private JLabel infoLabel;
-    private JRadioButton randomRadioButton;
-    private JConfigSlider beatSensitivitySlider;
-    private JConfigSlider beatTimeBetweenSlider;
-    private JRadioButton comingSoonRadioButton;
-    private JConfigSlider transitionTimeSlider;
+    private JButton editSelectedButton;
+    private JColorPanel colorsPreviewPanel;
 
-    private boolean isRunning = false;
+    private boolean audioReaderIsRunning = false;
+    private HueFrame selectionFrame = null;
 
 
     public MainFrame(int x, int y) {
         super(x, y);
+
         audioReader = componentHolder.getAudioReader();
 
         // add mixer names to dropdown
-        runOnSwingThread(
-                () -> {
-                    List<String> mixerNames = audioReader.getSupportedMixers().stream()
-                            .map(mixer -> mixer.getMixerInfo().getName())
-                            .collect(Collectors.toList());
+        List<String> mixerNames = audioReader.getSupportedMixers().stream()
+                .map(mixer -> mixer.getMixerInfo().getName())
+                .collect(Collectors.toList());
 
-                    String lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE, null);
-                    if (lastSource != null) {
-                        for (String mixerName : mixerNames) {
-                            if (mixerName.equals(lastSource)) {
-                                deviceSelectComboBox.addItem(mixerName);
-                                break;
-                            }
-                        }
-                    }
-
-                    for (String mixerName : mixerNames) {
-                        if (!mixerName.equals(lastSource)) {
-                            deviceSelectComboBox.addItem(mixerName);
-                        }
-                    }
+        String lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE);
+        if (lastSource != null) {
+            for (String mixerName : mixerNames) {
+                if (mixerName.equals(lastSource)) {
+                    deviceSelectComboBox.addItem(mixerName);
+                    break;
                 }
-        );
+            }
+        }
+
+        for (String mixerName : mixerNames) {
+            if (!mixerName.equals(lastSource)) {
+                deviceSelectComboBox.addItem(mixerName);
+            }
+        }
 
         restoreBrightnessButton.addActionListener(e -> {
             minBrightnessSlider.restoreDefault();
@@ -97,31 +106,79 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         // setup lights disable panel
         List<PHLight> allLights = getHueManager().getAllLights();
         List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-        runOnSwingThread(() -> {
-            for (PHLight light : allLights) {
+        for (PHLight light : allLights) {
 
-                JCheckBox checkBox = new JCheckBox();
-                checkBox.setText(light.getName());
-                if (!disabledLights.contains(light.getUniqueId())) {
-                    checkBox.setSelected(true);
+            JCheckBox checkBox = new JCheckBox();
+            checkBox.setText(light.getName());
+            checkBox.setBackground(Color.WHITE);
+            if (!disabledLights.contains(light.getUniqueId())) {
+                checkBox.setSelected(true);
+            }
+
+            lightsPanel.add(checkBox);
+
+            checkBox.addActionListener(e -> {
+
+                List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+
+                if (((JCheckBox) e.getSource()).isSelected()) {
+                    disabledLightsList.remove(light.getUniqueId());
+                } else {
+                    disabledLightsList.add(light.getUniqueId());
                 }
 
-                lightsPanel.add(checkBox);
+                config.putList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
+            });
+        }
 
-                checkBox.addActionListener(e -> {
+        addCustomColorsButton.addActionListener(e -> openColorSelectionFrame(null));
 
-                    List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+        editSelectedButton.addActionListener(e -> {
 
-                    if (((JCheckBox) e.getSource()).isSelected()) {
-                        disabledLightsList.remove(light.getUniqueId());
-                    } else {
-                        disabledLightsList.add(light.getUniqueId());
-                    }
+            String selectedSetName = setAndGetSelectedButton().getText();
+            if (selectedSetName.equals("Random")) {
+                JOptionPane.showMessageDialog(frame,
+                        "You cannot edit this set.",
+                        "Cannot Edit",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-                    config.putStringList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
-                });
+            openColorSelectionFrame(selectedSetName);
+        });
+
+        deleteCustomColorsButton.addActionListener(e -> {
+
+            String selected = setAndGetSelectedButton().getText();
+            if (selected.equals("Random")) {
+                JOptionPane.showMessageDialog(frame,
+                        "You cannot delete this set.",
+                        "Cannot Delete",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            int answerCode = JOptionPane.showConfirmDialog(
+                    frame,
+                    "Are you sure you want to delete color set " + selected + "?",
+                    "Confirm Set Deletion",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (answerCode == 0) {
+                List<String> sets = config.getStringList(ConfigNode.COLOR_SET_LIST);
+                sets.remove(selected);
+                config.putList(ConfigNode.COLOR_SET_LIST, sets);
+                config.remove(ConfigNode.getCustomNode("color.sets." + selected));
+                refreshColorSets();
             }
         });
+
+        refreshColorSets();
+        if (colorSelectPanel.getComponentCount() < 2) {
+            addColorPresets();
+        }
+
+        readdColorSetPresetsButton.addActionListener(e -> addColorPresets());
 
         restoreAdvancedButton.addActionListener(e -> {
             beatSensitivitySlider.restoreDefault();
@@ -130,56 +187,26 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
 
         startButton.addActionListener(e -> {
-
-            if (!isRunning) { // start
-                String selectedMixerName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
-                List<Mixer> supportedMixers = audioReader.getSupportedMixers();
-                for (Mixer supportedMixer : supportedMixers) {
-                    String mixerName = supportedMixer.getMixerInfo().getName();
-                    if (mixerName.equals(selectedMixerName)) {
-                        config.put(ConfigNode.LAST_AUDIO_SOURCE, mixerName);
-
-                        isRunning = getHueManager().initializeLights();
-                        if (isRunning) {
-                            audioReader.start(supportedMixer);
-                            startButton.setText("Stop");
-                            infoLabel.setText("Running");
-                            componentHolder.getAudioEventManager().registerBeatObserver(this);
-                        } else {
-                            infoLabel.setText("No lights were selected");
-                        }
-
-                        break;
-                    }
-                }
-
-            } else { // stop
-                startButton.setText("Start");
-                infoLabel.setText("Idle");
-                onWindowClose();
-                isRunning = false;
-            }
-        });
-
-        showAdvancedCheckbox.setSelected(config.getBoolean(ConfigNode.SHOW_ADVANCED_SETTINGS, false));
-        showAdvancedCheckbox.addActionListener((e) -> {
-            boolean isSelected = showAdvancedCheckbox.isSelected();
-            config.putBoolean(ConfigNode.SHOW_ADVANCED_SETTINGS, isSelected);
-            advancedPanel.setVisible(isSelected);
-        });
-        advancedPanel.setVisible(showAdvancedCheckbox.isSelected());
-
-        urlLabel.addMouseListener(new MouseInputAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                openInBrowser("https://lightbeat.io");
+            if (audioReaderIsRunning) {
+                stopBeatDetection();
+            } else {
+                startBeatDetection();
             }
         });
 
         String version = LightBeat.getVersion();
+        urlLabel.setText("v" + version + " | " + urlLabel.getText());
+        urlLabel.addMouseListener(new MouseInputAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                openLinkInBrowser("https://lightbeat.io");
+            }
+        });
+
+        // schedule updater task
         componentHolder.getExecutorService().schedule(() -> {
 
-            long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, 0);
+            long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
             if (updateDisableNotificationTime + 172800 > (System.currentTimeMillis() / 1000)) {
                 // only show update notification every two days
                 return;
@@ -197,7 +224,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                             "Update found",
                             JOptionPane.YES_NO_OPTION);
                     if (answerCode == 0) {
-                        openInBrowser("https://lightbeat.io");
+                        openLinkInBrowser("https://lightbeat.io/?downloads");
                     } else {
                         config.putLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, (int) (System.currentTimeMillis() / 1000));
                     }
@@ -209,27 +236,125 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         }, 5, TimeUnit.SECONDS);
 
-        drawFrame(mainPanel, "v" + version);
+        drawFrame(mainPanel, true);
+
+        showAdvancedCheckbox.setToRunOnChange(() -> {
+            advancedPanel.setVisible(showAdvancedCheckbox.isSelected());
+            frame.pack();
+        });
+
+        // restore last windows location
+        long locationStore = config.getLong(ConfigNode.WINDOW_LOCATION);
+        if (locationStore > 0) {
+            ByteBuffer locationBuffer = ByteBuffer.allocate(8).putLong(locationStore);
+            int storedX = locationBuffer.getInt(0);
+            int storedY = locationBuffer.getInt(4);
+
+            // check if in bounds
+            Rectangle newBounds = new Rectangle(storedX, storedY, 100, 100);
+            Rectangle screenBounds = new Rectangle(0, 0, 0, 0);
+
+            GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice[] screenDevices = graphicsEnvironment.getScreenDevices();
+            for (GraphicsDevice device : screenDevices) {
+                screenBounds.add(device.getDefaultConfiguration().getBounds());
+            }
+
+            if (screenBounds.contains(newBounds)) {
+                runOnSwingThread(() -> {
+                    newBounds.setSize(frame.getSize());
+                    frame.setBounds(newBounds);
+                });
+            }
+        }
+
+        if (config.getBoolean(ConfigNode.AUTOSTART)) {
+            runOnSwingThread(this::startBeatDetection);
+        }
     }
 
     @Override
     protected void onWindowClose() {
-        audioReader.stop();
-        componentHolder.getAudioEventManager().unregisterBeatObserver(this);
-        getHueManager().recoverOriginalState();
+
+        if (isSelectionFrameActive()) {
+            selectionFrame.dispose();
+        }
+
+        stopBeatDetection();
+
+        // store last location of window
+        long locationStore = ByteBuffer.allocate(8)
+                .putInt(frame.getX())
+                .putInt(frame.getY())
+                .getLong(0);
+
+        config.putLong(ConfigNode.WINDOW_LOCATION, locationStore);
     }
 
     public void createUIComponents() {
 
-        bannerLabel = new JIconLabel("banner.png", "bannerflash.png");
+        bannerLabel = new JIconLabel("/png/banner.png", "/png/bannerflash.png");
 
-        minBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MIN, 0);
-        maxBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MAX, 254);
-        sensitivitySlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_SENSITIVITY, 20);
+        minBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MIN);
+        maxBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MAX);
+        sensitivitySlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_SENSITIVITY);
 
-        beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY, 5);
-        beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN, 350);
-        transitionTimeSlider = new JConfigSlider(config, ConfigNode.LIGHTS_TRANSITION_TIME, 0);
+        beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
+        beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
+        transitionTimeSlider = new JConfigSlider(config, ConfigNode.LIGHTS_TRANSITION_TIME);
+
+        showAdvancedCheckbox = new JConfigCheckBox(config, ConfigNode.SHOW_ADVANCED_SETTINGS);
+        autoStartCheckBox = new JConfigCheckBox(config, ConfigNode.AUTOSTART);
+    }
+
+    void refreshColorSets() {
+
+        colorSelectPanel.removeAll();
+        colorButtonGroup.clearSelection();
+
+        addRadioButton("Random");
+        config.getStringList(ConfigNode.COLOR_SET_LIST).forEach(this::addRadioButton);
+
+        JRadioButton selectedSetButton = setAndGetSelectedButton();
+        if (!selectedSetButton.getText().equals(config.get(ConfigNode.COLOR_SET_SELECTED))) {
+            config.put(ConfigNode.COLOR_SET_SELECTED, selectedSetButton.getText());
+        }
+
+        colorsPreviewPanel.setColorSet(getHueManager().getColorSet());
+        colorSelectPanel.updateUI();
+        frame.pack();
+    }
+
+    private void addRadioButton(String setName) {
+        JRadioButton radioButton = new JRadioButton(setName);
+        radioButton.setBackground(Color.WHITE);
+        radioButton.addActionListener(e -> {
+            config.put(ConfigNode.COLOR_SET_SELECTED, setName);
+            colorsPreviewPanel.setColorSet(getHueManager().getColorSet());
+        });
+
+        colorSelectPanel.add(radioButton);
+        colorButtonGroup.add(radioButton);
+    }
+
+    private JRadioButton setAndGetSelectedButton() {
+
+        JRadioButton toReturn = null;
+        String selectedButton = config.get(ConfigNode.COLOR_SET_SELECTED);
+        for (Component radioButton : colorSelectPanel.getComponents()) {
+            JRadioButton button = (JRadioButton) radioButton;
+            if (button.getText().equals(selectedButton)) {
+                toReturn = button;
+                break;
+            }
+        }
+
+        if (toReturn == null) {
+            toReturn = (JRadioButton) colorSelectPanel.getComponents()[0];
+        }
+
+        toReturn.setSelected(true);
+        return toReturn;
     }
 
     @Override
@@ -244,12 +369,96 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     @Override
     public void silenceDetected() {}
 
-    private void openInBrowser(String url) {
+    private void startBeatDetection() {
+
+        if (audioReaderIsRunning) {
+            return;
+        }
+
+        String selectedMixerName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
+        List<Mixer> supportedMixers = audioReader.getSupportedMixers();
+        for (Mixer supportedMixer : supportedMixers) {
+            String mixerName = supportedMixer.getMixerInfo().getName();
+            if (mixerName.equals(selectedMixerName)) {
+                config.put(ConfigNode.LAST_AUDIO_SOURCE, mixerName);
+
+                audioReaderIsRunning = getHueManager().initializeLights();
+                if (audioReaderIsRunning) {
+                    boolean startedSuccessfully = audioReader.start(supportedMixer);
+                    if (startedSuccessfully) {
+                        startButton.setText("Stop");
+                        infoLabel.setText("Running, stop to reload any changes made");
+                        componentHolder.getAudioEventManager().registerBeatObserver(this);
+                        return;
+                    }
+
+                } else {
+                    infoLabel.setText("No lights were selected");
+                    return;
+                }
+            }
+        }
+
+        infoLabel.setText("Selected audio source is no longer available");
+    }
+
+    private void stopBeatDetection() {
+        if (audioReaderIsRunning) {
+            startButton.setText("Start");
+            startButton.setEnabled(false);
+            infoLabel.setText("Idle");
+            audioReader.stop();
+            componentHolder.getAudioEventManager().unregisterBeatObserver(this);
+            getHueManager().recoverOriginalState();
+            audioReaderIsRunning = false;
+
+            // re-enable with small delay
+            executorService.schedule(() -> runOnSwingThread(() -> startButton.setEnabled(true)), 1, TimeUnit.SECONDS);
+        }
+    }
+
+    private void openLinkInBrowser(String url) {
         Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
         if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
             try {
                 desktop.browse(new URI(url));
             } catch (Exception ignored) {}
+        }
+    }
+
+    private boolean isSelectionFrameActive() {
+        return selectionFrame != null && selectionFrame.getJFrame().isDisplayable();
+    }
+
+    private void openColorSelectionFrame(@Nullable String setName) {
+
+        if (isSelectionFrameActive()) {
+            JOptionPane.showMessageDialog(frame,
+                    "Color set editor is already open.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            selectionFrame.getJFrame().requestFocus();
+        } else {
+            boolean showEditPanel = setName != null;
+            selectionFrame = showEditPanel ? new ColorSelectionFrame(this, setName) : new ColorSelectionFrame(this);
+        }
+    }
+
+    private void addColorPresets() {
+
+        boolean hasAdded = false;
+        List<String> currentSetNames = config.getStringList(ConfigNode.COLOR_SET_LIST);
+
+        for (String presetName : config.getStringList(ConfigNode.COLOR_SET_PRESET_LIST)) {
+            if (!currentSetNames.contains(presetName)) {
+                hasAdded = true;
+                currentSetNames.add(presetName);
+            }
+        }
+
+        if (hasAdded) {
+            config.putList(ConfigNode.COLOR_SET_LIST, currentSetNames);
+            refreshColorSets();
         }
     }
 }

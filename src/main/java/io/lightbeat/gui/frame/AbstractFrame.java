@@ -1,9 +1,9 @@
 package io.lightbeat.gui.frame;
 
 import io.lightbeat.ComponentHolder;
-import io.lightbeat.config.Config;
 import io.lightbeat.LightBeat;
-import io.lightbeat.hue.HueManager;
+import io.lightbeat.config.Config;
+import io.lightbeat.hue.bridge.HueManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,46 +22,59 @@ public abstract class AbstractFrame implements HueFrame {
     final Config config = componentHolder.getConfig();
     final ScheduledExecutorService executorService = componentHolder.getExecutorService();
 
-    JFrame frame;
+    final JFrame frame = new JFrame();
 
+    private final String frameTitle;
     private final int x;
     private final int y;
 
+
     AbstractFrame(int x, int y) {
+        this(null, x, y);
+    }
+
+    AbstractFrame(String frameTitle, int x, int y) {
+        this.frameTitle = "LightBeat" + (frameTitle != null ? (" - " + frameTitle) : "" );
         this.x = x;
         this.y = y;
     }
 
-    void drawFrame(Container toDraw, String frameTitle) {
-        frame = new JFrame();
-        SwingUtilities.invokeLater(() -> {
-            frame.setTitle("LightBeat " + frameTitle);
-            frame.setContentPane(toDraw);
+    void drawFrame(Container mainContainer, boolean isMainFrame) {
+        runOnSwingThread(() -> {
+
+            frame.setTitle(frameTitle);
+            frame.setContentPane(mainContainer);
 
             // load icons
             List<Image> icons = new ArrayList<>();
             for (int i = 16; i <= 64; i += 16) {
-                icons.add(new ImageIcon(getClass().getResource("/icon_" + i + ".png")).getImage());
+                icons.add(new ImageIcon(getClass().getResource("/png/icon_" + i + ".png")).getImage());
             }
             frame.setIconImages(icons);
 
             ToolTipManager.sharedInstance().setInitialDelay(150);
             ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
 
-            int widthWindow = toDraw.getPreferredSize().width;
-            int heightWindow = toDraw.getPreferredSize().height;
-            frame.setBounds(x, y, widthWindow, heightWindow);
+            frame.setBounds(x, y, 10, 10);
+
+            if (!isMainFrame) {
+                frame.setType(Window.Type.UTILITY);
+            }
+
+            frame.pack();
 
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     dispose();
-                    componentHolder.getHueManager().shutdown();
+                    if (isMainFrame) {
+                        componentHolder.getHueManager().shutdown();
+                    }
                 }
             });
 
-            frame.setVisible(true);
             frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            frame.setVisible(true);
         });
     }
 

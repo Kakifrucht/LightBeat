@@ -3,6 +3,7 @@ package io.lightbeat.hue.light.effect;
 import com.philips.lighting.model.PHLight;
 import io.lightbeat.hue.light.BrightnessCalibrator;
 import io.lightbeat.hue.light.LightStateBuilder;
+import io.lightbeat.hue.light.color.ColorSet;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,21 +17,28 @@ import java.util.Map;
 public class LightUpdate {
 
     private final List<PHLight> lights;
+    private final ColorSet colorSet;
+
     private final int brightness;
     private final double brightnessPercentage;
     private final boolean doBrightnessChange;
     private final int transitionTime;
+    private final long timeSinceLastBeat;
 
     private final Map<PHLight, LightStateBuilder> builders;
 
 
-    public LightUpdate(List<PHLight> lights, BrightnessCalibrator.BrightnessData brightnessData) {
+    public LightUpdate(List<PHLight> lights, ColorSet colorSet,
+                       BrightnessCalibrator.BrightnessData brightnessData, long timeSinceLastBeat) {
 
         this.lights = lights;
+        this.colorSet = colorSet;
+
         this.brightness = brightnessData.getBrightness();
         this.brightnessPercentage = brightnessData.getBrightnessPercentage();
         this.doBrightnessChange = brightnessData.isBrightnessChange();
         this.transitionTime = brightnessData.getTransitionTime();
+        this.timeSinceLastBeat = timeSinceLastBeat;
 
         this.builders = new HashMap<>();
         for (PHLight light : lights) {
@@ -62,6 +70,10 @@ public class LightUpdate {
         return lights;
     }
 
+    ColorSet getColorSet() {
+        return colorSet;
+    }
+
     int getBrightness() {
         return brightness;
     }
@@ -76,6 +88,10 @@ public class LightUpdate {
 
     int getTransitionTime() {
         return transitionTime;
+    }
+
+    long getTimeSinceLastBeat() {
+        return timeSinceLastBeat;
     }
 
     LightStateBuilder getBuilder(PHLight light) {

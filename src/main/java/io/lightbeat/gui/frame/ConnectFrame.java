@@ -1,7 +1,7 @@
 package io.lightbeat.gui.frame;
 
 import com.philips.lighting.hue.sdk.PHAccessPoint;
-import io.lightbeat.hue.HueStateObserver;
+import io.lightbeat.hue.bridge.HueStateObserver;
 
 import javax.swing.*;
 import java.util.List;
@@ -30,7 +30,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
 
     public ConnectFrame(int x, int y) {
-        super(x, y);
+        super("Connect", x, y);
 
         selectBridgeBox.addActionListener(e -> {
             boolean setVisible = false;
@@ -65,8 +65,11 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             }
         });
 
-        drawFrame(mainPanel, "- Connect");
+        drawFrame(mainPanel, true);
     }
+
+    @Override
+    public void onWindowClose() {}
 
     @Override
     public void isScanningForBridges(boolean connectFailed) {
@@ -84,7 +87,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             }
 
             selectBridgeBox.addItem("Enter IP manually");
-            toggleButtonAndDropdown(true, currentAccessPoints != null ? "Bridges found, please select your bridge" : "No bridges found, type IP manually");
+            toggleButtonAndDropdown(true, currentAccessPoints != null ? "Bridges found, please select your bridge." : "No bridges found, type IP manually.");
         });
     }
 
@@ -92,19 +95,21 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     public void requestPushlink() {
 
         pushlinkProgressTask = executorService.scheduleAtFixedRate(() -> {
+
             int currentValue = pushlinkProgressBar.getValue();
             if (currentValue > 0) {
-                pushlinkProgressBar.setValue(currentValue - 1);
+                runOnSwingThread(() -> pushlinkProgressBar.setValue(currentValue - 1));
             } else {
                 pushlinkProgressTask.cancel(false);
             }
+
         }, 1, 1, TimeUnit.SECONDS);
 
         runOnSwingThread(() -> {
             pushlinkProgressBar.setValue(30);
             pushlinkProgressBar.setVisible(true);
             pushlinkImageLabel.setVisible(true);
-            toggleButtonAndDropdown(false, "Please press the pushlink button");
+            toggleButtonAndDropdown(false, "Please press the pushlink button on your bridge.");
         });
     }
 
@@ -118,12 +123,9 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
         runOnSwingThread(() -> {
             pushlinkProgressBar.setVisible(false);
             pushlinkImageLabel.setVisible(false);
-            toggleButtonAndDropdown(true, "Pushlinking timed out");
+            toggleButtonAndDropdown(true, "Pushlinking timed out, please try again.");
         });
     }
-
-    @Override
-    public void onWindowClose() {}
 
     private void toggleButtonAndDropdown(boolean setEnabled, String labelText) {
         runOnSwingThread(() -> {

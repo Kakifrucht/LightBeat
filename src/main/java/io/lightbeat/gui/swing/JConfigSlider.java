@@ -21,26 +21,24 @@ public class JConfigSlider extends JSlider {
     private JSlider boundedSlider;
     private boolean boundedMustBeHigher;
     private int minDifference;
+    private boolean toolTipIsSet = false;
 
 
-    public JConfigSlider(Config config, ConfigNode nodeToChange, int def) {
-        this.def = def;
+    public JConfigSlider(Config config, ConfigNode nodeToChange) {
+        this.def = config.getDefaultInt(nodeToChange);
 
         // temporary until UI designer overwrites value
         setMaximum(Integer.MAX_VALUE);
 
-        lastValue = config.getInt(nodeToChange, def);
+        lastValue = config.getInt(nodeToChange);
         setValue(lastValue);
 
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                if (toolTipText == null) {
-                    toolTipText = "<html>" + getToolTipText();
+                if (!toolTipIsSet) {
+                    updateTooltip();
                 }
-
-                String customText = toolTipText + "<br><br>Current Value: " + getValue() + " | Default: " + def + "</html>";
-                setToolTipText(customText);
             }
         });
 
@@ -64,6 +62,7 @@ public class JConfigSlider extends JSlider {
 
                 if (lastValue != value) {
                     lastValue = value;
+                    updateTooltip();
                     config.putInt(nodeToChange, lastValue);
                 }
             }
@@ -78,5 +77,18 @@ public class JConfigSlider extends JSlider {
 
     public void restoreDefault() {
         setValue(def);
+    }
+
+    private void updateTooltip() {
+
+        if (toolTipText == null) {
+            toolTipText = "<html>" + getToolTipText();
+        }
+
+        String customText = toolTipText + "<br><br>Current Value: " + getValue() + " | Default: " + def + "</html>";
+        setToolTipText(customText);
+        if (!toolTipIsSet) {
+            toolTipIsSet = true;
+        }
     }
 }
