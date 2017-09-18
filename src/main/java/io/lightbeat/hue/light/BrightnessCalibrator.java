@@ -13,8 +13,8 @@ import io.lightbeat.util.DoubleAverageBuffer;
  */
 public class BrightnessCalibrator {
 
-    private final static double HISTORY_STARTING_VALUE = 0.2d;
-    private final static long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
+    private static final double HISTORY_STARTING_VALUE = 0.2d;
+    private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
 
     private final int minBrightness;
     private final int maxBrightness;

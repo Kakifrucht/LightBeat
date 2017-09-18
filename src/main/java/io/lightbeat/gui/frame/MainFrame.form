@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="4" left="4" bottom="0" right="4"/>
     <constraints>
-      <xy x="21" y="43" width="825" height="539"/>
+      <xy x="21" y="43" width="874" height="542"/>
     </constraints>
     <properties>
       <background color="-1"/>
@@ -169,15 +169,6 @@
                   <font size="16"/>
                 </border>
                 <children>
-                  <component id="f22ac" class="javax.swing.JButton" binding="restoreAdvancedButton" default-binding="true">
-                    <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <background color="-1"/>
-                      <text value="Restore Defaults"/>
-                    </properties>
-                  </component>
                   <component id="bf495" class="javax.swing.JLabel">
                     <constraints>
                       <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -234,6 +225,38 @@
                       <toolTipText value="Transition time for light updates in 100ms increments.&lt;br&gt;Increasing this value will cause light updates to appear slower and less aggressive."/>
                     </properties>
                   </component>
+                  <grid id="2b0b9" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                    <margin top="0" left="0" bottom="0" right="0"/>
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <background color="-1"/>
+                    </properties>
+                    <border type="none"/>
+                    <children>
+                      <component id="a8cf6" class="javax.swing.JButton" binding="readdColorSetPresetsButton" default-binding="true">
+                        <constraints>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties>
+                          <background color="-1"/>
+                          <text value="Readd Color Set Presets"/>
+                          <toolTipText value="Readd the default color sets to the color selector. Will not overwrite if they still exist."/>
+                        </properties>
+                      </component>
+                      <component id="f22ac" class="javax.swing.JButton" binding="restoreAdvancedButton" default-binding="true">
+                        <constraints>
+                          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties>
+                          <background color="-1"/>
+                          <text value="Restore Defaults"/>
+                          <toolTipText value="Restores advanced settings defaults."/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
                 </children>
               </grid>
               <grid id="defca" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -423,6 +446,7 @@
                     <properties>
                       <background color="-1"/>
                       <text value="Restore Defaults"/>
+                      <toolTipText value="Restores brightness settings defaults."/>
                     </properties>
                   </component>
                 </children>

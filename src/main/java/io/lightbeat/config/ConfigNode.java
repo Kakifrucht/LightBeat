@@ -15,6 +15,7 @@ public enum ConfigNode {
     BRIGHTNESS_SENSITIVITY("brightness.sensitivity"),
     CUSTOM(null),
     COLOR_SET_LIST("color.set.list"),
+    COLOR_SET_PRESET_LIST("color.set.preset.list"),
     COLOR_SET_SELECTED("color.set.selected"),
     LAST_AUDIO_SOURCE("frame.lastaudiosource"),
     UPDATE_DISABLE_NOTIFICATION("frame.updatedisablenotification"),

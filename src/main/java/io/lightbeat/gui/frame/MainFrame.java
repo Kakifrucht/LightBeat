@@ -50,6 +50,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private ButtonGroup colorButtonGroup;
 
     private JPanel advancedPanel;
+    private JButton readdColorSetPresetsButton;
     private JButton restoreAdvancedButton;
     private JConfigSlider beatSensitivitySlider;
     private JConfigSlider beatTimeBetweenSlider;
@@ -173,6 +174,11 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
 
         refreshColorSets();
+        if (colorSelectPanel.getComponentCount() < 2) {
+            addColorPresets();
+        }
+
+        readdColorSetPresetsButton.addActionListener(e -> addColorPresets());
 
         restoreAdvancedButton.addActionListener(e -> {
             beatSensitivitySlider.restoreDefault();
@@ -193,7 +199,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         urlLabel.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                openInBrowser("https://lightbeat.io");
+                openLinkInBrowser("https://lightbeat.io");
             }
         });
 
@@ -218,7 +224,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                             "Update found",
                             JOptionPane.YES_NO_OPTION);
                     if (answerCode == 0) {
-                        openInBrowser("https://lightbeat.io/?downloads");
+                        openLinkInBrowser("https://lightbeat.io/?downloads");
                     } else {
                         config.putLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, (int) (System.currentTimeMillis() / 1000));
                     }
@@ -411,7 +417,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
     }
 
-    private void openInBrowser(String url) {
+    private void openLinkInBrowser(String url) {
         Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
         if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
             try {
@@ -435,6 +441,24 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         } else {
             boolean showEditPanel = setName != null;
             selectionFrame = showEditPanel ? new ColorSelectionFrame(this, setName) : new ColorSelectionFrame(this);
+        }
+    }
+
+    private void addColorPresets() {
+
+        boolean hasAdded = false;
+        List<String> currentSetNames = config.getStringList(ConfigNode.COLOR_SET_LIST);
+
+        for (String presetName : config.getStringList(ConfigNode.COLOR_SET_PRESET_LIST)) {
+            if (!currentSetNames.contains(presetName)) {
+                hasAdded = true;
+                currentSetNames.add(presetName);
+            }
+        }
+
+        if (hasAdded) {
+            config.putList(ConfigNode.COLOR_SET_LIST, currentSetNames);
+            refreshColorSets();
         }
     }
 }

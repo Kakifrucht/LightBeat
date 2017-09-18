@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class LightQueue {
 
-    private final static Logger logger = LoggerFactory.getLogger(LightQueue.class);
+    private static final Logger logger = LoggerFactory.getLogger(LightQueue.class);
 
     private final HueManager hueManager;
     private final Queue<QueueEntry> queue;

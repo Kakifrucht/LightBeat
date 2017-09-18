@@ -67,8 +67,6 @@ public class ColorSelectionFrame extends AbstractFrame {
             Color storedColor = new Color(Integer.parseInt(rgbString));
             addColorTile(storedColor);
         }
-
-        updateSaveButton(-1);
     }
 
     private ColorSelectionFrame(String title, MainFrame mainFrame) {
@@ -110,11 +108,7 @@ public class ColorSelectionFrame extends AbstractFrame {
         colorSelectorPanel.addMouseListener(selectorEvent);
         colorSelectorPanel.addMouseMotionListener(selectorEvent);
 
-        addColorButton.addActionListener(e -> {
-            addColorTile(currentColorPanel.getBackground());
-
-            updateSaveButton(-1);
-        });
+        addColorButton.addActionListener(e -> addColorTile(currentColorPanel.getBackground()));
 
         addRandomColorsToButton.addActionListener(e -> {
             int rgb = Color.HSBtoRGB((float) Math.random(), selectedSaturation, 1.0f);
@@ -210,14 +204,15 @@ public class ColorSelectionFrame extends AbstractFrame {
 
         selectedColorsPanel.add(tile);
         selectedColorsPanel.updateUI();
+        updateSaveButton(-1);
     }
 
     private void updateSaveButton(int textFieldLength) {
-        int length = colorSetNameField.getText().length();
+        int setNameLength = colorSetNameField.getText().length();
         if (textFieldLength >= 0) {
-            length = textFieldLength;
+            setNameLength = textFieldLength;
         }
-        saveButton.setEnabled(selectedColorsPanel.getComponentCount() >= 8 && length > 0);
+        saveButton.setEnabled(selectedColorsPanel.getComponentCount() >= 8 && setNameLength > 0);
     }
 
     private void showNameTakenDialog() {

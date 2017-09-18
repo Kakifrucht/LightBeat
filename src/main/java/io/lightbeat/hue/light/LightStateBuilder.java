@@ -15,7 +15,7 @@ import java.awt.*;
 @SuppressWarnings("UnusedReturnValue")
 public class LightStateBuilder {
 
-    private final static Logger logger = LoggerFactory.getLogger(LightStateBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(LightStateBuilder.class);
 
     public static LightStateBuilder create() {
         return new LightStateBuilder();
