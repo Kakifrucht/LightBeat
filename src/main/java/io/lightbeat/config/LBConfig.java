@@ -32,11 +32,11 @@ public class LBConfig implements Config {
         defaultInts.put(ConfigNode.BRIGHTNESS_SENSITIVITY.getKey(), 20);
 
         // hardcoded color presets
-        defaults.put(ConfigNode.COLOR_SET_PRESET_LIST.getKey(), "Rainbow■Light Colors■Saturation Ladder■Club■Very Light");
+        defaults.put(ConfigNode.COLOR_SET_PRESET_LIST.getKey(), "Rainbow■Club■Saturation Gradient■Light Colors■Very Light");
         defaults.put("color.sets.Rainbow", "-65536■-63776■-30976■-13824■-2359552■-9568512■-16711882■-16711750■-16721153■-16760321■-5897985");
+        defaults.put("color.sets.Club", "-53021■-53021■-5304065■-5304065■-56418■-56418■-15675393■-16351745■-16351745■-13300993■-61424■-61424■-16711921■-16580864■-65479■-65479■-3800833");
+        defaults.put("color.sets.Saturation_Gradient", "-65536■-16711924■-16774913■-65284■-47546■-9830564■-10722561■-243201■-24673■-5177457■-9011457■-30983■-1");
         defaults.put("color.sets.Light_Colors", "-8988417■-5505162■-35124■-8978452■-35181■-2359434■-887041■-4746■-28042■-9003521■-65674■-6815882");
-        defaults.put("color.sets.Saturation_Ladder", "-65536■-16711924■-16774913■-65284■-47546■-9830564■-10722561■-243201■-24673■-5177457■-9011457■-30983■-1");
-        defaults.put("color.sets.Club", "-65536■-65536■-65536■-65536■-16711899■-16774913■-13106945■-4521729■-65341■-65415■-16750337■-11206912■-14483712■-16711931■-5066753■-1■-65497■-65309");
         defaults.put("color.sets.Very_Light", "-6496769■-6503937■-6508033■-5268225■-17764■-6488156■-6501121■-3433217■-25422■-21092■-25345■-25371■-11364■-25439■-25438■-5046372■-7340129");
     }
 

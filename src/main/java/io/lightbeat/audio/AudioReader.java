@@ -5,14 +5,14 @@ import java.util.List;
 
 /**
  * Implementing class is able to return a list containing all readable audio mixers of the system,
- * and supports thread dispatchment to read from a given {@link Mixer}.
+ * and reads audio data from a selected {@link Mixer}.
  */
 public interface AudioReader {
 
     /**
-     * Returns a list of the systems supported mixers for audio data retrieval.
+     * Returns a list of the systems supported mixers for audio data read.
      *
-     * @return list
+     * @return list of supported mixer
      */
     List<Mixer> getSupportedMixers();
 
