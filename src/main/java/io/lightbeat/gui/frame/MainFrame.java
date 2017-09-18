@@ -7,6 +7,7 @@ import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.ConfigNode;
+import io.lightbeat.gui.swing.JColorPanel;
 import io.lightbeat.gui.swing.JConfigCheckBox;
 import io.lightbeat.gui.swing.JConfigSlider;
 import io.lightbeat.gui.swing.JIconLabel;
@@ -61,6 +62,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JLabel urlLabel;
     private JLabel infoLabel;
     private JButton editSelectedButton;
+    private JColorPanel colorsPreviewPanel;
 
     private boolean audioReaderIsRunning = false;
     private HueFrame selectionFrame = null;
@@ -136,7 +138,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             if (selectedSetName.equals("Random")) {
                 JOptionPane.showMessageDialog(frame,
                         "You cannot edit this set.",
-                        "Error",
+                        "Cannot Edit",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -149,7 +151,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             String selected = setAndGetSelectedButton().getText();
             if (selected.equals("Random")) {
                 JOptionPane.showMessageDialog(frame,
-                        "You cannot delete this color set.",
+                        "You cannot delete this set.",
                         "Cannot Delete",
                         JOptionPane.ERROR_MESSAGE);
                 return;
@@ -232,8 +234,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         showAdvancedCheckbox.setToRunOnChange(() -> {
             advancedPanel.setVisible(showAdvancedCheckbox.isSelected());
-            // change window size on panel toggle
-            frame.setSize(showAdvancedCheckbox.isSelected() ? super.preferredSize : super.minimumSize);
+            frame.pack();
         });
 
         // restore last windows location
@@ -313,13 +314,18 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             config.put(ConfigNode.COLOR_SET_SELECTED, selectedSetButton.getText());
         }
 
+        colorsPreviewPanel.setColorSet(getHueManager().getColorSet());
         colorSelectPanel.updateUI();
+        frame.pack();
     }
 
     private void addRadioButton(String setName) {
         JRadioButton radioButton = new JRadioButton(setName);
         radioButton.setBackground(Color.WHITE);
-        radioButton.addActionListener(e -> config.put(ConfigNode.COLOR_SET_SELECTED, setName));
+        radioButton.addActionListener(e -> {
+            config.put(ConfigNode.COLOR_SET_SELECTED, setName);
+            colorsPreviewPanel.setColorSet(getHueManager().getColorSet());
+        });
 
         colorSelectPanel.add(radioButton);
         colorButtonGroup.add(radioButton);

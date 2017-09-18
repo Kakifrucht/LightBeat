@@ -13,6 +13,9 @@ import io.lightbeat.config.ConfigNode;
 import io.lightbeat.gui.FrameManager;
 import io.lightbeat.hue.light.HueBeatObserver;
 import io.lightbeat.hue.light.LightQueue;
+import io.lightbeat.hue.light.color.ColorSet;
+import io.lightbeat.hue.light.color.CustomColorSet;
+import io.lightbeat.hue.light.color.RandomColorSet;
 import io.lightbeat.util.TimeThreshold;
 
 import java.util.*;
@@ -34,6 +37,7 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
     private HueBeatObserver beatObserver;
     private List<PHLight> lights;
     private Map<String, PHLightState> originalState;
+    private final Config config;
 
 
     public LBHueManager() {
@@ -42,12 +46,12 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
         hueSDK.setDeviceName(System.getProperty("os.name"));
 
         componentHolder = LightBeat.getComponentHolder();
+        config = componentHolder.getConfig();
         this.frameManager = componentHolder.getFrameManager();
         observerFrame = frameManager.showConnectFrame();
 
         hueSDK.getNotificationManager().registerSDKListener(new HueSDKListener(this));
 
-        Config config = componentHolder.getConfig();
         String bridgeUsername = config.get(ConfigNode.BRIDGE_USERNAME);
         String bridgeIP = config.get(ConfigNode.BRIDGE_IPADDRESS);
         if (bridgeUsername != null && bridgeIP != null) {
@@ -142,6 +146,16 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
             Collections.shuffle(toReturn);
         }
         return toReturn;
+    }
+
+    @Override
+    public ColorSet getColorSet() {
+        String selectedColorSet = config.get(ConfigNode.COLOR_SET_SELECTED);
+        if (selectedColorSet.equals("Random")) {
+            return new RandomColorSet();
+        } else {
+            return new CustomColorSet(config, selectedColorSet);
+        }
     }
 
     @Override

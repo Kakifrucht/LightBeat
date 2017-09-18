@@ -3,11 +3,8 @@ package io.lightbeat.hue.light;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.Config;
-import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.bridge.HueManager;
 import io.lightbeat.hue.light.color.ColorSet;
-import io.lightbeat.hue.light.color.CustomColorSet;
-import io.lightbeat.hue.light.color.RandomColorSet;
 import io.lightbeat.hue.light.effect.*;
 import io.lightbeat.util.DoubleAverageBuffer;
 
@@ -43,12 +40,7 @@ public class HueBeatObserver implements BeatObserver {
         effectPipe.add(new ColorFlipEffect());
         effectPipe.add(new StrobeEffect());
 
-        String selectedColorSet = config.get(ConfigNode.COLOR_SET_SELECTED);
-        if (selectedColorSet.equals("Random")) {
-            colorSet = new RandomColorSet();
-        } else {
-            colorSet = new CustomColorSet(config, selectedColorSet);
-        }
+        colorSet = hueManager.getColorSet();
     }
 
     @Override

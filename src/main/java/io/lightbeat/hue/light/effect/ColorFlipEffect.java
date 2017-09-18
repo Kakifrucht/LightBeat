@@ -2,7 +2,7 @@ package io.lightbeat.hue.light.effect;
 
 import com.philips.lighting.model.PHLight;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

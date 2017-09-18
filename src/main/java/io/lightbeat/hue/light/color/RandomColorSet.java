@@ -35,4 +35,9 @@ public class RandomColorSet implements ColorSet {
 
         return randomColors.poll();
     }
+
+    @Override
+    public List<Color> getColors() {
+        return null;
+    }
 }

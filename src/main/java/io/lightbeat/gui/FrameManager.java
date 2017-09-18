@@ -20,7 +20,7 @@ public class FrameManager {
 
     public FrameManager() {
         try {
-            // set system look and feel
+            // system look and feel by default
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ignored) {}
     }

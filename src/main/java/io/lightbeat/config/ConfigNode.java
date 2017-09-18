@@ -42,7 +42,7 @@ public enum ConfigNode {
 
     public static ConfigNode getCustomNode(String key) {
         ConfigNode node = CUSTOM;
-        node.setKey(key);
+        node.setKey(key.replace(" ", "_"));
         return node;
     }
 }

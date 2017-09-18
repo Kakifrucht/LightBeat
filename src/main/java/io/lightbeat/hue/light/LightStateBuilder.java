@@ -15,8 +15,6 @@ import java.awt.*;
 @SuppressWarnings("UnusedReturnValue")
 public class LightStateBuilder {
 
-    private final static int MAX_HUE = 65535;
-
     private final static Logger logger = LoggerFactory.getLogger(LightStateBuilder.class);
 
     public static LightStateBuilder create() {

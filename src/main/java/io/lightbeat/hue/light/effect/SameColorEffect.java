@@ -2,7 +2,7 @@ package io.lightbeat.hue.light.effect;
 
 import io.lightbeat.hue.light.LightStateBuilder;
 
-import java.awt.*;
+import java.awt.Color;
 
 /**
  * Sends same color to all lights.

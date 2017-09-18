@@ -23,8 +23,6 @@ public abstract class AbstractFrame implements HueFrame {
     final ScheduledExecutorService executorService = componentHolder.getExecutorService();
 
     final JFrame frame = new JFrame();
-    Dimension minimumSize;
-    Dimension preferredSize;
 
     private final String frameTitle;
     private final int x;
@@ -57,10 +55,7 @@ public abstract class AbstractFrame implements HueFrame {
             ToolTipManager.sharedInstance().setInitialDelay(150);
             ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
 
-            // store, because frame.pack() overwrites these
-            minimumSize = frame.getMinimumSize();
-            preferredSize = frame.getPreferredSize();
-            frame.setBounds(x, y, minimumSize.width, minimumSize.height);
+            frame.setBounds(x, y, 10, 10);
 
             if (!isMainFrame) {
                 frame.setType(Window.Type.UTILITY);

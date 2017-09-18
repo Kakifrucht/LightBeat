@@ -4,6 +4,7 @@ import com.philips.lighting.hue.sdk.PHAccessPoint;
 import com.philips.lighting.model.PHBridge;
 import com.philips.lighting.model.PHLight;
 import io.lightbeat.hue.light.LightQueue;
+import io.lightbeat.hue.light.color.ColorSet;
 
 import java.util.List;
 
@@ -59,6 +60,11 @@ public interface HueManager {
      * @return list of selected (not disabled) lights
      */
     List<PHLight> getLights(boolean randomized);
+
+    /**
+     * @return the currently selected color set
+     */
+    ColorSet getColorSet();
 
     /**
      * Initializes the lights and store their state to be recovered by {@link #recoverOriginalState()}.

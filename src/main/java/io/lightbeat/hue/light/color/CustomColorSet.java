@@ -53,4 +53,9 @@ public class CustomColorSet implements ColorSet {
 
         return colorQueue.poll();
     }
+
+    @Override
+    public List<Color> getColors() {
+        return colors;
+    }
 }
