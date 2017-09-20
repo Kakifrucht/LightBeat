@@ -14,6 +14,7 @@ public class JColorTile extends JPanel {
 
 
     public JColorTile(Color color) {
+        super();
 
         setBackground(color);
         setPreferredSize(new Dimension(20, 20));

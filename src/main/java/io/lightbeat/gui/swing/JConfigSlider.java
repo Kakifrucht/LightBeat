@@ -25,6 +25,7 @@ public class JConfigSlider extends JSlider {
 
 
     public JConfigSlider(Config config, ConfigNode nodeToChange) {
+        super();
         this.def = config.getDefaultInt(nodeToChange);
 
         // temporary until UI designer overwrites value

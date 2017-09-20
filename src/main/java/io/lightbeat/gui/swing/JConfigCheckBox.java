@@ -15,7 +15,7 @@ public class JConfigCheckBox extends JCheckBox {
 
 
     public JConfigCheckBox(Config config, ConfigNode configNode) {
-
+        super();
         boolean configValue = config.getBoolean(configNode);
         setSelected(configValue);
 

@@ -16,6 +16,7 @@ public class JIconLabel extends JLabel {
 
 
     public JIconLabel(String resourceName, @Nullable String secondResourceName) {
+        super();
         this.icon = getImageIcon(resourceName);
         setIcon(icon);
 

@@ -7,10 +7,7 @@ import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.ConfigNode;
-import io.lightbeat.gui.swing.JColorPanel;
-import io.lightbeat.gui.swing.JConfigCheckBox;
-import io.lightbeat.gui.swing.JConfigSlider;
-import io.lightbeat.gui.swing.JIconLabel;
+import io.lightbeat.gui.swing.*;
 import io.lightbeat.util.URLConnectionReader;
 
 import javax.sound.sampled.Mixer;
@@ -103,7 +100,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         minBrightnessSlider.setBoundedSlider(maxBrightnessSlider, true, 10);
         maxBrightnessSlider.setBoundedSlider(minBrightnessSlider, false, 10);
 
-        // setup lights disable panel
+        // setup lights toggle panel
         List<PHLight> allLights = getHueManager().getAllLights();
         List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
         for (PHLight light : allLights) {

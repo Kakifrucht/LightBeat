@@ -33,11 +33,12 @@ public class HueBeatObserver implements BeatObserver {
         this.brightnessCalibrator = new BrightnessCalibrator(config);
 
         effectPipe = new ArrayList<>();
-        // lower effects have highest priority
+        // effects at the end of pipe have highest priority
         effectPipe.add(new DefaultEffect());
         effectPipe.add(new AlertEffect());
         effectPipe.add(new SameColorEffect());
         effectPipe.add(new ColorFlipEffect());
+        effectPipe.add(new ColorChainEffect());
         effectPipe.add(new StrobeEffect());
 
         colorSet = hueManager.getColorSet();

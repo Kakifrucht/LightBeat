@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="4" left="4" bottom="0" right="4"/>
     <constraints>
-      <xy x="21" y="43" width="874" height="542"/>
+      <xy x="21" y="43" width="874" height="552"/>
     </constraints>
     <properties>
       <background color="-1"/>
@@ -199,16 +199,6 @@
                       </component>
                     </children>
                   </grid>
-                  <grid id="2958d" binding="colorSelectPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
-                    <constraints>
-                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <background color="-1"/>
-                    </properties>
-                    <border type="none"/>
-                    <children/>
-                  </grid>
                   <component id="d1b52" class="javax.swing.JButton" binding="addCustomColorsButton" default-binding="true">
                     <constraints>
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
@@ -224,6 +214,16 @@
                     </constraints>
                     <properties/>
                   </component>
+                  <grid id="2958d" binding="colorSelectPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                    <constraints>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <background color="-1"/>
+                    </properties>
+                    <border type="none"/>
+                    <children/>
+                  </grid>
                 </children>
               </grid>
             </children>
@@ -389,7 +389,7 @@
               <background color="-1"/>
               <maximum value="10"/>
               <minimum value="1"/>
-              <toolTipText value="Setting this value higher will cause more beats to get detected."/>
+              <toolTipText value="Setting this value higher will cause more beats to get detected.&lt;br&gt;It is usually not necessary to change this value as beat detection calibrates automatically."/>
             </properties>
           </component>
           <component id="e96dd" class="io.lightbeat.gui.swing.JConfigSlider" binding="beatTimeBetweenSlider" custom-create="true">

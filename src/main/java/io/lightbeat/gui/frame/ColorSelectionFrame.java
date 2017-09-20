@@ -3,6 +3,7 @@ package io.lightbeat.gui.frame;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.gui.swing.JColorPanel;
 import io.lightbeat.gui.swing.JColorTile;
+import io.lightbeat.gui.swing.WrapLayout;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -114,6 +115,8 @@ public class ColorSelectionFrame extends AbstractFrame {
             int rgb = Color.HSBtoRGB((float) Math.random(), selectedSaturation, 1.0f);
             addColorTile(new Color(rgb));
         });
+
+        selectedColorsPanel.setLayout(new WrapLayout(0));
 
         // restrict max input length
         colorSetNameField.setDocument(new PlainDocument() {

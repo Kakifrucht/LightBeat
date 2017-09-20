@@ -23,6 +23,7 @@ public class JColorPanel extends JPanel {
 
 
     public JColorPanel() {
+        super();
         setBorder(new LineBorder(Color.BLACK));
         createCanvas();
         addComponentListener(new ComponentAdapter() {
