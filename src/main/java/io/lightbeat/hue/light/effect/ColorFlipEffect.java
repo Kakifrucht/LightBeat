@@ -26,8 +26,8 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
     private Color color2;
 
 
-    public ColorFlipEffect() {
-        super(0.6f, 0.3f);
+    public ColorFlipEffect(float brightnessThreshold, float activationProbability) {
+        super(brightnessThreshold, activationProbability);
     }
 
     @Override

@@ -19,8 +19,8 @@ public class ColorChainEffect extends AbstractThresholdEffect {
     private int currentIndex;
 
 
-    public ColorChainEffect() {
-        super(0.7f, 0.4f);
+    public ColorChainEffect(float brightnessThreshold, float activationProbability) {
+        super(brightnessThreshold, activationProbability);
     }
 
     @Override

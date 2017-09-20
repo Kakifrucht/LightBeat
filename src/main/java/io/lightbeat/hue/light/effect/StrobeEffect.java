@@ -19,8 +19,8 @@ public class StrobeEffect extends AbstractRandomEffect {
     private int nextLightInBeats;
 
 
-    public StrobeEffect() {
-        super(0.8f, 1.0f, 0.05f);
+    public StrobeEffect(float brightnessThreshold, float activationProbability, float randomProbability) {
+        super(brightnessThreshold, activationProbability, randomProbability);
     }
 
     @Override

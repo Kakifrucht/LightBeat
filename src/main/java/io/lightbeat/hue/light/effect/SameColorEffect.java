@@ -10,7 +10,7 @@ import java.awt.Color;
 public class SameColorEffect extends AbstractThresholdEffect {
 
 
-    public SameColorEffect() {
+    public SameColorEffect(float brightnessThreshold, float activationProbability) {
         super(0.5f, 0.4f);
     }
 

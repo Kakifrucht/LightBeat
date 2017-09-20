@@ -35,11 +35,11 @@ public class HueBeatObserver implements BeatObserver {
         effectPipe = new ArrayList<>();
         // effects at the end of pipe have highest priority
         effectPipe.add(new DefaultEffect());
-        effectPipe.add(new AlertEffect());
-        effectPipe.add(new SameColorEffect());
-        effectPipe.add(new ColorFlipEffect());
-        effectPipe.add(new ColorChainEffect());
-        effectPipe.add(new StrobeEffect());
+        effectPipe.add(new AlertEffect(0.7f, 0.4f, 0.05f));
+        effectPipe.add(new SameColorEffect(0.5f, 0.2f));
+        effectPipe.add(new ColorFlipEffect(0.6f, 0.25f));
+        effectPipe.add(new ColorChainEffect(0.4f, 0.3f));
+        effectPipe.add(new StrobeEffect(0.8f, 1.0f, 0.05f));
 
         colorSet = hueManager.getColorSet();
     }

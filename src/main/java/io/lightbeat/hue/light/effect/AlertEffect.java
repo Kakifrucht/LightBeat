@@ -15,8 +15,8 @@ public class AlertEffect extends AbstractRandomEffect {
     private TimeThreshold alertThreshold;
 
 
-    public AlertEffect() {
-        super(0.7f, 0.4f, 0.05f);
+    public AlertEffect(float brightnessThreshold, float activationProbability, float randomProbability) {
+        super(brightnessThreshold, activationProbability, randomProbability);
     }
 
     @Override
