@@ -2,8 +2,8 @@ package io.lightbeat.hue.light.effect;
 
 import com.philips.lighting.model.PHLight;
 import io.lightbeat.hue.light.LightStateBuilder;
+import io.lightbeat.hue.light.color.Color;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -3,7 +3,6 @@ package io.lightbeat.hue.light.color;
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class CustomColorSet implements ColorSet {
     public CustomColorSet(Config config, String setName) {
         for (String colorString : config.getStringList(ConfigNode.getCustomNode("color.sets." + setName))) {
             int color = Integer.parseInt(colorString);
-            colors.add(new Color(color));
+            colors.add(new LBColor(color));
         }
     }
 

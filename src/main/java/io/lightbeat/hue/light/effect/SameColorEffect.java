@@ -1,8 +1,7 @@
 package io.lightbeat.hue.light.effect;
 
 import io.lightbeat.hue.light.LightStateBuilder;
-
-import java.awt.Color;
+import io.lightbeat.hue.light.color.Color;
 
 /**
  * Sends same color to all lights.
@@ -11,7 +10,7 @@ public class SameColorEffect extends AbstractThresholdEffect {
 
 
     public SameColorEffect(float brightnessThreshold, float activationProbability) {
-        super(0.5f, 0.4f);
+        super(brightnessThreshold, activationProbability);
     }
 
     @Override

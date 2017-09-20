@@ -23,6 +23,8 @@ public interface Config {
 
     boolean getBoolean(ConfigNode node);
 
+    boolean getDefaultBoolean(ConfigNode node);
+
     void putBoolean(ConfigNode node, boolean value);
 
     List<String> getStringList(ConfigNode node);

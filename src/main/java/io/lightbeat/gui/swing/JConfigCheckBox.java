@@ -13,15 +13,19 @@ public class JConfigCheckBox extends JCheckBox {
 
     private Runnable toRunOnChange;
 
+    private final boolean def;
+
 
     public JConfigCheckBox(Config config, ConfigNode configNode) {
         super();
+        this.def = config.getDefaultBoolean(configNode);
         boolean configValue = config.getBoolean(configNode);
         setSelected(configValue);
 
         addItemListener(e -> {
-            if (isSelected()){
-                config.putBoolean(configNode, true);
+            boolean isSelected = isSelected();
+            if (isSelected != def) {
+                config.putBoolean(configNode, isSelected);
             } else {
                 config.remove(configNode);
             }

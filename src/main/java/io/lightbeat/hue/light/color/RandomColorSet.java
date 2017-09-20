@@ -1,6 +1,5 @@
 package io.lightbeat.hue.light.color;
 
-import java.awt.Color;
 import java.util.*;
 
 /**
@@ -25,8 +24,7 @@ public class RandomColorSet implements ColorSet {
             for (int i = 0; i < 16; i++) {
                 currentColor += rnd.nextFloat() / 4f;
                 currentColor %= 1f;
-                int rgb = Color.HSBtoRGB(currentColor, 1f, 1f);
-                randomColors.add(new Color(rgb));
+                randomColors.add(new LBColor(currentColor, 1f));
             }
 
             Collections.shuffle(randomColors);

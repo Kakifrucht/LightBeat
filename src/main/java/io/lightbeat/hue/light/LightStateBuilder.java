@@ -3,11 +3,10 @@ package io.lightbeat.hue.light;
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
 import io.lightbeat.LightBeat;
+import io.lightbeat.hue.light.color.Color;
 import io.lightbeat.hue.light.color.ColorSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.*;
 
 /**
  * Builder class to create {@link PHLightState}'s. Also used to send built states to the {@link LightQueue}.
@@ -116,9 +115,8 @@ public class LightStateBuilder {
         }
 
         if (color != null) {
-            float[] hsb = Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null);
-            newLightState.setHue((int) (hsb[0] * 65535));
-            newLightState.setSaturation((int) (hsb[1] * 254));
+            newLightState.setHue(color.getHue());
+            newLightState.setSaturation(color.getSaturation());
         }
 
         if (setOn != null) {

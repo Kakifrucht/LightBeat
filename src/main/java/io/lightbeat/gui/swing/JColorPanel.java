@@ -1,5 +1,6 @@
 package io.lightbeat.gui.swing;
 
+import io.lightbeat.hue.light.color.Color;
 import io.lightbeat.hue.light.color.ColorSet;
 
 import javax.swing.*;
@@ -24,7 +25,7 @@ public class JColorPanel extends JPanel {
 
     public JColorPanel() {
         super();
-        setBorder(new LineBorder(Color.BLACK));
+        setBorder(new LineBorder(java.awt.Color.BLACK));
         createCanvas();
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -63,7 +64,7 @@ public class JColorPanel extends JPanel {
             for (int x = 0; x < width; x++) {
                 float hue = (float) x / width;
                 for (int y = 0; y < height; y++) {
-                    int rgb = Color.HSBtoRGB(hue, drawSaturationGradient ? (float) (height - y) / height : 1f, 1f);
+                    int rgb = java.awt.Color.HSBtoRGB(hue, drawSaturationGradient ? (float) (height - y) / height : 1f, 1f);
                     canvas.setRGB(x, y, rgb);
                 }
             }

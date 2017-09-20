@@ -3,6 +3,7 @@ package io.lightbeat.hue.light;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.Config;
+import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.bridge.HueManager;
 import io.lightbeat.hue.light.color.ColorSet;
 import io.lightbeat.hue.light.effect.*;
@@ -39,7 +40,9 @@ public class HueBeatObserver implements BeatObserver {
         effectPipe.add(new SameColorEffect(0.5f, 0.2f));
         effectPipe.add(new ColorFlipEffect(0.6f, 0.25f));
         effectPipe.add(new ColorChainEffect(0.4f, 0.3f));
-        effectPipe.add(new StrobeEffect(0.8f, 1.0f, 0.05f));
+        if (config.getBoolean(ConfigNode.BRIGHTNESS_STROBE)) {
+            effectPipe.add(new StrobeEffect(0.8f, 1.0f, 0.05f));
+        }
 
         colorSet = hueManager.getColorSet();
     }

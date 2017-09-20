@@ -52,6 +52,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JConfigSlider beatSensitivitySlider;
     private JConfigSlider beatTimeBetweenSlider;
     private JConfigSlider transitionTimeSlider;
+    private JConfigCheckBox strobeCheckBox;
 
     private JButton startButton;
     private JConfigCheckBox showAdvancedCheckbox;
@@ -299,6 +300,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
         beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
         transitionTimeSlider = new JConfigSlider(config, ConfigNode.LIGHTS_TRANSITION_TIME);
+        strobeCheckBox = new JConfigCheckBox(config, ConfigNode.BRIGHTNESS_STROBE);
 
         showAdvancedCheckbox = new JConfigCheckBox(config, ConfigNode.SHOW_ADVANCED_SETTINGS);
         autoStartCheckBox = new JConfigCheckBox(config, ConfigNode.AUTOSTART);

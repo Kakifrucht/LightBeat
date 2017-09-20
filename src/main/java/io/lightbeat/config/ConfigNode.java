@@ -13,6 +13,7 @@ public enum ConfigNode {
     BRIGHTNESS_MIN("brightness.min"),
     BRIGHTNESS_MAX("brightness.max"),
     BRIGHTNESS_SENSITIVITY("brightness.sensitivity"),
+    BRIGHTNESS_STROBE("brightness.strobe"),
     CUSTOM(null),
     COLOR_SET_LIST("color.set.list"),
     COLOR_SET_PRESET_LIST("color.set.preset.list"),

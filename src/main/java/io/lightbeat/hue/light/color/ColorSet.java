@@ -1,6 +1,5 @@
 package io.lightbeat.hue.light.color;
 
-import java.awt.*;
 import java.util.List;
 
 /**
