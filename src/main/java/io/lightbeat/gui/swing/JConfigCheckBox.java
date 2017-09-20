@@ -20,7 +20,12 @@ public class JConfigCheckBox extends JCheckBox {
         setSelected(configValue);
 
         addItemListener(e -> {
-            config.putBoolean(configNode, isSelected());
+            if (isSelected()){
+                config.putBoolean(configNode, true);
+            } else {
+                config.remove(configNode);
+            }
+
             if (toRunOnChange != null) {
                 toRunOnChange.run();
             }

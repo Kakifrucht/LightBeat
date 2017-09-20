@@ -64,7 +64,11 @@ public class JConfigSlider extends JSlider {
                 if (lastValue != value) {
                     lastValue = value;
                     updateTooltip();
-                    config.putInt(nodeToChange, lastValue);
+                    if (lastValue != def) {
+                        config.putInt(nodeToChange, lastValue);
+                    } else {
+                        config.remove(nodeToChange);
+                    }
                 }
             }
         });
