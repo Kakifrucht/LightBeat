@@ -4,7 +4,6 @@ import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
 
 import java.util.*;
-import java.util.List;
 
 /**
  * Set consisting of the colors stored in {@link Config}, accessed via set name.

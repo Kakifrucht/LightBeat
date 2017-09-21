@@ -7,7 +7,10 @@ import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.ConfigNode;
-import io.lightbeat.gui.swing.*;
+import io.lightbeat.gui.swing.JColorPanel;
+import io.lightbeat.gui.swing.JConfigCheckBox;
+import io.lightbeat.gui.swing.JConfigSlider;
+import io.lightbeat.gui.swing.JIconLabel;
 import io.lightbeat.util.URLConnectionReader;
 
 import javax.sound.sampled.Mixer;
@@ -53,6 +56,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JConfigSlider beatTimeBetweenSlider;
     private JConfigSlider transitionTimeSlider;
     private JConfigCheckBox strobeCheckBox;
+    private JConfigCheckBox glowCheckBox;
 
     private JButton startButton;
     private JConfigCheckBox showAdvancedCheckbox;
@@ -62,6 +66,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JLabel infoLabel;
     private JButton editSelectedButton;
     private JColorPanel colorsPreviewPanel;
+    private JButton deviceHelpButton;
 
     private boolean audioReaderIsRunning = false;
     private HueFrame selectionFrame = null;
@@ -93,44 +98,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             }
         }
 
-        restoreBrightnessButton.addActionListener(e -> {
-            minBrightnessSlider.restoreDefault();
-            maxBrightnessSlider.restoreDefault();
-            sensitivitySlider.restoreDefault();
-        });
-        minBrightnessSlider.setBoundedSlider(maxBrightnessSlider, true, 10);
-        maxBrightnessSlider.setBoundedSlider(minBrightnessSlider, false, 10);
-
-        // setup lights toggle panel
-        List<PHLight> allLights = getHueManager().getAllLights();
-        List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-        for (PHLight light : allLights) {
-
-            JCheckBox checkBox = new JCheckBox();
-            checkBox.setText(light.getName());
-            checkBox.setBackground(Color.WHITE);
-            if (!disabledLights.contains(light.getUniqueId())) {
-                checkBox.setSelected(true);
-            }
-
-            lightsPanel.add(checkBox);
-
-            checkBox.addActionListener(e -> {
-
-                List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-
-                if (((JCheckBox) e.getSource()).isSelected()) {
-                    disabledLightsList.remove(light.getUniqueId());
-                } else {
-                    disabledLightsList.add(light.getUniqueId());
-                }
-
-                config.putList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
-            });
-        }
+        deviceHelpButton.addActionListener(e -> openLinkInBrowser("https://lightbeat.io/audioguide.php"));
 
         addCustomColorsButton.addActionListener(e -> openColorSelectionFrame(null));
-
         editSelectedButton.addActionListener(e -> {
 
             String selectedSetName = setAndGetSelectedButton().getText();
@@ -176,12 +146,49 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             addColorPresets();
         }
 
-        readdColorSetPresetsButton.addActionListener(e -> addColorPresets());
+        // setup lights toggle panel
+        List<PHLight> allLights = getHueManager().getAllLights();
+        List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+        for (PHLight light : allLights) {
 
+            JCheckBox checkBox = new JCheckBox();
+            checkBox.setText(light.getName());
+            checkBox.setBackground(Color.WHITE);
+            if (!disabledLights.contains(light.getUniqueId())) {
+                checkBox.setSelected(true);
+            }
+
+            lightsPanel.add(checkBox);
+
+            checkBox.addActionListener(e -> {
+
+                List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+
+                if (((JCheckBox) e.getSource()).isSelected()) {
+                    disabledLightsList.remove(light.getUniqueId());
+                } else {
+                    disabledLightsList.add(light.getUniqueId());
+                }
+
+                config.putList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
+            });
+        }
+
+        restoreBrightnessButton.addActionListener(e -> {
+            minBrightnessSlider.restoreDefault();
+            maxBrightnessSlider.restoreDefault();
+            sensitivitySlider.restoreDefault();
+        });
+        minBrightnessSlider.setBoundedSlider(maxBrightnessSlider, true, 10);
+        maxBrightnessSlider.setBoundedSlider(minBrightnessSlider, false, 10);
+
+        readdColorSetPresetsButton.addActionListener(e -> addColorPresets());
         restoreAdvancedButton.addActionListener(e -> {
             beatSensitivitySlider.restoreDefault();
             beatTimeBetweenSlider.restoreDefault();
             transitionTimeSlider.restoreDefault();
+            strobeCheckBox.restoreDefault();
+            glowCheckBox.restoreDefault();
         });
 
         startButton.addActionListener(e -> {
@@ -301,6 +308,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
         transitionTimeSlider = new JConfigSlider(config, ConfigNode.LIGHTS_TRANSITION_TIME);
         strobeCheckBox = new JConfigCheckBox(config, ConfigNode.BRIGHTNESS_STROBE);
+        glowCheckBox = new JConfigCheckBox(config, ConfigNode.BRIGHTNESS_GLOW);
 
         showAdvancedCheckbox = new JConfigCheckBox(config, ConfigNode.SHOW_ADVANCED_SETTINGS);
         autoStartCheckBox = new JConfigCheckBox(config, ConfigNode.AUTOSTART);

@@ -32,6 +32,7 @@ public class LBConfig implements Config {
         defaultInts.put(ConfigNode.BRIGHTNESS_MAX.getKey(), 254);
         defaultInts.put(ConfigNode.BRIGHTNESS_SENSITIVITY.getKey(), 20);
 
+        defaultBools.put(ConfigNode.BRIGHTNESS_GLOW.getKey(), true);
         defaultBools.put(ConfigNode.BRIGHTNESS_STROBE.getKey(), true);
 
         // hardcoded color presets

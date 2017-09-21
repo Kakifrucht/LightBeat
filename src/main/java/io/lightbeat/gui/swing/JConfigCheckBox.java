@@ -18,7 +18,9 @@ public class JConfigCheckBox extends JCheckBox {
 
     public JConfigCheckBox(Config config, ConfigNode configNode) {
         super();
+
         this.def = config.getDefaultBoolean(configNode);
+
         boolean configValue = config.getBoolean(configNode);
         setSelected(configValue);
 
@@ -39,5 +41,9 @@ public class JConfigCheckBox extends JCheckBox {
     public void setToRunOnChange(Runnable toRunOnChange) {
         this.toRunOnChange = toRunOnChange;
         SwingUtilities.invokeLater(toRunOnChange);
+    }
+
+    public void restoreDefault() {
+        setSelected(def);
     }
 }

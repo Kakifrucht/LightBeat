@@ -10,6 +10,7 @@ public enum ConfigNode {
     BEAT_SENSITIVITY("beat.sensitivity"),
     BRIDGE_USERNAME("bridge.username"),
     BRIDGE_IPADDRESS("bridge.ipaddress"),
+    BRIGHTNESS_GLOW("brightness.glow"),
     BRIGHTNESS_MIN("brightness.min"),
     BRIGHTNESS_MAX("brightness.max"),
     BRIGHTNESS_SENSITIVITY("brightness.sensitivity"),

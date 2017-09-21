@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="4" left="4" bottom="0" right="4"/>
     <constraints>
-      <xy x="21" y="43" width="874" height="564"/>
+      <xy x="21" y="43" width="874" height="595"/>
     </constraints>
     <properties>
       <background color="-1"/>
@@ -65,8 +65,7 @@
               <text value="Start"/>
             </properties>
           </component>
-          <grid id="972a9" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-            <margin top="0" left="0" bottom="0" right="0"/>
+          <grid id="972a9" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -76,18 +75,15 @@
             <border type="none"/>
             <children>
               <component id="bf7bd" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="showAdvancedCheckbox" custom-create="true">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
+                <constraints/>
                 <properties>
                   <background color="-1"/>
                   <text value="Show Advanced Settings"/>
+                  <verticalAlignment value="1"/>
                 </properties>
               </component>
               <component id="c0777" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="autoStartCheckBox" custom-create="true" default-binding="true">
-                <constraints>
-                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
+                <constraints/>
                 <properties>
                   <background color="-1"/>
                   <text value="Auto Start On Launch"/>
@@ -124,7 +120,7 @@
             </properties>
             <border type="none"/>
             <children>
-              <grid id="9296e" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="9296e" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -138,13 +134,13 @@
                 <children>
                   <component id="27542" class="javax.swing.JComboBox" binding="deviceSelectComboBox" default-binding="true">
                     <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="0" fill="1" indent="0" use-parent-layout="false">
+                      <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="2" anchor="0" fill="1" indent="0" use-parent-layout="false">
                         <preferred-size width="-1" height="25"/>
                       </grid>
                     </constraints>
                     <properties>
                       <background color="-1"/>
-                      <toolTipText value="&lt;html&gt;&#10;Select the audio device that will be read from.&lt;br&gt;You can always use your systems microphone, however for&lt;br&gt;best results it is recommended to select Stereo Mix (if available),&lt;br&gt;or alternatively install a virtual audio cable to directly read your systems audio.&lt;br&gt;This is necessary if you don't have a microphone or want to use headphones.&#10;&lt;/html&gt;"/>
+                      <toolTipText value="&lt;html&gt;&#10;Select the audio device that will be read from.&lt;br&gt;You can always use your systems microphone, however for&lt;br&gt;best results it is recommended to select Stereo Mix (if available),&lt;br&gt;or alternatively install a virtual audio cable to directly read your systems audio.&lt;br&gt;This is necessary if you don't have a microphone or want to use headphones.&lt;br&gt;Click on the &quot;Help&quot; button for more setup information.&#10;&lt;/html&gt;"/>
                     </properties>
                   </component>
                   <component id="f5f3" class="javax.swing.JLabel">
@@ -153,6 +149,16 @@
                     </constraints>
                     <properties>
                       <text value="Select Stereo Mix or a Virtual Audio Cable for best results."/>
+                    </properties>
+                  </component>
+                  <component id="43ab3" class="javax.swing.JButton" binding="deviceHelpButton" default-binding="true">
+                    <constraints>
+                      <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="6" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <background color="-1"/>
+                      <text value="Help"/>
+                      <toolTipText value="Opens audio setup help in your webbrowser."/>
                     </properties>
                   </component>
                 </children>
@@ -453,14 +459,44 @@
               </component>
             </children>
           </grid>
-          <component id="aa401" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="strobeCheckBox" custom-create="true" default-binding="true">
+          <grid id="89ef1" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <background color="-1"/>
-              <text value="Strobe"/>
-              <toolTipText value="Toggle any strobing effects that turn your lights on and off."/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="aa401" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="strobeCheckBox" custom-create="true" default-binding="true">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <background color="-1"/>
+                  <text value="Strobe"/>
+                  <toolTipText value="Toggle all strobing effects that turn your lights on and off."/>
+                </properties>
+              </component>
+              <component id="36d5e" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="glowCheckBox" custom-create="true" default-binding="true">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <background color="-1"/>
+                  <text value="Glow"/>
+                  <toolTipText value="Toggle all glowing effects."/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <component id="2cc7e" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Light Effects"/>
             </properties>
           </component>
         </children>

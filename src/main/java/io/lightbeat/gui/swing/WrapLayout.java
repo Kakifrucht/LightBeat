@@ -9,10 +9,6 @@ import java.awt.*;
 public class WrapLayout extends FlowLayout {
 
 
-    public WrapLayout() {
-        super();
-    }
-
     public WrapLayout(int align) {
         super(align);
     }
