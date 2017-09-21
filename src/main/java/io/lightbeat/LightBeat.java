@@ -2,13 +2,15 @@ package io.lightbeat;
 
 import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEventManager;
-import io.lightbeat.config.Config;
-import io.lightbeat.gui.FrameManager;
-import io.lightbeat.hue.bridge.LBHueManager;
 import io.lightbeat.audio.LBAudioReader;
+import io.lightbeat.config.Config;
 import io.lightbeat.config.LBConfig;
+import io.lightbeat.gui.FrameManager;
 import io.lightbeat.hue.bridge.HueManager;
+import io.lightbeat.hue.bridge.LBHueManager;
 
+import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -31,7 +33,13 @@ public class LightBeat implements ComponentHolder {
     }
 
     public static String getVersion() {
-        return LightBeat.class.getPackage().getImplementationVersion();
+        Properties properties = new Properties();
+        try {
+            properties.load(LightBeat.class.getClassLoader().getResourceAsStream("metadata.properties"));
+        } catch (IOException e) {
+            return null;
+        }
+        return properties.getProperty("version");
     }
 
     //- static end -//

@@ -1,7 +1,6 @@
 package io.lightbeat.gui.frame;
 
 import com.philips.lighting.model.PHLight;
-import com.sun.istack.internal.Nullable;
 import io.lightbeat.LightBeat;
 import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
@@ -199,8 +198,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             }
         });
 
-        String version = LightBeat.getVersion();
-        urlLabel.setText("v" + version + " | " + urlLabel.getText());
         urlLabel.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -208,38 +205,43 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             }
         });
 
-        // schedule updater task
-        componentHolder.getExecutorService().schedule(() -> {
+        String version = LightBeat.getVersion();
+        if (version != null) {
+            urlLabel.setText("v" + version + " | " + urlLabel.getText());
 
-            long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
-            if (updateDisableNotificationTime + 172800 > (System.currentTimeMillis() / 1000)) {
-                // only show update notification every two days
-                return;
-            }
+            // schedule updater task
+            componentHolder.getExecutorService().schedule(() -> {
 
-            URLConnectionReader reader = new URLConnectionReader("https://lightbeat.io/latest.php");
-            try {
-                String currentVersion = reader.getFirstLine();
-                boolean isCurrentVersion = version.equals(currentVersion);
-
-                if (!isCurrentVersion) {
-                    int answerCode = JOptionPane.showConfirmDialog(
-                            frame,
-                            "A new update is available (version " + currentVersion + ").\n\nUpdate now?",
-                            "Update found",
-                            JOptionPane.YES_NO_OPTION);
-                    if (answerCode == 0) {
-                        openLinkInBrowser("https://lightbeat.io/?downloads");
-                    } else {
-                        config.putLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, (int) (System.currentTimeMillis() / 1000));
-                    }
+                long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
+                if (updateDisableNotificationTime + 172800 > (System.currentTimeMillis() / 1000)) {
+                    // only show update notification every two days
+                    return;
                 }
 
-            } catch (Exception ignored) {
-                // fail silently
-            }
+                URLConnectionReader reader = new URLConnectionReader("https://lightbeat.io/latest.php");
+                try {
+                    String currentVersion = reader.getFirstLine();
+                    boolean isCurrentVersion = version.equals(currentVersion);
 
-        }, 5, TimeUnit.SECONDS);
+                    if (!isCurrentVersion) {
+                        int answerCode = JOptionPane.showConfirmDialog(
+                                frame,
+                                "A new update is available (version " + currentVersion + ").\n\nUpdate now?",
+                                "Update found",
+                                JOptionPane.YES_NO_OPTION);
+                        if (answerCode == 0) {
+                            openLinkInBrowser("https://lightbeat.io/?downloads");
+                        } else if (answerCode == 1) {
+                            config.putLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, (int) (System.currentTimeMillis() / 1000));
+                        }
+                    }
+
+                } catch (Exception ignored) {
+                    // fail silently
+                }
+
+            }, 5, TimeUnit.SECONDS);
+        }
 
         drawFrame(mainPanel, true);
 
@@ -437,7 +439,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         return selectionFrame != null && selectionFrame.getJFrame().isDisplayable();
     }
 
-    private void openColorSelectionFrame(@Nullable String setName) {
+    private void openColorSelectionFrame(String setName) {
 
         if (isSelectionFrameActive()) {
             JOptionPane.showMessageDialog(frame,

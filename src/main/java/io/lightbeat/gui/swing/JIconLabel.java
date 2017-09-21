@@ -1,7 +1,5 @@
 package io.lightbeat.gui.swing;
 
-import com.sun.istack.internal.Nullable;
-
 import javax.swing.*;
 
 /**
@@ -15,7 +13,7 @@ public class JIconLabel extends JLabel {
     private boolean firstIconSelected = true;
 
 
-    public JIconLabel(String resourceName, @Nullable String secondResourceName) {
+    public JIconLabel(String resourceName, String secondResourceName) {
         super();
         this.icon = getImageIcon(resourceName);
         setIcon(icon);

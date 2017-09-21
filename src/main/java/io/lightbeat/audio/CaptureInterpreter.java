@@ -1,6 +1,5 @@
 package io.lightbeat.audio;
 
-import com.sun.istack.internal.Nullable;
 import io.lightbeat.config.ConfigNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +38,6 @@ class CaptureInterpreter {
         this.timeBetweenBeatsMillis = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN);
     }
 
-    @Nullable
     BeatEvent interpretValue(double amplitude) {
 
         amplitudeHistory.add(amplitude);

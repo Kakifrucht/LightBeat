@@ -1,4 +1,3 @@
 Manifest-Version: 1.0
-Implementation-Version: ${project.version}
 Main-Class: io.lightbeat.LightBeat
 

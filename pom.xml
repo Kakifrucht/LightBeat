@@ -16,8 +16,9 @@
                 <filtering>true</filtering>
                 <directory>${basedir}/src/main/resources/</directory>
                 <includes>
-                    <include>png/*.png</include>
+                    <include>metadata.properties</include>
                     <include>META-INF/MANIFEST.MF</include>
+                    <include>png/*.png</include>
                 </includes>
             </resource>
         </resources>
