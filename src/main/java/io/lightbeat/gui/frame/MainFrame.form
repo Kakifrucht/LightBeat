@@ -65,7 +65,8 @@
               <text value="Start"/>
             </properties>
           </component>
-          <grid id="972a9" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+          <grid id="972a9" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -75,7 +76,9 @@
             <border type="none"/>
             <children>
               <component id="bf7bd" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="showAdvancedCheckbox" custom-create="true">
-                <constraints/>
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
                 <properties>
                   <background color="-1"/>
                   <text value="Show Advanced Settings"/>
@@ -83,7 +86,9 @@
                 </properties>
               </component>
               <component id="c0777" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="autoStartCheckBox" custom-create="true" default-binding="true">
-                <constraints/>
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
                 <properties>
                   <background color="-1"/>
                   <text value="Auto Start On Launch"/>
@@ -443,8 +448,8 @@
                 </constraints>
                 <properties>
                   <background color="-1"/>
-                  <text value="Readd Color Presets"/>
-                  <toolTipText value="Readd the default color sets to the color selector. Only deleted sets will be readded."/>
+                  <text value="Re-add Color Presets"/>
+                  <toolTipText value="Re-add the default color sets to the color selector. Only deleted sets will be readded."/>
                 </properties>
               </component>
               <component id="f22ac" class="javax.swing.JButton" binding="restoreAdvancedButton" default-binding="true">
