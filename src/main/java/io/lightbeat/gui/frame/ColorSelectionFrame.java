@@ -199,14 +199,12 @@ public class ColorSelectionFrame extends AbstractFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 selectedColorsPanel.remove(tile);
-                selectedColorsPanel.revalidate();
-                updateSaveButton(-1);
+                revalidatePanel();
             }
         });
 
         selectedColorsPanel.add(tile);
-        selectedColorsPanel.revalidate();
-        updateSaveButton(-1);
+        revalidatePanel();
     }
 
     private void updateSaveButton(int textFieldLength) {
@@ -222,6 +220,12 @@ public class ColorSelectionFrame extends AbstractFrame {
                 "A color set with given name already exists.",
                 "Name Already Taken",
                 JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void revalidatePanel() {
+        selectedColorsPanel.revalidate();
+        selectedColorsPanel.repaint();
+        updateSaveButton(-1);
     }
 
     @Override
