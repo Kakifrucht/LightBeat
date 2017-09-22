@@ -199,14 +199,13 @@ public class ColorSelectionFrame extends AbstractFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 selectedColorsPanel.remove(tile);
-                selectedColorsPanel.updateUI();
-
+                selectedColorsPanel.revalidate();
                 updateSaveButton(-1);
             }
         });
 
         selectedColorsPanel.add(tile);
-        selectedColorsPanel.updateUI();
+        selectedColorsPanel.revalidate();
         updateSaveButton(-1);
     }
 

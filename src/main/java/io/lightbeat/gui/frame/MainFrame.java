@@ -330,7 +330,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
 
         colorsPreviewPanel.setColorSet(getHueManager().getColorSet());
-        colorSelectPanel.updateUI();
+        colorSelectPanel.repaint();
         frame.pack();
     }
 

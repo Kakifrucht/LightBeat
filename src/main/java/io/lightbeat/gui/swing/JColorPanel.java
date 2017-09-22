@@ -26,11 +26,11 @@ public class JColorPanel extends JPanel {
     public JColorPanel() {
         super();
         setBorder(new LineBorder(java.awt.Color.BLACK));
-        createCanvas();
+        repaintCanvas();
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                createCanvas();
+                repaintCanvas();
             }
         });
     }
@@ -45,11 +45,10 @@ public class JColorPanel extends JPanel {
     public void setColorSet(ColorSet colorSet) {
         this.colorSet = colorSet.getColors();
         drawSaturationGradient = false;
-        createCanvas();
-        updateUI();
+        repaintCanvas();
     }
 
-    private void createCanvas() {
+    private void repaintCanvas() {
 
         int width = getWidth();
         int height = getHeight();
@@ -79,5 +78,7 @@ public class JColorPanel extends JPanel {
                 }
             }
         }
+
+        repaint();
     }
 }
