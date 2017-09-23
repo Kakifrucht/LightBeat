@@ -444,8 +444,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         if (isSelectionFrameActive()) {
             JOptionPane.showMessageDialog(frame,
                     "Color set editor is already open.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    "Editor Open",
+                    JOptionPane.INFORMATION_MESSAGE);
             selectionFrame.getJFrame().requestFocus();
         } else {
             boolean showEditPanel = setName != null;

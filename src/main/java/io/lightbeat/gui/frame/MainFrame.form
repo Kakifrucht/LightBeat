@@ -326,7 +326,7 @@
                     <properties>
                       <background color="-1"/>
                       <maximum value="254"/>
-                      <toolTipText value="Define the maximum brightness level, reached when the music is currently more intense than on average."/>
+                      <toolTipText value="Define the maximum brightness level, reached when the music is currently more intense than on average.&lt;br&gt;This setting is not always taken into account as long as the Glow effect is enabled."/>
                     </properties>
                   </component>
                   <component id="f1e0f" class="javax.swing.JLabel">

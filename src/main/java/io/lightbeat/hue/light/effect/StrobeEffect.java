@@ -21,6 +21,7 @@ public class StrobeEffect extends AbstractRandomEffect {
 
     public StrobeEffect(float brightnessThreshold, float activationProbability, float randomProbability) {
         super(brightnessThreshold, activationProbability, randomProbability);
+        setBrightnessDeactivationThreshold(0.6f);
     }
 
     @Override

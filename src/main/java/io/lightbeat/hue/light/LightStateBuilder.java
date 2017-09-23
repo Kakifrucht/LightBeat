@@ -74,29 +74,27 @@ public class LightStateBuilder {
 
     public void copyFromBuilder(LightStateBuilder copyFrom) {
 
-        // is default passes if transition time is set to 0, we still want to copy it in that case
-        if (copyFrom.isDefault() || copyFrom.transitionTime == 0) {
-            return;
-        }
+        if (!copyFrom.isDefault() || copyFrom.transitionTime != Integer.MIN_VALUE) {
 
-        if (copyFrom.transitionTime != Integer.MIN_VALUE) {
-            this.transitionTime = copyFrom.transitionTime;
-        }
+            if (copyFrom.transitionTime != Integer.MIN_VALUE) {
+                this.transitionTime = copyFrom.transitionTime;
+            }
 
-        if (copyFrom.brightness != Integer.MIN_VALUE) {
-            this.brightness = copyFrom.brightness;
-        }
+            if (copyFrom.brightness != Integer.MIN_VALUE) {
+                this.brightness = copyFrom.brightness;
+            }
 
-        if (copyFrom.color != null) {
-            this.color = copyFrom.color;
-        }
+            if (copyFrom.color != null) {
+                this.color = copyFrom.color;
+            }
 
-        if (copyFrom.setOn != null) {
-            this.setOn = copyFrom.setOn;
-        }
+            if (copyFrom.setOn != null) {
+                this.setOn = copyFrom.setOn;
+            }
 
-        if (copyFrom.alert != null) {
-            this.alert = copyFrom.alert;
+            if (copyFrom.alert != null) {
+                this.alert = copyFrom.alert;
+            }
         }
     }
 
@@ -131,8 +129,7 @@ public class LightStateBuilder {
     }
 
     private boolean isDefault() {
-        return transitionTime <= 0
-                && brightness == Integer.MIN_VALUE
+        return brightness == Integer.MIN_VALUE
                 && color == null
                 && setOn == null
                 && alert == null;

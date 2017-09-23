@@ -21,21 +21,23 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
     private final float brightnessThreshold;
     private final float activationProbability;
 
+    private float brightnessDeactivationThreshold;
     boolean isActive = false;
 
 
     AbstractThresholdEffect(float brightnessThreshold, float activationProbability) {
         this.brightnessThreshold = brightnessThreshold;
         this.activationProbability = activationProbability;
+        this.brightnessDeactivationThreshold = brightnessThreshold;
     }
 
     @Override
     public void beatReceived(LightUpdate lightUpdate) {
         this.lightUpdate = lightUpdate;
         if (isActive) {
-            if (lightUpdate.isBrightnessChange() && lightUpdate.getBrightnessPercentage() < brightnessThreshold) {
+            if (lightUpdate.isBrightnessChange() && lightUpdate.getBrightnessPercentage() < brightnessDeactivationThreshold) {
                 setActive(false);
-            } else {
+            } else if (!lightUpdate.getLights().isEmpty()) {
                 executeEffect();
             }
         } else {
@@ -56,6 +58,10 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
         }
     }
 
+    void setBrightnessDeactivationThreshold(float newThreshold) {
+        this.brightnessDeactivationThreshold = newThreshold;
+    }
+
     abstract void initializeEffect();
 
     void executionDone() {
@@ -67,7 +73,9 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
         if (active) {
             logger.info("{} was started", this);
             initializeEffect();
-            executeEffect();
+            if (!lightUpdate.getLights().isEmpty()) {
+                executeEffect();
+            }
         } else {
             activationThreshold.setCurrentThreshold(MILLIS_BETWEEN_ACTIVATION);
             executionDone();

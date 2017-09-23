@@ -46,4 +46,14 @@ public class LBColor implements Color {
     public int getSaturation() {
         return (int) (saturation * 254);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof LBColor && rgb == ((LBColor) o).rgb;
+    }
+
+    @Override
+    public int hashCode() {
+        return rgb;
+    }
 }

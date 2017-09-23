@@ -24,17 +24,17 @@ class CaptureInterpreter {
     private final long timeBetweenBeatsMillis;
 
     // calculate amplitude averages
-    private final DoubleAverageBuffer amplitudeHistory = new DoubleAverageBuffer(800, false);
+    private final DoubleAverageBuffer amplitudeHistory = new DoubleAverageBuffer(150, false);
     private double beatThreshold;
     private boolean isSilent = true;
 
-    private final TimeThreshold nextBeatThreshold = new TimeThreshold(1000L); // add calibration phase
+    private final TimeThreshold nextBeatThreshold = new TimeThreshold(1000L); // add one second calibration phase
     private final TimeThreshold noBeatThreshold = new TimeThreshold();
     private final TimeThreshold silenceThreshold = new TimeThreshold();
 
 
     CaptureInterpreter(Config config) {
-        this.beatThresholdReductionMultiplier = config.getInt(ConfigNode.BEAT_SENSITIVITY) / 1000.0d;
+        this.beatThresholdReductionMultiplier = config.getInt(ConfigNode.BEAT_SENSITIVITY) / 150d;
         this.timeBetweenBeatsMillis = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN);
     }
 
