@@ -8,17 +8,21 @@ import io.lightbeat.hue.light.color.Color;
  */
 public class SameColorEffect extends AbstractThresholdEffect {
 
+    private Color lastColor;
+
 
     public SameColorEffect(float brightnessThreshold, float activationProbability) {
         super(brightnessThreshold, activationProbability);
     }
 
     @Override
-    public void executeEffect() {
-        Color color = lightUpdate.getColorSet().getNextColor();
-        lightUpdate.copyBuilderToAll(LightStateBuilder.create().setColor(color));
+    void initializeEffect() {
+        lastColor = null;
     }
 
     @Override
-    void initializeEffect() {}
+    public void executeEffect() {
+        lastColor = lightUpdate.getColorSet().getNextColor(lastColor);
+        lightUpdate.copyBuilderToAll(LightStateBuilder.create().setColor(lastColor));
+    }
 }

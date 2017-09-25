@@ -35,6 +35,11 @@ public class RandomColorSet implements ColorSet {
     }
 
     @Override
+    public Color getNextColor(Color differentFrom) {
+        return getNextColor();
+    }
+
+    @Override
     public List<Color> getColors() {
         return null;
     }

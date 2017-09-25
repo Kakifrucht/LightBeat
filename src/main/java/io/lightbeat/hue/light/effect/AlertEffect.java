@@ -1,8 +1,11 @@
 package io.lightbeat.hue.light.effect;
 
 import com.philips.lighting.model.PHLight;
+import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.light.LightStateBuilder;
 import io.lightbeat.util.TimeThreshold;
+
+import java.util.List;
 
 /**
  * Adds the {@link com.philips.lighting.model.PHLight.PHLightAlertMode#ALERT_SELECT} effect
@@ -30,7 +33,13 @@ public class AlertEffect extends AbstractRandomEffect {
 
     @Override
     void executeEffectOnceRandomly() {
-        lightUpdate.getBuilder(lightUpdate.getLights().get(0)).setAlertMode(PHLight.PHLightAlertMode.ALERT_SELECT);
+        List<Light> activeLights = lightUpdate.getLightsTurnedOn();
+        if (!activeLights.isEmpty()) {
+            activeLights
+                    .get(0)
+                    .getStateBuilder()
+                    .setAlertMode(PHLight.PHLightAlertMode.ALERT_SELECT);
+        }
     }
 
     @Override

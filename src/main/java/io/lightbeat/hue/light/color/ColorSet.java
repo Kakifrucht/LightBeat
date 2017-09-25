@@ -10,9 +10,18 @@ public interface ColorSet {
     /**
      * Get the next color in this set.
      *
-     * @return hue of color
+     * @return color
      */
     Color getNextColor();
+
+    /**
+     * Get the next color in this set which should be different from the given color.
+     *
+     *
+     * @param differentFrom return value should be different from this parameter (no guarantee)
+     * @return color
+     */
+    Color getNextColor(Color differentFrom);
 
     /**
      * Get all colors in this set. Returns null if colors are dynamically determined or random.

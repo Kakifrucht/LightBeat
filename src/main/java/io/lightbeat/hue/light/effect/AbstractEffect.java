@@ -1,6 +1,7 @@
 package io.lightbeat.hue.light.effect;
 
 import io.lightbeat.LightBeat;
+import io.lightbeat.hue.light.LightUpdate;
 
 import java.util.Random;
 import java.util.concurrent.ScheduledExecutorService;

@@ -1,5 +1,7 @@
 package io.lightbeat.hue.light.effect;
 
+import io.lightbeat.hue.light.LightUpdate;
+
 /**
  * Implementing classes contain custom light change effects and patterns when beats were received.
  */

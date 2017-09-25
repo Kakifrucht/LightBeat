@@ -11,7 +11,7 @@ import io.lightbeat.util.DoubleAverageBuffer;
  * object, which contains the relevant information for the next light update, and if a brightness
  * change is needed in the first place.
  */
-public class BrightnessCalibrator {
+class BrightnessCalibrator {
 
     private static final double HISTORY_STARTING_VALUE = 0.2d;
     private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
@@ -83,7 +83,7 @@ public class BrightnessCalibrator {
         return new BrightnessData(minBrightness, minBrightness - lastBrightness, 0.0f, true);
     }
 
-    void clearHistory() {
+    void clear() {
         amplitudeDifferenceHistory.clear();
         amplitudeDifferenceHistory.add(HISTORY_STARTING_VALUE);
     }
@@ -94,7 +94,7 @@ public class BrightnessCalibrator {
     }
 
 
-    public class BrightnessData {
+    class BrightnessData {
 
         private final int brightness;
         private final int brightnessDifference;
@@ -110,23 +110,23 @@ public class BrightnessCalibrator {
             this.doBrightnessChange = doBrightnessChange;
         }
 
-        public int getBrightness() {
+        int getBrightness() {
             return brightness;
         }
 
-        public int getBrightnessDifference() {
+        int getBrightnessDifference() {
             return brightnessDifference;
         }
 
-        public double getBrightnessPercentage() {
+        double getBrightnessPercentage() {
             return brightnessPercentage;
         }
 
-        public boolean isBrightnessChange() {
+        boolean isBrightnessChange() {
             return doBrightnessChange;
         }
 
-        public int getTransitionTime() {
+        int getTransitionTime() {
             return transitionTime;
         }
     }

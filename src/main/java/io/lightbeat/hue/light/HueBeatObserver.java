@@ -33,8 +33,8 @@ public class HueBeatObserver implements BeatObserver {
         this.hueManager = hueManager;
         this.brightnessCalibrator = new BrightnessCalibrator(config);
 
-        effectPipe = new ArrayList<>();
         // effects at the end of pipe have highest priority
+        effectPipe = new ArrayList<>();
         effectPipe.add(new DefaultEffect());
         if (config.getBoolean(ConfigNode.BRIGHTNESS_GLOW)) {
             effectPipe.add(new AlertEffect(0.7f, 0.4f, 0.05f));
@@ -45,7 +45,8 @@ public class HueBeatObserver implements BeatObserver {
         effectPipe.add(new ColorChainEffect(0.6f, 0.3f));
 
         if (config.getBoolean(ConfigNode.BRIGHTNESS_STROBE)) {
-            effectPipe.add(new StrobeEffect(0.8f, 1.0f, 0.05f));
+            effectPipe.add(new StrobeEffect(0.9f, 1f, 0.05f));
+            effectPipe.add(new StrobeChainEffect(0.8f, 0.5f));
         }
 
         colorSet = hueManager.getColorSet();
@@ -78,12 +79,12 @@ public class HueBeatObserver implements BeatObserver {
     @Override
     public void silenceDetected() {
         noBeatReceived();
-        brightnessCalibrator.clearHistory();
+        brightnessCalibrator.clear();
         amplitudeHistory.clear();
     }
 
     private LightUpdate getNewLightUpdate(BrightnessCalibrator.BrightnessData data) {
-        return new LightUpdate(hueManager.getLights(true), colorSet, data, getTimeSinceLastBeat());
+        return new LightUpdate(hueManager.getSelectedLights(), colorSet, data, getTimeSinceLastBeat());
     }
 
     private long getTimeSinceLastBeat() {

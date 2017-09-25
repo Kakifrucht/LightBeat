@@ -3,7 +3,7 @@ package io.lightbeat.hue.bridge;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 import com.philips.lighting.model.PHBridge;
 import com.philips.lighting.model.PHLight;
-import io.lightbeat.hue.light.LightQueue;
+import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.light.color.ColorSet;
 
 import java.util.List;
@@ -18,11 +18,6 @@ public interface HueManager {
      * @return the currently connected bridge
      */
     PHBridge getBridge();
-
-    /**
-     * @return the queue to send light updates to
-     */
-    LightQueue getQueue();
 
     /**
      * Causes a scan for bridges in the connected network.
@@ -51,15 +46,14 @@ public interface HueManager {
      *
      * @return list of lights
      */
-    List<PHLight> getAllLights();
+    List<PHLight> getLights();
 
     /**
-     * Get connected and selected lights.
+     * Get all selected lights. {@link #initializeLights()} must be called at least one time.
      *
-     * @param randomized if true will return in randomized order
      * @return list of selected (not disabled) lights
      */
-    List<PHLight> getLights(boolean randomized);
+    List<Light> getSelectedLights();
 
     /**
      * @return the currently selected color set

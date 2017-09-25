@@ -2,19 +2,15 @@ package io.lightbeat.hue.light;
 
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
-import io.lightbeat.LightBeat;
 import io.lightbeat.hue.light.color.Color;
 import io.lightbeat.hue.light.color.ColorSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Builder class to create {@link PHLightState}'s. Also used to send built states to the {@link LightQueue}.
+ * Builder class to create {@link PHLightState}'s.
+ * Can also copy from other builders via {@link #copyFromBuilder(LightStateBuilder)}.
  */
 @SuppressWarnings("UnusedReturnValue")
 public class LightStateBuilder {
-
-    private static final Logger logger = LoggerFactory.getLogger(LightStateBuilder.class);
 
     public static LightStateBuilder create() {
         return new LightStateBuilder();
@@ -49,32 +45,19 @@ public class LightStateBuilder {
         return this;
     }
 
-    public LightStateBuilder setOn(boolean setOn) {
-        this.setOn = setOn;
-        return this;
-    }
-
     public LightStateBuilder setAlertMode(PHLight.PHLightAlertMode alert) {
         this.alert = alert;
         return this;
     }
 
-    public void updateState(PHLight lightToUpdate) {
-        PHLightState newState = getLightState();
-        if (newState != null) {
-            LightBeat.getComponentHolder().getHueManager().getQueue().addUpdate(lightToUpdate, newState);
-
-            String mode = newState.getAlertMode().equals(PHLight.PHLightAlertMode.ALERT_UNKNOWN) ? "null" : newState.getAlertMode().toString();
-            logger.info("Updated light {} to bri {} | color {}/{} | mode {} | on {}",
-                    lightToUpdate.getName(), newState.getBrightness(), newState.getHue(),
-                    newState.getSaturation(), mode, newState.isOn()
-            );
-        }
+    LightStateBuilder setOn(boolean setOn) {
+        this.setOn = setOn;
+        return this;
     }
 
-    public void copyFromBuilder(LightStateBuilder copyFrom) {
+    void copyFromBuilder(LightStateBuilder copyFrom) {
 
-        if (!copyFrom.isDefault() || copyFrom.transitionTime != Integer.MIN_VALUE) {
+        if (copyFrom != null && (!copyFrom.isDefault() || copyFrom.transitionTime != Integer.MIN_VALUE)) {
 
             if (copyFrom.transitionTime != Integer.MIN_VALUE) {
                 this.transitionTime = copyFrom.transitionTime;
@@ -98,9 +81,8 @@ public class LightStateBuilder {
         }
     }
 
-    private PHLightState getLightState() {
+    PHLightState getLightState() {
 
-        // don't update if not necessary
         if (isDefault()) {
             return null;
         }

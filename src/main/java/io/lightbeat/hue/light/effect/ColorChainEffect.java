@@ -1,7 +1,6 @@
 package io.lightbeat.hue.light.effect;
 
-import com.philips.lighting.model.PHLight;
-import io.lightbeat.hue.light.LightStateBuilder;
+import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.light.color.Color;
 
 import java.util.ArrayList;
@@ -13,7 +12,7 @@ import java.util.List;
  */
 public class ColorChainEffect extends AbstractThresholdEffect {
 
-    private List<PHLight> lightsInOrder;
+    private List<Light> lightsInOrder;
 
     private Color currentColor;
     private int currentIndex;
@@ -29,30 +28,23 @@ public class ColorChainEffect extends AbstractThresholdEffect {
 
         currentColor = lightUpdate.getColorSet().getNextColor();
         currentIndex = -1;
-
-        // initialize to one color
-        lightUpdate.copyBuilderToAll(LightStateBuilder.create().setColor(currentColor));
     }
 
     @Override
     void executeEffect() {
-        if (currentIndex++ >= lightsInOrder.size() - 1) {
-            Color nextColor = lightUpdate.getColorSet().getNextColor();
-            if (nextColor.equals(currentColor)) {
-                nextColor = lightUpdate.getColorSet().getNextColor();
-            }
 
-            currentColor = nextColor;
+        if (currentIndex++ >= lightsInOrder.size() - 1) {
+            currentColor = lightUpdate.getColorSet().getNextColor(currentColor);
             currentIndex = 0;
         }
 
-        PHLight nextLight = lightsInOrder.get(currentIndex);
-        lightUpdate.getBuilder(nextLight).setColor(currentColor);
+        Light nextLight = lightsInOrder.get(currentIndex);
+        nextLight.getStateBuilder().setColor(currentColor);
 
-        // undo updates to other lights
-        for (PHLight phLight : lightUpdate.getLights()) {
-            if (!nextLight.equals(phLight)) {
-                lightUpdate.getBuilder(phLight).setColor(null);
+        // undo color updates to other lights
+        for (Light light : lightUpdate.getLightsTurnedOn()) {
+            if (!nextLight.equals(light)) {
+                light.getStateBuilder().setColor(null);
             }
         }
     }

@@ -84,7 +84,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
             @Override
             public void run() {
 
-                double highestAmplitude = Double.MIN_VALUE;
+                double highestAmplitude = -1d;
                 while (dataLine.available() >= frameSize && dataLine.read(audioInputBuffer, 0, frameSize) > 0) {
 
                     // convert to normalized values (2 bytes per sample)

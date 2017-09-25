@@ -12,6 +12,7 @@ import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.gui.FrameManager;
 import io.lightbeat.hue.light.HueBeatObserver;
+import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.light.LightQueue;
 import io.lightbeat.hue.light.color.ColorSet;
 import io.lightbeat.hue.light.color.CustomColorSet;
@@ -28,16 +29,16 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
     private final ComponentHolder componentHolder;
     private final PHHueSDK hueSDK;
     private final FrameManager frameManager;
-    private final LightQueue queue;
+    private final Config config;
+    private final LightQueue lightQueue;
 
     private State currentState = State.NOT_CONNECTED;
     private HueStateObserver observerFrame;
     private PHBridge bridge;
 
     private HueBeatObserver beatObserver;
-    private List<PHLight> lights;
-    private Map<String, PHLightState> originalState;
-    private final Config config;
+    private List<Light> lights;
+    private Map<String, PHLightState> originalLightStates;
 
 
     public LBHueManager() {
@@ -63,17 +64,12 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
             doBridgesScan();
         }
 
-        this.queue = new LightQueue(this);
+        this.lightQueue = new LightQueue(this);
     }
 
     @Override
     public PHBridge getBridge() {
         return bridge;
-    }
-
-    @Override
-    public LightQueue getQueue() {
-        return queue;
     }
 
     @Override
@@ -105,8 +101,8 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
 
         if (isConnected()) {
             hueSDK.getHeartbeatManager().disableAllHeartbeats(bridge);
-            queue.markShutdown();
-            if (originalState != null) {
+            lightQueue.markShutdown();
+            if (originalLightStates != null) {
                 recoverOriginalState();
             }
             return;
@@ -134,15 +130,15 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
     }
 
     @Override
-    public List<PHLight> getAllLights() {
+    public List<PHLight> getLights() {
         return bridge.getResourceCache().getAllLights();
     }
 
     @Override
-    public List<PHLight> getLights(boolean randomized) {
+    public List<Light> getSelectedLights() {
 
-        List<PHLight> toReturn = new ArrayList<>(lights);
-        if (randomized && toReturn.size() > 1) {
+        List<Light> toReturn = new ArrayList<>(lights);
+        if (toReturn.size() > 1) {
             Collections.shuffle(toReturn);
         }
         return toReturn;
@@ -161,24 +157,30 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
     @Override
     public boolean initializeLights() {
 
-        originalState = new HashMap<>();
+        originalLightStates = new HashMap<>();
         lights = new ArrayList<>();
-        List<PHLight> allLights = getAllLights();
         List<String> disabledLights = componentHolder.getConfig().getStringList(ConfigNode.LIGHTS_DISABLED);
-        for (PHLight light : allLights) {
+        for (PHLight phLight : getLights()) {
 
-            if (disabledLights.contains(light.getUniqueId())) {
+            if (disabledLights.contains(phLight.getUniqueId())) {
                 continue;
             }
 
-            PHLightState currentState = new PHLightState(light.getLastKnownLightState());
+            PHLightState currentState = new PHLightState(phLight.getLastKnownLightState());
             currentState.setReachable(null);
-            originalState.put(light.getUniqueId(), currentState);
+            originalLightStates.put(phLight.getUniqueId(), currentState);
 
-            lights.add(light);
+            lights.add(new Light(phLight, lightQueue, componentHolder.getExecutorService()));
         }
 
         if (!lights.isEmpty()) {
+
+            for (Light light : lights) {
+                if (!light.isOn()) {
+                    light.setOn(true);
+                }
+            }
+
             beatObserver = new HueBeatObserver(this, componentHolder.getConfig());
             componentHolder.getAudioEventManager().registerBeatObserver(beatObserver);
             return true;
@@ -196,14 +198,14 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
 
         componentHolder.getAudioEventManager().unregisterBeatObserver(beatObserver);
 
-        for (PHLight light : lights) {
-            if (originalState.containsKey(light.getUniqueId())) {
-                queue.addUpdate(light, originalState.get(light.getUniqueId()));
+        for (PHLight light : getLights()) {
+            if (originalLightStates.containsKey(light.getUniqueId())) {
+                lightQueue.addUpdate(light, originalLightStates.get(light.getUniqueId()));
             }
         }
 
         lights = null;
-        originalState = null;
+        originalLightStates = null;
     }
 
     @Override

@@ -448,8 +448,8 @@
                 </constraints>
                 <properties>
                   <background color="-1"/>
-                  <text value="Re-add Color Presets"/>
-                  <toolTipText value="Re-add the default color sets to the color selector. Only deleted sets will be readded."/>
+                  <text value="Restore Color Presets"/>
+                  <toolTipText value="Restores the default color sets to the color selector. Only deleted sets will be readded."/>
                 </properties>
               </component>
               <component id="f22ac" class="javax.swing.JButton" binding="restoreAdvancedButton" default-binding="true">

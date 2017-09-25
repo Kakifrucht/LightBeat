@@ -1,7 +1,8 @@
 package io.lightbeat.hue.light.effect;
 
-import com.philips.lighting.model.PHLight;
+import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.light.LightStateBuilder;
+import io.lightbeat.hue.light.LightUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +16,12 @@ public class DefaultEffect extends AbstractEffect {
     void executeEffect() {
 
         // select random light(s) to update
-        List<PHLight> lights = lightUpdate.getLights();
-        List<PHLight> lightsToChange = new ArrayList<>();
+        List<Light> lights = lightUpdate.getLightsTurnedOn();
+        if (lights.isEmpty()) {
+            return;
+        }
+
+        List<Light> lightsToChange = new ArrayList<>();
         lightsToChange.add(lights.get(0));
 
         // randomly add more lights, depending on amount of lights in configuration
@@ -25,8 +30,8 @@ public class DefaultEffect extends AbstractEffect {
             lightsToChange.add(lights.get(i));
         }
 
-        for (PHLight light : lightsToChange) {
-            lightUpdate.getBuilder(light).setRandomHue(lightUpdate.getColorSet());
+        for (Light light : lightsToChange) {
+            light.getStateBuilder().setRandomHue(lightUpdate.getColorSet());
         }
     }
 

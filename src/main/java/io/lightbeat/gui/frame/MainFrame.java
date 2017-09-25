@@ -146,7 +146,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
 
         // setup lights toggle panel
-        List<PHLight> allLights = getHueManager().getAllLights();
+        List<PHLight> allLights = getHueManager().getLights();
         List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
         for (PHLight light : allLights) {
 

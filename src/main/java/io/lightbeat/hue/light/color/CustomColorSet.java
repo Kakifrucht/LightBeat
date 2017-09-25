@@ -16,6 +16,7 @@ public class CustomColorSet implements ColorSet {
     private Queue<Color> colorQueue;
     private Set<Color> colorsAtQueueEnd;
 
+
     public CustomColorSet(Config config, String setName) {
         for (String colorString : config.getStringList(ConfigNode.getCustomNode("color.sets." + setName))) {
             int color = Integer.parseInt(colorString);
@@ -50,6 +51,16 @@ public class CustomColorSet implements ColorSet {
         }
 
         return colorQueue.poll();
+    }
+
+    @Override
+    public Color getNextColor(Color differentFrom) {
+        Color nextColor = getNextColor();
+        int maxIterations = 5;
+        while (nextColor.equals(differentFrom) && maxIterations-- > 0) {
+            nextColor = getNextColor();
+        }
+        return nextColor;
     }
 
     @Override

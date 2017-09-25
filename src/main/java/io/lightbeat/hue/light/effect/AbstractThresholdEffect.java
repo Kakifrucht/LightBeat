@@ -1,5 +1,6 @@
 package io.lightbeat.hue.light.effect;
 
+import io.lightbeat.hue.light.LightUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.lightbeat.util.TimeThreshold;
@@ -37,7 +38,7 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
         if (isActive) {
             if (lightUpdate.isBrightnessChange() && lightUpdate.getBrightnessPercentage() < brightnessDeactivationThreshold) {
                 setActive(false);
-            } else if (!lightUpdate.getLights().isEmpty()) {
+            } else {
                 executeEffect();
             }
         } else {
@@ -73,7 +74,7 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
         if (active) {
             logger.info("{} was started", this);
             initializeEffect();
-            if (!lightUpdate.getLights().isEmpty()) {
+            if (!lightUpdate.getLightsTurnedOn().isEmpty()) {
                 executeEffect();
             }
         } else {
