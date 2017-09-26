@@ -227,7 +227,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                         int answerCode = JOptionPane.showConfirmDialog(
                                 frame,
                                 "A new update is available (version " + currentVersion + ").\n\nUpdate now?",
-                                "Update found",
+                                "Update Found",
                                 JOptionPane.YES_NO_OPTION);
                         if (answerCode == 0) {
                             openLinkInBrowser("https://lightbeat.io/?downloads");

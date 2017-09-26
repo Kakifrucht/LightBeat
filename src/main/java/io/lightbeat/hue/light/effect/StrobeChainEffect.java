@@ -16,7 +16,7 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
 
     public StrobeChainEffect(float brightnessThreshold, float activationProbability) {
         super(brightnessThreshold, activationProbability);
-        setBrightnessDeactivationThreshold(0.7f);
+        setBrightnessDeactivationThreshold(0.55f);
     }
 
     @Override

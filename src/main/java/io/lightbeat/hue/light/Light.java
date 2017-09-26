@@ -64,7 +64,7 @@ public class Light {
     public void setOn(boolean on) {
 
         if (currentStrobe != null) {
-            currentStrobe.cancel(true);
+            currentStrobe.cancel(false);
         }
 
         if (this.isOn == on) {
@@ -108,6 +108,10 @@ public class Light {
             return;
         }
 
+        if (currentStrobe != null) {
+            currentStrobe.cancel(false);
+        }
+
         // strobe on beat, at least for 250 ms and at max for 500 ms
         long strobeDelay = timeSinceLastBeat;
         while (strobeDelay > 500L) {
@@ -141,7 +145,7 @@ public class Light {
             strobeController = null;
 
             if (currentStrobe != null) {
-                currentStrobe.cancel(true);
+                currentStrobe.cancel(false);
             }
 
             if (!isOn) {
