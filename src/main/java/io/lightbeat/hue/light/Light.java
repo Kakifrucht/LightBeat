@@ -19,12 +19,13 @@ public class Light {
     private final LightQueue lightQueue;
     private final ScheduledExecutorService executorService;
 
-    private LightStateBuilder currentBuilder;
+    private volatile LightStateBuilder currentBuilder;
 
-    private boolean isOn;
     private LightEffect strobeController;
-    private LightStateBuilder builderToCopyAfterTurningOn;
-    private ScheduledFuture currentStrobe;
+
+    private volatile LightStateBuilder builderToCopyAfterTurningOn;
+    private volatile boolean isOn;
+    private volatile ScheduledFuture currentStrobe;
 
 
     public Light(PHLight light, LightQueue lightQueue, ScheduledExecutorService executorService) {
@@ -98,6 +99,17 @@ public class Light {
         return false;
     }
 
+    public void unsetStrobeController(LightEffect cancellingEffect) {
+        if (cancellingEffect.equals(strobeController)) {
+            strobeController = null;
+            interruptStrobe();
+
+            if (!isOn) {
+                setOn(true);
+            }
+        }
+    }
+
     public void doStrobe(LightEffect strobeController, long timeSinceLastBeat) {
         doStrobe(strobeController, timeSinceLastBeat, -1);
     }
@@ -108,9 +120,7 @@ public class Light {
             return;
         }
 
-        if (currentStrobe != null) {
-            currentStrobe.cancel(false);
-        }
+        interruptStrobe();
 
         // strobe on beat, at least for 250 ms and at max for 500 ms
         long strobeDelay = timeSinceLastBeat;
@@ -140,16 +150,12 @@ public class Light {
         }, strobeDelay, TimeUnit.MILLISECONDS);
     }
 
-    public void cancelStrobe(LightEffect cancellingEffect) {
-        if (cancellingEffect.equals(strobeController)) {
-            strobeController = null;
+    private void interruptStrobe() {
+        if (currentStrobe != null) {
 
-            if (currentStrobe != null) {
-                currentStrobe.cancel(false);
-            }
-
-            if (!isOn) {
-                setOn(true);
+            currentStrobe.cancel(false);
+            if (!currentStrobe.isDone()) {
+                setOn(!isOn);
             }
         }
     }

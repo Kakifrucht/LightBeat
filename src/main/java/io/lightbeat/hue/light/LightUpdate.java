@@ -40,7 +40,7 @@ public class LightUpdate {
         for (Light light : lights) {
 
             if (doBrightnessChange) {
-                int transitionTime = this.transitionTime + ((brightnessData.getBrightnessDifference() < -60) ? 2 : 1);
+                int transitionTime = this.transitionTime + ((brightnessData.getBrightnessDifferencePrevious() < -0.4d) ? 2 : 1);
                 light.getStateBuilder().setTransitionTime(transitionTime)
                         .setBrightness(brightness);
             } else {

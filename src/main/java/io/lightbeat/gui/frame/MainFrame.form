@@ -400,7 +400,7 @@
               <background color="-1"/>
               <maximum value="10"/>
               <minimum value="1"/>
-              <toolTipText value="Setting this value higher will cause more beats to get detected.&lt;br&gt;It is usually not necessary to change this value as beat detection calibrates automatically."/>
+              <toolTipText value="Setting this value higher may cause more beats to get detected.&lt;br&gt;It is usually not necessary to change this value as beat detection calibrates automatically."/>
             </properties>
           </component>
           <component id="e96dd" class="io.lightbeat.gui.swing.JConfigSlider" binding="beatTimeBetweenSlider" custom-create="true">

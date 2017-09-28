@@ -13,39 +13,36 @@ import io.lightbeat.util.DoubleAverageBuffer;
  */
 class BrightnessCalibrator {
 
-    private static final double HISTORY_STARTING_VALUE = 0.2d;
+    private static final double HISTORY_STARTING_VALUE = 0.15d;
     private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
 
     private final int minBrightness;
-    private final int maxBrightness;
-    private final int medianBrightness;
-    private final int transitionTime;
-    private final int brightnessChangeThreshold;
-    private final double brightnessMultiplier;
+    private final int brightnessRange;
 
-    private int lastBrightness = 0;
+    private final double sensitivityMultiplier;
+    private final int transitionTime;
+
+    private double lastBrightness = 0d;
 
     private final TimeThreshold brightnessReductionThreshold = new TimeThreshold(0L);
     private final DoubleAverageBuffer amplitudeDifferenceHistory = new DoubleAverageBuffer(75);
 
 
     BrightnessCalibrator(Config config) {
-        minBrightness = config.getInt(ConfigNode.BRIGHTNESS_MIN);
-        maxBrightness = config.getInt(ConfigNode.BRIGHTNESS_MAX);
-        medianBrightness = (maxBrightness + minBrightness) / 2;
+        this.minBrightness = config.getInt(ConfigNode.BRIGHTNESS_MIN);
+        int maxBrightness = config.getInt(ConfigNode.BRIGHTNESS_MAX);
+        this.brightnessRange = maxBrightness - minBrightness;
 
-        transitionTime = config.getInt(ConfigNode.LIGHTS_TRANSITION_TIME);
+        this.sensitivityMultiplier = 1.0d - (config.getInt(ConfigNode.BRIGHTNESS_SENSITIVITY) / 200.0d);
+        this.transitionTime = config.getInt(ConfigNode.LIGHTS_TRANSITION_TIME);
 
-        brightnessChangeThreshold = (maxBrightness - minBrightness) / 6;
-        brightnessMultiplier = 1.0d + (config.getInt(ConfigNode.BRIGHTNESS_SENSITIVITY)  / 100.0d);
-
-        amplitudeDifferenceHistory.add(HISTORY_STARTING_VALUE);
+        this.amplitudeDifferenceHistory.add(HISTORY_STARTING_VALUE);
     }
 
     /**
      * Get the brightness for the given amplitude difference from the average amplitude.
      *
-     * @param amplitudeDifference difference from average amplitude (between 0 and 1)
+     * @param amplitudeDifference difference from average amplitude (between -1 and 1)
      * @return BrightnessData object containing all information about the brightness
      */
     BrightnessData getBrightness(double amplitudeDifference) {
@@ -53,34 +50,32 @@ class BrightnessCalibrator {
         amplitudeDifferenceHistory.add(amplitudeDifference);
 
         // multiplier is calibrated in regards to the currently highest amplitude, which will set brightness to max if received
-        int amplitudeMultiplier = (int) ((medianBrightness / amplitudeDifferenceHistory.getMaxValue()) * brightnessMultiplier);
-        int brightness = (int) (medianBrightness + (amplitudeDifference * amplitudeMultiplier));
-        brightness = Math.max(Math.min(brightness, maxBrightness), minBrightness);
+        double brightnessMultiplier = 1 / (amplitudeDifferenceHistory.getMaxValue() * sensitivityMultiplier);
+        double brightnessPercentage = Math.min(amplitudeDifference * brightnessMultiplier, 1d);
+        double brightnessDifference = brightnessPercentage - lastBrightness;
 
-        int brightnessDifference = brightness - lastBrightness;
-        boolean doBrightnessChange = Math.abs(brightnessDifference) > brightnessChangeThreshold;
-
+        boolean doBrightnessChange = Math.abs(brightnessDifference) > 0.15d;
         if (doBrightnessChange) {
             // brightnessReductionThreshold reduces unnecessary fluctuations and thus reduces latency
-            if (brightness < lastBrightness && !brightnessReductionThreshold.isMet()) {
+            if (brightnessPercentage < lastBrightness && !brightnessReductionThreshold.isMet()) {
+                brightnessPercentage = lastBrightness;
+                brightnessDifference = 0d;
                 doBrightnessChange = false;
-                brightness = lastBrightness;
-                brightnessDifference = 0;
             } else {
-                setLastBrightness(brightness);
+                setLastBrightness(brightnessPercentage);
             }
         } else {
-            brightness = lastBrightness;
-            brightnessDifference = 0;
+            brightnessPercentage = lastBrightness;
+            brightnessDifference = 0d;
         }
 
-        double brightnessPercentage = ((float) brightness - minBrightness) / (maxBrightness - minBrightness);
-        return new BrightnessData(brightness, brightnessDifference, brightnessPercentage, doBrightnessChange);
+        return new BrightnessData(brightnessPercentage, brightnessDifference, doBrightnessChange);
     }
 
     BrightnessData getLowestBrightnessData() {
-        setLastBrightness(minBrightness);
-        return new BrightnessData(minBrightness, minBrightness - lastBrightness, 0.0f, true);
+        double brightnessDifferencePercentage = 0d - lastBrightness;
+        setLastBrightness(0d);
+        return new BrightnessData(0d, brightnessDifferencePercentage, true);
     }
 
     void clear() {
@@ -88,7 +83,7 @@ class BrightnessCalibrator {
         amplitudeDifferenceHistory.add(HISTORY_STARTING_VALUE);
     }
 
-    private void setLastBrightness(int brightness) {
+    private void setLastBrightness(double brightness) {
         brightnessReductionThreshold.setCurrentThreshold(BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS);
         lastBrightness = brightness;
     }
@@ -96,34 +91,36 @@ class BrightnessCalibrator {
 
     class BrightnessData {
 
-        private final int brightness;
-        private final int brightnessDifference;
         private final double brightnessPercentage;
+        private final double brightnessDifferencePercentage;
         private final boolean doBrightnessChange;
 
+        private final int brightness;
 
-        private BrightnessData(int brightness, int brightnessDifference,
-                               double brightnessPercentage, boolean doBrightnessChange) {
-            this.brightness = brightness;
-            this.brightnessDifference = brightnessDifference;
+
+        private BrightnessData(double brightnessPercentage, double brightnessDifferencePercentage, boolean doBrightnessChange) {
+
             this.brightnessPercentage = brightnessPercentage;
+            this.brightnessDifferencePercentage = brightnessDifferencePercentage;
             this.doBrightnessChange = doBrightnessChange;
-        }
 
-        int getBrightness() {
-            return brightness;
-        }
-
-        int getBrightnessDifference() {
-            return brightnessDifference;
+            this.brightness = (int) (brightnessPercentage * brightnessRange) + minBrightness;
         }
 
         double getBrightnessPercentage() {
             return brightnessPercentage;
         }
 
+        double getBrightnessDifferencePrevious() {
+            return brightnessDifferencePercentage;
+        }
+
         boolean isBrightnessChange() {
             return doBrightnessChange;
+        }
+
+        int getBrightness() {
+            return brightness;
         }
 
         int getTransitionTime() {

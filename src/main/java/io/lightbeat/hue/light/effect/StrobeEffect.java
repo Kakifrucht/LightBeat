@@ -19,7 +19,7 @@ public class StrobeEffect extends AbstractRandomEffect {
 
     public StrobeEffect(float brightnessThreshold, float activationProbability, float randomProbability) {
         super(brightnessThreshold, activationProbability, randomProbability);
-        setBrightnessDeactivationThreshold(0.6f);
+        setBrightnessDeactivationThreshold(0.7f);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class StrobeEffect extends AbstractRandomEffect {
 
     @Override
     public void executionDone() {
-        lightUpdate.getLights().forEach(l -> l.cancelStrobe(this));
+        lightUpdate.getLights().forEach(l -> l.unsetStrobeController(this));
     }
 
     @Override

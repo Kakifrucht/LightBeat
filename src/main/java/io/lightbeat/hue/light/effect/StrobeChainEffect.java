@@ -16,7 +16,7 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
 
     public StrobeChainEffect(float brightnessThreshold, float activationProbability) {
         super(brightnessThreshold, activationProbability);
-        setBrightnessDeactivationThreshold(0.55f);
+        setBrightnessDeactivationThreshold(0.6f);
     }
 
     @Override
@@ -52,6 +52,6 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
 
     @Override
     public void executionDone() {
-        lightsInOrder.forEach(l -> l.cancelStrobe(this));
+        lightsInOrder.forEach(l -> l.unsetStrobeController(this));
     }
 }

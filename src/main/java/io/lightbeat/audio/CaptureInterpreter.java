@@ -34,7 +34,7 @@ class CaptureInterpreter {
 
 
     CaptureInterpreter(Config config) {
-        this.beatThresholdReductionMultiplier = config.getInt(ConfigNode.BEAT_SENSITIVITY) / 150d;
+        this.beatThresholdReductionMultiplier = config.getInt(ConfigNode.BEAT_SENSITIVITY) / 120d;
         this.timeBetweenBeatsMillis = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN);
     }
 
@@ -72,13 +72,16 @@ class CaptureInterpreter {
 
                     if (silenceThreshold.isMet()) {
                         silenceThreshold.disable();
+                        noBeatThreshold.disable();
                         isSilent = true;
                         logger.info("Silence detected");
                         return new BeatEvent();
                     }
+
                 } else if (!isSilent) {
                     silenceThreshold.setCurrentThreshold(SILENCE_MILLIS);
                 }
+
             } else {
                 silenceThreshold.disable();
                 if (isSilent) {
