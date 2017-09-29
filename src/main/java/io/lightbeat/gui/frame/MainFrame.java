@@ -36,6 +36,11 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private JComboBox<String> deviceSelectComboBox;
 
+    private JButton addCustomColorsButton;
+    private JButton deleteCustomColorsButton;
+    private JPanel colorSelectPanel;
+    private ButtonGroup colorButtonGroup;
+
     private JButton restoreBrightnessButton;
     private JConfigSlider minBrightnessSlider;
     private JConfigSlider maxBrightnessSlider;
@@ -43,17 +48,13 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private JPanel lightsPanel;
 
-    private JButton addCustomColorsButton;
-    private JButton deleteCustomColorsButton;
-    private JPanel colorSelectPanel;
-    private ButtonGroup colorButtonGroup;
-
     private JPanel advancedPanel;
     private JButton readdColorSetPresetsButton;
     private JButton restoreAdvancedButton;
     private JConfigSlider beatSensitivitySlider;
     private JConfigSlider beatTimeBetweenSlider;
     private JConfigSlider transitionTimeSlider;
+    private JConfigSlider colorRandomizationSlider;
     private JConfigCheckBox strobeCheckBox;
     private JConfigCheckBox glowCheckBox;
 
@@ -186,6 +187,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             beatSensitivitySlider.restoreDefault();
             beatTimeBetweenSlider.restoreDefault();
             transitionTimeSlider.restoreDefault();
+            colorRandomizationSlider.restoreDefault();
             strobeCheckBox.restoreDefault();
             glowCheckBox.restoreDefault();
         });
@@ -309,6 +311,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
         beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
         transitionTimeSlider = new JConfigSlider(config, ConfigNode.LIGHTS_TRANSITION_TIME);
+        colorRandomizationSlider = new JConfigSlider(config, ConfigNode.COLOR_RANDOMIZATION_RANGE);
         strobeCheckBox = new JConfigCheckBox(config, ConfigNode.BRIGHTNESS_STROBE);
         glowCheckBox = new JConfigCheckBox(config, ConfigNode.BRIGHTNESS_GLOW);
 

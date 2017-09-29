@@ -12,6 +12,7 @@ import java.util.*;
 public class CustomColorSet implements ColorSet {
 
     private final List<Color> colors = new ArrayList<>();
+    private final double colorRandomizationRange;
 
     private Queue<Color> colorQueue = new LinkedList<>();
 
@@ -26,6 +27,8 @@ public class CustomColorSet implements ColorSet {
         while (colors.size() < 12) {
             colors.addAll(colorsCopy);
         }
+
+        this.colorRandomizationRange = (double) config.getInt(ConfigNode.COLOR_RANDOMIZATION_RANGE) / 100d;
     }
 
     @Override
@@ -37,7 +40,7 @@ public class CustomColorSet implements ColorSet {
 
             colorQueue.clear();
             for (Color color : colors) {
-                colorQueue.add(color.getDerivedColor());
+                colorQueue.add(color.getDerivedColor(colorRandomizationRange));
             }
         }
 
@@ -49,7 +52,7 @@ public class CustomColorSet implements ColorSet {
         Color nextColor = getNextColor();
 
         int maxIterations = 5;
-        while (nextColor.isSimilar(differentFrom) && maxIterations-- > 0) {
+        while (nextColor.isSimilar(differentFrom, colorRandomizationRange) && maxIterations-- > 0) {
             nextColor = getNextColor();
         }
         return nextColor;

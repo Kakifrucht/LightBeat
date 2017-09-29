@@ -10,8 +10,6 @@ import static java.awt.Color.RGBtoHSB;
  */
 public class LBColor implements Color {
 
-    private static final double DERIVATION_BOUND = 0.02d;
-
     private final int rgb;
     private final float hue;
     private final float saturation;
@@ -51,19 +49,19 @@ public class LBColor implements Color {
     }
 
     @Override
-    public Color getDerivedColor() {
-        return new LBColor(getRandomizedFloat(hue), getRandomizedFloat(saturation));
+    public Color getDerivedColor(double derivationBound) {
+        return new LBColor(getRandomizedFloat(hue, derivationBound), getRandomizedFloat(saturation, derivationBound));
     }
 
-    private float getRandomizedFloat(float toRandomize) {
-        // add random value between -DERIVATION_BOUND and +DERIVATION_BOUND
-        double normalizationVal = 0.5d / DERIVATION_BOUND;
-        double randomness = toRandomize + ((Math.random() / normalizationVal) - DERIVATION_BOUND);
+    private float getRandomizedFloat(float toRandomize, double derivationBound) {
+        // add random value between -derivationBound and +derivationBound
+        double normalizationVal = 0.5d / derivationBound;
+        double randomness = toRandomize + ((Math.random() / normalizationVal) - derivationBound);
         return (float) Math.min(Math.max(randomness, 0d), 1d);
     }
 
     @Override
-    public boolean isSimilar(Color color) {
+    public boolean isSimilar(Color color, double derivationBound) {
 
         if (color == null) {
             return false;
@@ -76,10 +74,10 @@ public class LBColor implements Color {
         float otherHue = color.getHue();
         float otherSaturation = color.getSaturation();
 
-        return otherHue <= this.hue + DERIVATION_BOUND
-                && otherHue >= this.hue - DERIVATION_BOUND
-                && otherSaturation <= this.saturation + DERIVATION_BOUND
-                && otherSaturation >= this.saturation - DERIVATION_BOUND;
+        return otherHue <= this.hue + derivationBound
+                && otherHue >= this.hue - derivationBound
+                && otherSaturation <= this.saturation + derivationBound
+                && otherSaturation >= this.saturation - derivationBound;
     }
 
     @Override

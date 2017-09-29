@@ -16,6 +16,7 @@ public enum ConfigNode {
     BRIGHTNESS_SENSITIVITY("brightness.sensitivity"),
     BRIGHTNESS_STROBE("brightness.strobe"),
     CUSTOM(null),
+    COLOR_RANDOMIZATION_RANGE("color.randomization"),
     COLOR_SET_LIST("color.set.list"),
     COLOR_SET_PRESET_LIST("color.set.preset.list"),
     COLOR_SET_SELECTED("color.set.selected"),
