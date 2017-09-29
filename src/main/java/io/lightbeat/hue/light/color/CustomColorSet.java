@@ -13,8 +13,7 @@ public class CustomColorSet implements ColorSet {
 
     private final List<Color> colors = new ArrayList<>();
 
-    private Queue<Color> colorQueue;
-    private Set<Color> colorsAtQueueEnd;
+    private Queue<Color> colorQueue = new LinkedList<>();
 
 
     public CustomColorSet(Config config, String setName) {
@@ -22,32 +21,24 @@ public class CustomColorSet implements ColorSet {
             int color = Integer.parseInt(colorString);
             colors.add(new LBColor(color));
         }
+
+        List<Color> colorsCopy = new ArrayList<>(colors);
+        while (colors.size() < 12) {
+            colors.addAll(colorsCopy);
+        }
     }
 
     @Override
-    public Color getNextColor() {
+    public synchronized Color getNextColor() {
 
         if (colorQueue == null || colorQueue.isEmpty()) {
 
             Collections.shuffle(colors);
 
-            // add color at the end if it was at the end of previous queue (no color duplication)
-            if (colorsAtQueueEnd != null) {
-                for (int i = 0; i < 3; i++) {
-                    Color colorAt = colors.get(i);
-                    if (colorsAtQueueEnd.contains(colorAt)) {
-                        colors.remove(i);
-                        colors.add(colorAt);
-                    }
-                }
+            colorQueue.clear();
+            for (Color color : colors) {
+                colorQueue.add(color.getDerivedColor());
             }
-
-            colorsAtQueueEnd = new HashSet<>();
-            for (int i = colors.size() - 1; i >= colors.size() - 3; i--) {
-                colorsAtQueueEnd.add(colors.get(i));
-            }
-
-            colorQueue = new LinkedList<>(colors);
         }
 
         return colorQueue.poll();
@@ -56,8 +47,9 @@ public class CustomColorSet implements ColorSet {
     @Override
     public Color getNextColor(Color differentFrom) {
         Color nextColor = getNextColor();
+
         int maxIterations = 5;
-        while (nextColor.equals(differentFrom) && maxIterations-- > 0) {
+        while (nextColor.isSimilar(differentFrom) && maxIterations-- > 0) {
             nextColor = getNextColor();
         }
         return nextColor;

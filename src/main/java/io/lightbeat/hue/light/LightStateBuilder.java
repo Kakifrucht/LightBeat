@@ -95,8 +95,8 @@ public class LightStateBuilder {
         }
 
         if (color != null) {
-            newLightState.setHue(color.getHue());
-            newLightState.setSaturation(color.getSaturation());
+            newLightState.setHue((int) (color.getHue() * 65535));
+            newLightState.setSaturation((int) (color.getSaturation() * 254));
         }
 
         if (setOn != null) {

@@ -212,7 +212,7 @@ public class ColorSelectionFrame extends AbstractFrame {
         if (textFieldLength >= 0) {
             setNameLength = textFieldLength;
         }
-        saveButton.setEnabled(selectedColorsPanel.getComponentCount() >= 8 && setNameLength > 0);
+        saveButton.setEnabled(selectedColorsPanel.getComponentCount() >= 3 && setNameLength > 0);
     }
 
     private void showNameTakenDialog() {
