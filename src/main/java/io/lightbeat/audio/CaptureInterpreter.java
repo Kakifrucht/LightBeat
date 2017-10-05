@@ -61,6 +61,7 @@ class CaptureInterpreter {
 
             // reduce beat threshold
             if (average < beatThreshold) {
+                //TODO think about a way that is better compatible with variable timeBetweenBeatsMillis
                 double difference = beatThreshold - average;
                 beatThreshold -= difference * beatThresholdReductionMultiplier;
             }

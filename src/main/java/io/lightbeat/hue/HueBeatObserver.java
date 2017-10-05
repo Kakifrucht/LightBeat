@@ -1,12 +1,12 @@
-package io.lightbeat.hue.light;
+package io.lightbeat.hue;
 
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.bridge.HueManager;
-import io.lightbeat.hue.light.color.ColorSet;
-import io.lightbeat.hue.light.effect.*;
+import io.lightbeat.hue.effect.*;
+import io.lightbeat.hue.color.ColorSet;
 import io.lightbeat.util.DoubleAverageBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +18,6 @@ import java.util.List;
  * Receives {@link BeatEvent}'s dispatched by the audio module.
  * Determines brightness changes and passes the data through it's
  * effect pipe, which will then update selected lights accordingly.
- * Brightness is dependant on previously received music amplitudes.
  */
 public class HueBeatObserver implements BeatObserver {
 
@@ -27,7 +26,6 @@ public class HueBeatObserver implements BeatObserver {
     private final HueManager hueManager;
     private final BrightnessCalibrator brightnessCalibrator;
     private final List<LightEffect> effectPipe;
-    private final ColorSet colorSet;
 
     private final DoubleAverageBuffer amplitudeHistory = new DoubleAverageBuffer(75, false);
     private long lastBeatTimeStamp = System.currentTimeMillis();
@@ -38,22 +36,21 @@ public class HueBeatObserver implements BeatObserver {
         this.brightnessCalibrator = new BrightnessCalibrator(config);
 
         // effects at the end of pipe have highest priority
+        ColorSet colorSet = hueManager.getColorSet();
         effectPipe = new ArrayList<>();
-        effectPipe.add(new DefaultEffect());
+        effectPipe.add(new DefaultEffect(colorSet));
         if (config.getBoolean(ConfigNode.BRIGHTNESS_GLOW)) {
-            effectPipe.add(new AlertEffect(0.8f, 0.4f, 0.05f));
+            effectPipe.add(new AlertEffect(colorSet,0.8f, 0.4f, 0.05f));
         }
 
-        effectPipe.add(new SameColorEffect(0.5f, 0.15f));
-        effectPipe.add(new ColorFlipEffect(0.4f, 0.125f));
-        effectPipe.add(new ColorChainEffect(0.6f, 0.1f));
+        effectPipe.add(new ColorFadeEffect(colorSet,0.5f, 0.15f));
+        effectPipe.add(new ColorFlipEffect(colorSet,0.4f, 0.125f));
+        effectPipe.add(new ColorChainEffect(colorSet,0.5f, 0.1f));
 
         if (config.getBoolean(ConfigNode.BRIGHTNESS_STROBE)) {
-            effectPipe.add(new StrobeEffect(0.9f, 1f, 0.05f));
-            effectPipe.add(new StrobeChainEffect(0.7f, 0.15f));
+            effectPipe.add(new StrobeEffect(colorSet,0.95f, 0.5f, 0.02f));
+            effectPipe.add(new StrobeChainEffect(colorSet,0.7f, 0.15f));
         }
-
-        colorSet = hueManager.getColorSet();
     }
 
     @Override
@@ -64,13 +61,13 @@ public class HueBeatObserver implements BeatObserver {
         double amplitudeDifference = event.getTriggeringAmplitude() - amplitudeHistory.getCurrentAverage();
         BrightnessCalibrator.BrightnessData data = brightnessCalibrator.getBrightness(amplitudeDifference);
 
-        doLightUpdate(data, true);
+        passDataToEffectPipe(data, true);
         lastBeatTimeStamp = System.currentTimeMillis();
     }
 
     @Override
     public void noBeatReceived() {
-        doLightUpdate(brightnessCalibrator.getLowestBrightnessData(), false);
+        passDataToEffectPipe(brightnessCalibrator.getLowestBrightnessData(), false);
     }
 
     @Override
@@ -80,8 +77,8 @@ public class HueBeatObserver implements BeatObserver {
         amplitudeHistory.clear();
     }
 
-    private void doLightUpdate(BrightnessCalibrator.BrightnessData data, boolean receivedBeat) {
-        LightUpdate lightUpdate = new LightUpdate(hueManager.getSelectedLights(), colorSet, data, getTimeSinceLastBeat());
+    private void passDataToEffectPipe(BrightnessCalibrator.BrightnessData data, boolean receivedBeat) {
+        LightUpdate lightUpdate = new LightUpdate(hueManager.getSelectedLights(), data, getTimeSinceLastBeat());
         try {
             effectPipe.forEach(effect -> {
                 if (receivedBeat) {

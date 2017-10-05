@@ -11,15 +11,16 @@ import io.lightbeat.LightBeat;
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.gui.FrameManager;
-import io.lightbeat.hue.light.HueBeatObserver;
+import io.lightbeat.hue.HueBeatObserver;
+import io.lightbeat.hue.light.LBLight;
 import io.lightbeat.hue.light.Light;
-import io.lightbeat.hue.light.LightQueue;
-import io.lightbeat.hue.light.color.ColorSet;
-import io.lightbeat.hue.light.color.CustomColorSet;
-import io.lightbeat.hue.light.color.RandomColorSet;
+import io.lightbeat.hue.color.ColorSet;
+import io.lightbeat.hue.color.CustomColorSet;
+import io.lightbeat.hue.color.RandomColorSet;
 import io.lightbeat.util.TimeThreshold;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Default {@link HueManager} implementation.
@@ -99,12 +100,19 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
 
         componentHolder.getExecutorService().shutdown();
 
+
         if (isConnected()) {
+
             hueSDK.getHeartbeatManager().disableAllHeartbeats(bridge);
-            lightQueue.markShutdown();
+
             if (originalLightStates != null) {
+                try {
+                    componentHolder.getExecutorService().awaitTermination(500, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ignored) {}
                 recoverOriginalState();
             }
+
+            lightQueue.markShutdown();
             return;
         } else if (currentState.equals(State.AWAITING_PUSHLINK)) {
             hueSDK.stopPushlinkAuthentication();
@@ -159,6 +167,8 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
 
         originalLightStates = new HashMap<>();
         lights = new ArrayList<>();
+
+        int transitionTime = config.getInt(ConfigNode.LIGHTS_TRANSITION_TIME);
         List<String> disabledLights = componentHolder.getConfig().getStringList(ConfigNode.LIGHTS_DISABLED);
         for (PHLight phLight : getLights()) {
 
@@ -170,13 +180,13 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
             currentState.setReachable(null);
             originalLightStates.put(phLight.getUniqueId(), currentState);
 
-            lights.add(new Light(phLight, lightQueue, componentHolder.getExecutorService()));
+            lights.add(new LBLight(phLight, lightQueue, componentHolder.getExecutorService(), transitionTime));
         }
 
         if (!lights.isEmpty()) {
 
             for (Light light : lights) {
-                if (!light.isOn()) {
+                if (light.isOff()) {
                     light.setOn(true);
                 }
             }

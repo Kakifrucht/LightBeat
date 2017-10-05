@@ -1,4 +1,4 @@
-package io.lightbeat.hue.light.color;
+package io.lightbeat.hue.color;
 
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
@@ -14,7 +14,7 @@ public class CustomColorSet implements ColorSet {
     private final List<Color> colors = new ArrayList<>();
     private final double colorRandomizationRange;
 
-    private Queue<Color> colorQueue = new LinkedList<>();
+    private final Queue<Color> colorQueue = new LinkedList<>();
 
 
     public CustomColorSet(Config config, String setName) {
@@ -34,7 +34,7 @@ public class CustomColorSet implements ColorSet {
     @Override
     public synchronized Color getNextColor() {
 
-        if (colorQueue == null || colorQueue.isEmpty()) {
+        if (colorQueue.isEmpty()) {
 
             Collections.shuffle(colors);
 
@@ -49,7 +49,11 @@ public class CustomColorSet implements ColorSet {
 
     @Override
     public Color getNextColor(Color differentFrom) {
+
         Color nextColor = getNextColor();
+        if (differentFrom == null) {
+            return nextColor;
+        }
 
         int maxIterations = 5;
         while (nextColor.isSimilar(differentFrom, colorRandomizationRange) && maxIterations-- > 0) {

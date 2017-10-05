@@ -1,6 +1,7 @@
-package io.lightbeat.hue.light.effect;
+package io.lightbeat.hue.effect;
 
 import io.lightbeat.hue.light.Light;
+import io.lightbeat.hue.color.ColorSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,23 +15,23 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
     private int currentIndex;
 
 
-    public StrobeChainEffect(float brightnessThreshold, float activationProbability) {
-        super(brightnessThreshold, activationProbability);
+    public StrobeChainEffect(ColorSet colorSet, float brightnessThreshold, float activationProbability) {
+        super(colorSet, brightnessThreshold, activationProbability);
         setBrightnessDeactivationThreshold(0.6f);
     }
 
     @Override
-    void initializeEffect() {
+    void initialize() {
         lightsInOrder = new ArrayList<>();
         currentIndex = 0;
     }
 
     @Override
-    void executeEffect() {
+    void execute() {
 
         if (lightsInOrder.isEmpty()) {
             for (Light light : lightUpdate.getLights()) {
-                if (light.setStrobeController(this)) {
+                if (light.getStrobeController().setControllingEffect(this)) {
                     lightsInOrder.add(light);
                     light.setOn(false);
                 }
@@ -38,12 +39,9 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
             return;
         }
 
-        Light toStrobe = lightsInOrder.get(currentIndex++);
-        if (toStrobe.getLastKnownLightState().getBrightness() != lightUpdate.getBrightness()) {
-            toStrobe.getStateBuilder().setBrightness(lightUpdate.getBrightness());
-        }
-
-        toStrobe.doStrobe(this, lightUpdate.getTimeSinceLastBeat());
+        lightsInOrder.get(currentIndex++)
+                .getStrobeController()
+                .doStrobe(this, lightUpdate.getTimeSinceLastBeat());
 
         if (currentIndex >= lightsInOrder.size()) {
             currentIndex = 0;
@@ -52,6 +50,6 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
 
     @Override
     public void executionDone() {
-        lightsInOrder.forEach(l -> l.unsetStrobeController(this));
+        lightsInOrder.forEach(l -> l.getStrobeController().unsetControllingEffect(this));
     }
 }

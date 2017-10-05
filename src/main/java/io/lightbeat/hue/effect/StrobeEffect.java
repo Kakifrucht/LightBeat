@@ -1,7 +1,8 @@
-package io.lightbeat.hue.light.effect;
+package io.lightbeat.hue.effect;
 
 import com.philips.lighting.model.PHLight;
 import io.lightbeat.hue.light.Light;
+import io.lightbeat.hue.color.ColorSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,23 +18,23 @@ public class StrobeEffect extends AbstractRandomEffect {
     private int nextLightInBeats;
 
 
-    public StrobeEffect(float brightnessThreshold, float activationProbability, float randomProbability) {
-        super(brightnessThreshold, activationProbability, randomProbability);
+    public StrobeEffect(ColorSet colorSet, float brightnessThreshold, float activationProbability, float randomProbability) {
+        super(colorSet, brightnessThreshold, activationProbability, randomProbability);
         setBrightnessDeactivationThreshold(0.7f);
     }
 
     @Override
-    void initializeEffect() {
+    void initialize() {
         activeLight = null;
         nextLightInBeats = 0;
     }
 
     @Override
-    public void executeEffect() {
+    public void execute() {
 
         List<Light> controllableLights = new ArrayList<>();
         for (Light light : lightUpdate.getLights()) {
-            if (light.canDoStrobe(this)) {
+            if (light.getStrobeController().canControl(this)) {
                 controllableLights.add(light);
             }
         }
@@ -42,7 +43,6 @@ public class StrobeEffect extends AbstractRandomEffect {
             return;
         }
 
-        int brightness = lightUpdate.getBrightness();
         if (nextLightInBeats-- <= 0) {
 
             if (activeLight != null) {
@@ -52,20 +52,14 @@ public class StrobeEffect extends AbstractRandomEffect {
                 // turn all lights off at the beginning and take control
                 for (Light controllableLight : controllableLights) {
                     controllableLight.setOn(false);
-                    controllableLight.setStrobeController(this);
+                    controllableLight.getStrobeController().setControllingEffect(this);
                 }
             }
 
             for (Light light : controllableLights) {
-                if (!light.equals(activeLight) && !light.isOn()) {
+                if (!light.equals(activeLight) && light.isOff()) {
                     activeLight = light;
                     activeLight.setOn(true);
-
-                    if (activeLight.getLastKnownLightState().getBrightness() != brightness) {
-                        // due to turning all lights off at the beginning brightness must eventually be set again
-                        activeLight.getStateBuilder().setBrightness(brightness);
-                    }
-
                     break;
                 }
             }
@@ -81,13 +75,9 @@ public class StrobeEffect extends AbstractRandomEffect {
             int amountToStrobe = Math.max((controllableLights.size() - 1) / 2, 1);
             for (Light light : controllableLights) {
 
-                if (!light.equals(this.activeLight) && !light.isOn()) {
+                if (!light.equals(this.activeLight) && light.isOff()) {
 
-                    if (light.getLastKnownLightState().getBrightness() != brightness) {
-                        light.getStateBuilder().setBrightness(brightness);
-                    }
-
-                    light.doStrobe(this, lightUpdate.getTimeSinceLastBeat());
+                    light.getStrobeController().doStrobe(this, lightUpdate.getTimeSinceLastBeat());
 
                     if (--amountToStrobe == 0) {
                         break;
@@ -99,20 +89,20 @@ public class StrobeEffect extends AbstractRandomEffect {
 
     @Override
     public void executionDone() {
-        lightUpdate.getLights().forEach(l -> l.unsetStrobeController(this));
+        lightUpdate.getLights().forEach(l -> l.getStrobeController().unsetControllingEffect(this));
     }
 
     @Override
     void executeEffectOnceRandomly() {
 
-        if (lightUpdate.isBrightnessChange()) {
+        if (lightUpdate.isBrightnessChange() || lightUpdate.getBrightnessPercentage() < 0.5d) {
             return;
         }
 
         // strobe all strobable lights but one
         List<Light> lights = lightUpdate.getLightsTurnedOn();
         for (int i = 1; i < lights.size(); i++) {
-            lights.get(i).doStrobe(this, lightUpdate.getTimeSinceLastBeat(), lightUpdate.getBrightness());
+            lights.get(i).getStrobeController().doStrobe(this, lightUpdate.getTimeSinceLastBeat());
         }
     }
 }

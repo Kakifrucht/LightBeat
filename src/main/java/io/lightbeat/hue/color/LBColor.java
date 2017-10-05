@@ -1,4 +1,4 @@
-package io.lightbeat.hue.light.color;
+package io.lightbeat.hue.color;
 
 import static java.awt.Color.HSBtoRGB;
 import static java.awt.Color.RGBtoHSB;

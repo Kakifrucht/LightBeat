@@ -1,4 +1,4 @@
-package io.lightbeat.hue.light;
+package io.lightbeat.hue;
 
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
@@ -20,7 +20,6 @@ class BrightnessCalibrator {
     private final int brightnessRange;
 
     private final double sensitivityMultiplier;
-    private final int transitionTime;
 
     private double lastBrightness = 0d;
 
@@ -34,7 +33,6 @@ class BrightnessCalibrator {
         this.brightnessRange = maxBrightness - minBrightness;
 
         this.sensitivityMultiplier = 1.0d - (config.getInt(ConfigNode.BRIGHTNESS_SENSITIVITY) / 200.0d);
-        this.transitionTime = config.getInt(ConfigNode.LIGHTS_TRANSITION_TIME);
 
         this.amplitudeDifferenceHistory.add(HISTORY_STARTING_VALUE);
     }
@@ -59,23 +57,20 @@ class BrightnessCalibrator {
             // brightnessReductionThreshold reduces unnecessary fluctuations and thus reduces latency
             if (brightnessPercentage < lastBrightness && !brightnessReductionThreshold.isMet()) {
                 brightnessPercentage = lastBrightness;
-                brightnessDifference = 0d;
                 doBrightnessChange = false;
             } else {
                 setLastBrightness(brightnessPercentage);
             }
         } else {
             brightnessPercentage = lastBrightness;
-            brightnessDifference = 0d;
         }
 
-        return new BrightnessData(brightnessPercentage, brightnessDifference, doBrightnessChange);
+        return new BrightnessData(brightnessPercentage, doBrightnessChange);
     }
 
     BrightnessData getLowestBrightnessData() {
-        double brightnessDifferencePercentage = 0d - lastBrightness;
         setLastBrightness(0d);
-        return new BrightnessData(0d, brightnessDifferencePercentage, true);
+        return new BrightnessData(0d, true);
     }
 
     void clear() {
@@ -92,27 +87,23 @@ class BrightnessCalibrator {
     class BrightnessData {
 
         private final double brightnessPercentage;
-        private final double brightnessDifferencePercentage;
         private final boolean doBrightnessChange;
 
         private final int brightness;
+        private final int brightnessLow;
 
 
-        private BrightnessData(double brightnessPercentage, double brightnessDifferencePercentage, boolean doBrightnessChange) {
+        private BrightnessData(double brightnessPercentage, boolean doBrightnessChange) {
 
             this.brightnessPercentage = brightnessPercentage;
-            this.brightnessDifferencePercentage = brightnessDifferencePercentage;
             this.doBrightnessChange = doBrightnessChange;
 
             this.brightness = (int) (brightnessPercentage * brightnessRange) + minBrightness;
+            this.brightnessLow = ((brightness - minBrightness) / 2) + minBrightness;
         }
 
         double getBrightnessPercentage() {
             return brightnessPercentage;
-        }
-
-        double getBrightnessDifferencePrevious() {
-            return brightnessDifferencePercentage;
         }
 
         boolean isBrightnessChange() {
@@ -123,8 +114,8 @@ class BrightnessCalibrator {
             return brightness;
         }
 
-        int getTransitionTime() {
-            return transitionTime;
+        int getBrightnessLow() {
+            return brightnessLow;
         }
     }
 }

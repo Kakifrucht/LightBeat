@@ -4,7 +4,7 @@ import com.philips.lighting.hue.sdk.PHAccessPoint;
 import com.philips.lighting.model.PHBridge;
 import com.philips.lighting.model.PHLight;
 import io.lightbeat.hue.light.Light;
-import io.lightbeat.hue.light.color.ColorSet;
+import io.lightbeat.hue.color.ColorSet;
 
 import java.util.List;
 

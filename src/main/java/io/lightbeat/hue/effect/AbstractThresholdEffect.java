@@ -1,9 +1,10 @@
-package io.lightbeat.hue.light.effect;
+package io.lightbeat.hue.effect;
 
-import io.lightbeat.hue.light.LightUpdate;
+import io.lightbeat.hue.LightUpdate;
+import io.lightbeat.hue.color.ColorSet;
+import io.lightbeat.util.TimeThreshold;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.lightbeat.util.TimeThreshold;
 
 /**
  * Adds custom brightness threshold and, if met, activation probability parameters
@@ -26,7 +27,8 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
     boolean isActive = false;
 
 
-    AbstractThresholdEffect(float brightnessThreshold, float activationProbability) {
+    AbstractThresholdEffect(ColorSet colorSet, float brightnessThreshold, float activationProbability) {
+        super(colorSet);
         this.brightnessThreshold = brightnessThreshold;
         this.activationProbability = activationProbability;
         this.brightnessDeactivationThreshold = brightnessThreshold;
@@ -39,7 +41,7 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
             if (lightUpdate.isBrightnessChange() && lightUpdate.getBrightnessPercentage() < brightnessDeactivationThreshold) {
                 setActive(false);
             } else {
-                executeEffect();
+                execute();
             }
         } else {
             if (lightUpdate.isBrightnessChange()
@@ -63,7 +65,7 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
         this.brightnessDeactivationThreshold = newThreshold;
     }
 
-    abstract void initializeEffect();
+    abstract void initialize();
 
     void executionDone() {
         // don't force overwrites by subclasses
@@ -73,10 +75,8 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
         this.isActive = active;
         if (active) {
             logger.info("{} was started", this);
-            initializeEffect();
-            if (!lightUpdate.getLightsTurnedOn().isEmpty()) {
-                executeEffect();
-            }
+            initialize();
+            execute();
         } else {
             activationThreshold.setCurrentThreshold(MILLIS_BETWEEN_ACTIVATION);
             executionDone();

@@ -2,8 +2,7 @@ package io.lightbeat.hue.light;
 
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
-import io.lightbeat.hue.light.color.Color;
-import io.lightbeat.hue.light.color.ColorSet;
+import io.lightbeat.hue.color.Color;
 
 /**
  * Builder class to create {@link PHLightState}'s.
@@ -16,7 +15,7 @@ public class LightStateBuilder {
         return new LightStateBuilder();
     }
 
-    private int transitionTime = Integer.MIN_VALUE;
+    private int transitionTime = 0;
     private int brightness = Integer.MIN_VALUE;
     private Color color = null;
     private Boolean setOn;
@@ -25,39 +24,9 @@ public class LightStateBuilder {
 
     private LightStateBuilder() {}
 
-    public LightStateBuilder setTransitionTime(int transitionTime) {
-        this.transitionTime = transitionTime;
-        return this;
-    }
+    public void copyFromBuilder(LightStateBuilder copyFrom) {
 
-    public LightStateBuilder setBrightness(int brightness) {
-        this.brightness = brightness;
-        return this;
-    }
-
-    public LightStateBuilder setColor(Color color) {
-        this.color = color;
-        return this;
-    }
-
-    public LightStateBuilder setRandomHue(ColorSet colorSet) {
-        color = colorSet.getNextColor();
-        return this;
-    }
-
-    public LightStateBuilder setAlertMode(PHLight.PHLightAlertMode alert) {
-        this.alert = alert;
-        return this;
-    }
-
-    LightStateBuilder setOn(boolean setOn) {
-        this.setOn = setOn;
-        return this;
-    }
-
-    void copyFromBuilder(LightStateBuilder copyFrom) {
-
-        if (copyFrom != null && (!copyFrom.isDefault() || copyFrom.transitionTime != Integer.MIN_VALUE)) {
+        if (copyFrom != null && (!copyFrom.isDefault() || copyFrom.transitionTime > 0)) {
 
             if (copyFrom.transitionTime != Integer.MIN_VALUE) {
                 this.transitionTime = copyFrom.transitionTime;
@@ -81,6 +50,38 @@ public class LightStateBuilder {
         }
     }
 
+    public LightStateBuilder addTransitionTime(int transitionTime) {
+        this.transitionTime += transitionTime;
+        return this;
+    }
+
+    public LightStateBuilder setAlertMode(PHLight.PHLightAlertMode alert) {
+        this.alert = alert;
+        return this;
+    }
+
+    public LightStateBuilder setColor(Color color) {
+        this.color = color;
+        return this;
+    }
+
+    public LightStateBuilder setBrightness(int brightness) {
+        this.brightness = brightness;
+        return this;
+    }
+
+    LightStateBuilder setOn(boolean setOn) {
+        this.setOn = setOn;
+        return this;
+    }
+
+    boolean isDefault() {
+        return brightness == Integer.MIN_VALUE
+                && color == null
+                && setOn == null
+                && alert == null;
+    }
+
     PHLightState getLightState() {
 
         if (isDefault()) {
@@ -88,7 +89,7 @@ public class LightStateBuilder {
         }
 
         PHLightState newLightState = new PHLightState();
-        newLightState.setTransitionTime(transitionTime != Integer.MIN_VALUE ? transitionTime : 0);
+        newLightState.setTransitionTime(transitionTime);
 
         if (brightness >= 0) {
             newLightState.setBrightness(brightness);
@@ -108,12 +109,5 @@ public class LightStateBuilder {
         }
 
         return newLightState;
-    }
-
-    private boolean isDefault() {
-        return brightness == Integer.MIN_VALUE
-                && color == null
-                && setOn == null
-                && alert == null;
     }
 }

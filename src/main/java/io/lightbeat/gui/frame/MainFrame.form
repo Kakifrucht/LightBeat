@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="4" left="4" bottom="0" right="4"/>
     <constraints>
-      <xy x="21" y="43" width="874" height="597"/>
+      <xy x="21" y="43" width="874" height="635"/>
     </constraints>
     <properties>
       <background color="-1"/>
@@ -331,33 +331,33 @@
                       <toolTipText value="Define the maximum brightness level, reached when the music is currently more intense than on average.&lt;br&gt;This setting is not always taken into account as long as the Glow effect is enabled."/>
                     </properties>
                   </component>
-                  <component id="f1e0f" class="javax.swing.JLabel">
-                    <constraints>
-                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <labelFor value=""/>
-                      <text value="Change Sensitivity"/>
-                    </properties>
-                  </component>
-                  <component id="84dcf" class="io.lightbeat.gui.swing.JConfigSlider" binding="sensitivitySlider" custom-create="true">
-                    <constraints>
-                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <background color="-1"/>
-                      <maximum value="50"/>
-                      <toolTipText value="Setting this value higher will cause more brightness updates."/>
-                    </properties>
-                  </component>
                   <component id="6963d" class="javax.swing.JButton" binding="restoreBrightnessButton">
                     <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <background color="-1"/>
                       <text value="Restore Defaults"/>
                       <toolTipText value="Restores brightness settings defaults."/>
+                    </properties>
+                  </component>
+                  <component id="bc99b" class="javax.swing.JLabel">
+                    <constraints>
+                      <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Fade Time"/>
+                    </properties>
+                  </component>
+                  <component id="3aa89" class="io.lightbeat.gui.swing.JConfigSlider" binding="transitionTimeSlider" custom-create="true">
+                    <constraints>
+                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <background color="-1"/>
+                      <maximum value="8"/>
+                      <minimum value="1"/>
+                      <toolTipText value="Fade time for light updates in 100ms increments."/>
                     </properties>
                   </component>
                 </children>
@@ -378,60 +378,23 @@
           <font size="16"/>
         </border>
         <children>
-          <component id="bf495" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Beat Detection Sensitivity"/>
-            </properties>
-          </component>
           <component id="33417" class="javax.swing.JLabel">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Minimum Beat Delay (millis)"/>
             </properties>
           </component>
-          <component id="449f0" class="io.lightbeat.gui.swing.JConfigSlider" binding="beatSensitivitySlider" custom-create="true">
-            <constraints>
-              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <background color="-1"/>
-              <maximum value="10"/>
-              <minimum value="1"/>
-              <toolTipText value="Setting this value higher may cause more beats to get detected.&lt;br&gt;It is usually not necessary to change this value as beat detection calibrates automatically."/>
-            </properties>
-          </component>
           <component id="e96dd" class="io.lightbeat.gui.swing.JConfigSlider" binding="beatTimeBetweenSlider" custom-create="true">
             <constraints>
-              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <background color="-1"/>
               <maximum value="1000"/>
               <minimum value="100"/>
               <toolTipText value="Minimum time in milliseconds until the next beat can be detected.&lt;br&gt;Setting this value too low might cause network congestion and additional latency, setting it too high might skip beats.&lt;br&gt;The best setting is dependant on your individual setup."/>
-            </properties>
-          </component>
-          <component id="bc99b" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Transition Time"/>
-            </properties>
-          </component>
-          <component id="3aa89" class="io.lightbeat.gui.swing.JConfigSlider" binding="transitionTimeSlider" custom-create="true">
-            <constraints>
-              <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <background color="-1"/>
-              <maximum value="4"/>
-              <toolTipText value="Transition time for light updates in 100ms increments.&lt;br&gt;Increasing this value will cause light updates to appear slower and less aggressive."/>
             </properties>
           </component>
           <grid id="2b0b9" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -493,7 +456,7 @@
                 <properties>
                   <background color="-1"/>
                   <text value="Glow"/>
-                  <toolTipText value="Toggle all glowing effects."/>
+                  <toolTipText value="Toggle all glowing effects. This does not toggle any fading effects."/>
                 </properties>
               </component>
             </children>
@@ -523,6 +486,44 @@
             </constraints>
             <properties>
               <text value="Color Randomization Range"/>
+            </properties>
+          </component>
+          <component id="f1e0f" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <labelFor value=""/>
+              <text value="Brightness Change Sensitivity"/>
+            </properties>
+          </component>
+          <component id="84dcf" class="io.lightbeat.gui.swing.JConfigSlider" binding="brightnessSensitivitySlider" custom-create="true">
+            <constraints>
+              <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-1"/>
+              <maximum value="50"/>
+              <toolTipText value="Setting this value higher will cause more brightness updates."/>
+            </properties>
+          </component>
+          <component id="bf495" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Beat Detection Sensitivity"/>
+            </properties>
+          </component>
+          <component id="449f0" class="io.lightbeat.gui.swing.JConfigSlider" binding="beatSensitivitySlider" custom-create="true">
+            <constraints>
+              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <background color="-1"/>
+              <maximum value="10"/>
+              <minimum value="1"/>
+              <toolTipText value="Setting this value higher may cause more beats to get detected.&lt;br&gt;It is usually not necessary to change this value as beat detection calibrates automatically."/>
             </properties>
           </component>
         </children>

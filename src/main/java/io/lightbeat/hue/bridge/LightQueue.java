@@ -1,4 +1,4 @@
-package io.lightbeat.hue.light;
+package io.lightbeat.hue.bridge;
 
 import com.philips.lighting.hue.listener.PHLightListener;
 import com.philips.lighting.hue.sdk.PHHueSDK;
@@ -6,7 +6,6 @@ import com.philips.lighting.model.PHBridgeResource;
 import com.philips.lighting.model.PHHueError;
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
-import io.lightbeat.hue.bridge.HueManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,13 +67,24 @@ public class LightQueue {
     private volatile boolean shutdownWasMarked = false;
 
 
-    public LightQueue(HueManager hueManager) {
+    LightQueue(HueManager hueManager) {
         this.hueManager = hueManager;
         queue = new LinkedList<>();
     }
 
     public void addUpdate(PHLight light, PHLightState state) {
+
+        if (light == null || state == null) {
+            throw new IllegalArgumentException("Light and state cannot be null");
+        }
+
         synchronized (queue) {
+
+            if (shutdownWasMarked) {
+                throw new IllegalStateException("Tried to add update for light "
+                        + light.getName() + " when shutdown was already marked");
+            }
+
             queue.add(new QueueEntry(light, state));
             if (currentWork == null) {
                 next();
@@ -83,9 +93,9 @@ public class LightQueue {
     }
 
     /**
-     * Will shutdown SDK if or once the queue is empty.
+     * Will shutdown SDK threads if or once the queue is empty.
      */
-    public void markShutdown() {
+    void markShutdown() {
         synchronized (queue) {
             shutdownWasMarked = true;
             if (currentWork == null) {

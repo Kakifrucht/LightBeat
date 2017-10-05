@@ -1,31 +1,34 @@
-package io.lightbeat.hue.light.effect;
+package io.lightbeat.hue.effect;
 
-import io.lightbeat.LightBeat;
-import io.lightbeat.hue.light.LightUpdate;
+import io.lightbeat.hue.LightUpdate;
+import io.lightbeat.hue.color.ColorSet;
 
 import java.util.Random;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Abstract implementation of {@link LightEffect}.
- * Implementations must override {@link #executeEffect()} and can access the current
+ * Implementations must override {@link #execute()} and can access the current
  * {@link LightUpdate} via field.
  */
 abstract class AbstractEffect implements LightEffect {
 
+    final ColorSet colorSet;
     final Random rnd = new Random();
-    final ScheduledExecutorService executorService = LightBeat.getComponentHolder().getExecutorService();
 
     LightUpdate lightUpdate;
 
 
+    AbstractEffect(ColorSet colorSet) {
+        this.colorSet = colorSet;
+    }
+
     @Override
     public void beatReceived(LightUpdate lightUpdate) {
         this.lightUpdate = lightUpdate;
-        executeEffect();
+        execute();
     }
 
-    abstract void executeEffect();
+    abstract void execute();
 
     @Override
     public String toString() {

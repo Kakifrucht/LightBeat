@@ -4,6 +4,7 @@ import com.philips.lighting.hue.sdk.PHAccessPoint;
 import com.philips.lighting.hue.sdk.PHHueSDK;
 import com.philips.lighting.hue.sdk.PHMessageType;
 import com.philips.lighting.hue.sdk.PHSDKListener;
+import com.philips.lighting.hue.sdk.exception.PHHeartbeatException;
 import com.philips.lighting.model.PHBridge;
 import com.philips.lighting.model.PHBridgeConfiguration;
 import com.philips.lighting.model.PHHueParsingError;
@@ -42,7 +43,12 @@ class HueSDKListener implements PHSDKListener {
         config.put(ConfigNode.BRIDGE_IPADDRESS, bridgeConfiguration.getIpAddress());
 
         hueSDK.setSelectedBridge(phBridge);
-        hueSDK.getHeartbeatManager().enableLightsHeartbeat(phBridge, PHHueSDK.HB_INTERVAL);
+        try {
+            hueSDK.getHeartbeatManager().enableLightsHeartbeat(phBridge, PHHueSDK.HB_INTERVAL);
+        } catch (PHHeartbeatException e) {
+            logger.warn("Exception while enabling lights heartbeat", e);
+        }
+
         callbackReceiver.setConnected(phBridge);
     }
 

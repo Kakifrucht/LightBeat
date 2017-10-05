@@ -1,4 +1,4 @@
-package io.lightbeat.hue.light.color;
+package io.lightbeat.hue.color;
 
 import java.util.List;
 

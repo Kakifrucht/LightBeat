@@ -44,16 +44,16 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JButton restoreBrightnessButton;
     private JConfigSlider minBrightnessSlider;
     private JConfigSlider maxBrightnessSlider;
-    private JConfigSlider sensitivitySlider;
+    private JConfigSlider transitionTimeSlider;
 
     private JPanel lightsPanel;
 
     private JPanel advancedPanel;
     private JButton readdColorSetPresetsButton;
     private JButton restoreAdvancedButton;
-    private JConfigSlider beatSensitivitySlider;
     private JConfigSlider beatTimeBetweenSlider;
-    private JConfigSlider transitionTimeSlider;
+    private JConfigSlider beatSensitivitySlider;
+    private JConfigSlider brightnessSensitivitySlider;
     private JConfigSlider colorRandomizationSlider;
     private JConfigCheckBox strobeCheckBox;
     private JConfigCheckBox glowCheckBox;
@@ -177,16 +177,16 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         restoreBrightnessButton.addActionListener(e -> {
             minBrightnessSlider.restoreDefault();
             maxBrightnessSlider.restoreDefault();
-            sensitivitySlider.restoreDefault();
+            transitionTimeSlider.restoreDefault();
         });
         minBrightnessSlider.setBoundedSlider(maxBrightnessSlider, true, 10);
         maxBrightnessSlider.setBoundedSlider(minBrightnessSlider, false, 10);
 
         readdColorSetPresetsButton.addActionListener(e -> addColorPresets());
         restoreAdvancedButton.addActionListener(e -> {
-            beatSensitivitySlider.restoreDefault();
             beatTimeBetweenSlider.restoreDefault();
-            transitionTimeSlider.restoreDefault();
+            beatSensitivitySlider.restoreDefault();
+            brightnessSensitivitySlider.restoreDefault();
             colorRandomizationSlider.restoreDefault();
             strobeCheckBox.restoreDefault();
             glowCheckBox.restoreDefault();
@@ -306,11 +306,11 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         minBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MIN);
         maxBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MAX);
-        sensitivitySlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_SENSITIVITY);
-
-        beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
-        beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
         transitionTimeSlider = new JConfigSlider(config, ConfigNode.LIGHTS_TRANSITION_TIME);
+
+        beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
+        beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
+        brightnessSensitivitySlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_SENSITIVITY);
         colorRandomizationSlider = new JConfigSlider(config, ConfigNode.COLOR_RANDOMIZATION_RANGE);
         strobeCheckBox = new JConfigCheckBox(config, ConfigNode.BRIGHTNESS_STROBE);
         glowCheckBox = new JConfigCheckBox(config, ConfigNode.BRIGHTNESS_GLOW);
@@ -325,7 +325,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         colorButtonGroup.clearSelection();
 
         addRadioButton("Random");
-        config.getStringList(ConfigNode.COLOR_SET_LIST).forEach(this::addRadioButton);
+        for (String setName : config.getStringList(ConfigNode.COLOR_SET_LIST)) {
+            addRadioButton(setName);
+        }
 
         JRadioButton selectedSetButton = setAndGetSelectedButton();
         if (!selectedSetButton.getText().equals(config.get(ConfigNode.COLOR_SET_SELECTED))) {
