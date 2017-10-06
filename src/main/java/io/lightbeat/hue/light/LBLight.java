@@ -94,9 +94,7 @@ public class LBLight implements Light {
     public void doLightUpdate() {
 
         strobeController.applyUpdates();
-        if (isOn) {
-            colorController.applyUpdates();
-        }
+        colorController.applyUpdates();
 
         // only set brightness if it was updated or other state stuff was updated
         boolean brightnessAlreadySet = false;

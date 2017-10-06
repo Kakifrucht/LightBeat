@@ -43,9 +43,9 @@ public class HueBeatObserver implements BeatObserver {
             effectPipe.add(new AlertEffect(colorSet,0.8f, 0.4f, 0.05f));
         }
 
-        effectPipe.add(new ColorFadeEffect(colorSet,0.5f, 0.15f));
-        effectPipe.add(new ColorFlipEffect(colorSet,0.4f, 0.125f));
-        effectPipe.add(new ColorChainEffect(colorSet,0.5f, 0.1f));
+        effectPipe.add(new ColorFlipEffect(colorSet,0.7f, 0.1f));
+        effectPipe.add(new ColorFadeEffect(colorSet,0.6f, 0.125f));
+        effectPipe.add(new ColorChainEffect(colorSet,0.5f, 0.15f));
 
         if (config.getBoolean(ConfigNode.BRIGHTNESS_STROBE)) {
             effectPipe.add(new StrobeEffect(colorSet,0.95f, 0.5f, 0.02f));
