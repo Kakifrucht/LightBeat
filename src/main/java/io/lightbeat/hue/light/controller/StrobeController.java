@@ -52,8 +52,6 @@ public class StrobeController extends AbstractController {
                 lightToControl.setOn(onAfterStrobe);
                 lightToControl.doLightUpdate();
 
-                currentStrobe = null;
-
             }, strobeDelay, TimeUnit.MILLISECONDS);
 
             strobeDelay = null;
@@ -61,7 +59,7 @@ public class StrobeController extends AbstractController {
     }
 
     public boolean isStrobing() {
-        return currentStrobe != null;
+        return currentStrobe != null && !currentStrobe.isDone();
     }
 
     /**
@@ -87,7 +85,6 @@ public class StrobeController extends AbstractController {
     public void cancelStrobe() {
         if (isStrobing()) {
             currentStrobe.cancel(false);
-            currentStrobe = null;
         }
     }
 
@@ -101,8 +98,6 @@ public class StrobeController extends AbstractController {
             if (!currentStrobe.isDone()) {
                 lightToControl.setOn(lightToControl.isOff());
             }
-
-            currentStrobe = null;
         }
     }
 }

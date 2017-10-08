@@ -14,6 +14,7 @@ import io.lightbeat.util.DoubleAverageBuffer;
 class BrightnessCalibrator {
 
     private static final double HISTORY_STARTING_VALUE = 0.15d;
+    private static final double BRIGHTNESS_CHANGE_PERCENTAGE = 0.25d;
     private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
 
     private final int minBrightness;
@@ -49,10 +50,11 @@ class BrightnessCalibrator {
 
         // multiplier is calibrated in regards to the currently highest amplitude, which will set brightness to max if received
         double brightnessMultiplier = 1 / (amplitudeDifferenceHistory.getMaxValue() * sensitivityMultiplier);
-        double brightnessPercentage = Math.min(amplitudeDifference * brightnessMultiplier, 1d);
+        double brightnessPercentage = Math.max(Math.min(amplitudeDifference * brightnessMultiplier, 1d), -1d);
+        brightnessPercentage = (brightnessPercentage + 1d) / 2d;
         double brightnessDifference = brightnessPercentage - lastBrightness;
 
-        boolean doBrightnessChange = Math.abs(brightnessDifference) > 0.15d;
+        boolean doBrightnessChange = Math.abs(brightnessDifference) > BRIGHTNESS_CHANGE_PERCENTAGE;
         if (doBrightnessChange) {
             // brightnessReductionThreshold reduces unnecessary fluctuations and thus reduces latency
             if (brightnessPercentage < lastBrightness && !brightnessReductionThreshold.isMet()) {

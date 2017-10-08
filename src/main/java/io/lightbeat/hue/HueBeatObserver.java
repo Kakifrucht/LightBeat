@@ -48,7 +48,7 @@ public class HueBeatObserver implements BeatObserver {
         effectPipe.add(new ColorChainEffect(colorSet,0.5f, 0.15f));
 
         if (config.getBoolean(ConfigNode.BRIGHTNESS_STROBE)) {
-            effectPipe.add(new StrobeEffect(colorSet,0.95f, 0.5f, 0.02f));
+            effectPipe.add(new StrobeEffect(colorSet,0.95f, 0.2f, 0.02f));
             effectPipe.add(new StrobeChainEffect(colorSet,0.7f, 0.15f));
         }
     }

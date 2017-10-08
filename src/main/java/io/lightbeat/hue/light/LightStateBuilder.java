@@ -76,7 +76,7 @@ public class LightStateBuilder {
     }
 
     boolean isDefault() {
-        return brightness == Integer.MIN_VALUE
+        return brightness < 0
                 && color == null
                 && setOn == null
                 && alert == null;

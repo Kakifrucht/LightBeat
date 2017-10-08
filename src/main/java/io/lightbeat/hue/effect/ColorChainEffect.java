@@ -70,6 +70,7 @@ public class ColorChainEffect extends AbstractThresholdEffect {
     @Override
     public void executionDone() {
         for (Light light : lightsInOrder) {
+            light.getColorController().setFadeColor(this, currentFadeColor);
             light.getColorController().unsetControllingEffect(this);
         }
     }

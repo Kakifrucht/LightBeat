@@ -24,6 +24,8 @@ public interface Light {
      */
     LightStateBuilder getStateBuilder();
 
+    boolean isOff();
+
     /**
      * Turn this light on or off while preparing a temporary builder to be returned via {@link #getStateBuilder()}.
      * Does nothing if the light is already in it's desired state.
@@ -32,8 +34,6 @@ public interface Light {
      * @param on whether to turn the light on or off
      */
     void setOn(boolean on);
-
-    boolean isOff();
 
     /**
      * Send this lights state with the information set in it's builder, retrieved with {@link #getStateBuilder()}.

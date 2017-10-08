@@ -1,5 +1,6 @@
 package io.lightbeat.hue.effect;
 
+import io.lightbeat.hue.color.Color;
 import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.LightUpdate;
 import io.lightbeat.hue.color.ColorSet;
@@ -12,6 +13,9 @@ import java.util.List;
  */
 public class DefaultEffect extends AbstractEffect {
 
+    private Color lastFadeColor;
+
+
     public DefaultEffect(ColorSet colorSet) {
         super(colorSet);
     }
@@ -21,7 +25,8 @@ public class DefaultEffect extends AbstractEffect {
 
         if (lightUpdate.isBrightnessChange()) {
 
-            lightUpdate.setFadeColorForAll(this, colorSet.getNextColor());
+            lastFadeColor = colorSet.getNextColor(lastFadeColor);
+            lightUpdate.setFadeColorForAll(this, lastFadeColor);
 
             int newBrightness = lightUpdate.getBrightness();
             int newBrightnessLow = lightUpdate.getBrightnessLow();

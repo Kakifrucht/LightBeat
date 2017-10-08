@@ -10,7 +10,7 @@ import io.lightbeat.hue.light.controller.StrobeController;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Default {@link Light} implementation.
+ * Default and thread safe {@link Light} implementation.
  */
 public class LBLight implements Light {
 
@@ -65,7 +65,12 @@ public class LBLight implements Light {
     }
 
     @Override
-    public void setOn(boolean on) {
+    public boolean isOff() {
+        return !isOn;
+    }
+
+    @Override
+    public synchronized void setOn(boolean on) {
 
         if (strobeController.isStrobing()) {
             strobeController.cancelStrobe();
@@ -86,12 +91,7 @@ public class LBLight implements Light {
     }
 
     @Override
-    public boolean isOff() {
-        return !isOn;
-    }
-
-    @Override
-    public void doLightUpdate() {
+    public synchronized void doLightUpdate() {
 
         strobeController.applyUpdates();
         colorController.applyUpdates();
@@ -118,7 +118,7 @@ public class LBLight implements Light {
     }
 
     @Override
-    public void doLightUpdateFade() {
+    public synchronized void doLightUpdateFade() {
 
         if (isOn && !strobeController.isStrobing()) {
 

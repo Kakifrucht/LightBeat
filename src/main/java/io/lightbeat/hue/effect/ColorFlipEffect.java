@@ -88,6 +88,7 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
     @Override
     public void executionDone() {
         for (Light light : lightFlipDirection.keySet()) {
+            light.getColorController().setFadeColor(this, color1);
             light.getColorController().unsetControllingEffect(this);
         }
     }
