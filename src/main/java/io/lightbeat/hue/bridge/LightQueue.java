@@ -57,9 +57,12 @@ public class LightQueue {
                 mode = newState.getAlertMode().toString();
             }
 
-            return currentWork.light.getName() + " (bri " + newState.getBrightness() + " | color "
-                    + newState.getHue() + "/" + newState.getSaturation()
-                    + " | mode " + mode + " | on " + newState.isOn() + ")";
+            return currentWork.light.getName()
+                    + " (time " + newState.getTransitionTime()
+                    + " | bri " + newState.getBrightness()
+                    + " | color " + newState.getHue() + "/" + newState.getSaturation()
+                    + " | mode " + mode
+                    + " | on " + newState.isOn() + ")";
         }
     };
 

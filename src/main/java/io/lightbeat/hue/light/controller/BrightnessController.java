@@ -11,6 +11,7 @@ public class BrightnessController extends AbstractController {
     private volatile int fadeBrightness;
 
     private volatile boolean brightnessWasUpdated;
+    private volatile boolean fadeOnly;
 
 
     public BrightnessController(Light lightToControl) {
@@ -18,7 +19,11 @@ public class BrightnessController extends AbstractController {
     }
 
     public void applyUpdates() {
-        lightToControl.getStateBuilder().setBrightness(brightness);
+
+        if (!fadeOnly) {
+            lightToControl.getStateBuilder().setBrightness(brightness);
+        }
+
         if (brightnessWasUpdated) {
             brightnessWasUpdated = false;
         }
@@ -46,5 +51,13 @@ public class BrightnessController extends AbstractController {
 
     public int getFadeBrightness() {
         return fadeBrightness;
+    }
+
+    public void setFadeOnly(boolean fadeOnly) {
+        this.fadeOnly = fadeOnly;
+    }
+
+    public boolean isFadeOnly() {
+        return fadeOnly;
     }
 }

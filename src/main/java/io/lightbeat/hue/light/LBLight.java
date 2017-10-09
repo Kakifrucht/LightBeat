@@ -133,16 +133,17 @@ public class LBLight implements Light {
 
                 Integer lastUpdateBrightness = lastLightStateUpdate.getBrightness();
                 int fadeBrightness = brightnessController.getFadeBrightness();
-                if (lastLightStateUpdate != null
-                        && lastUpdateBrightness != null
+                if (lastUpdateBrightness != null
                         && lastUpdateBrightness != fadeBrightness) {
                     fadeBuilder.setBrightness(fadeBrightness);
                 }
+            } else if (brightnessController.isFadeOnly()) {
+                fadeBuilder.setBrightness(brightnessController.getFadeBrightness());
+                brightnessController.setFadeOnly(false);
             }
 
-
             if (!fadeBuilder.isDefault()) {
-                lightQueue.addUpdate(light, fadeBuilder.addTransitionTime(fadeTime).getLightState());
+                lightQueue.addUpdate(light, fadeBuilder.setTransitionTime(fadeTime).getLightState());
             }
         }
 

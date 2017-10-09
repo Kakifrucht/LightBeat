@@ -4,6 +4,7 @@ import io.lightbeat.hue.color.Color;
 import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.LightUpdate;
 import io.lightbeat.hue.color.ColorSet;
+import io.lightbeat.hue.light.controller.BrightnessController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +26,7 @@ public class DefaultEffect extends AbstractEffect {
 
         if (lightUpdate.isBrightnessChange()) {
 
-            lastFadeColor = colorSet.getNextColor(lastFadeColor);
-            lightUpdate.setFadeColorForAll(this, lastFadeColor);
+            updateRandomFadeColor();
 
             int newBrightness = lightUpdate.getBrightness();
             int newBrightnessLow = lightUpdate.getBrightnessLow();
@@ -57,10 +57,16 @@ public class DefaultEffect extends AbstractEffect {
 
     @Override
     public void noBeatReceived(LightUpdate lightUpdate) {
-
+        updateRandomFadeColor();
         for (Light light : lightUpdate.getLights()) {
-            light.getBrightnessController().setBrightness(lightUpdate.getBrightness(), lightUpdate.getBrightnessLow());
-            light.getStateBuilder().addTransitionTime(3);
+            BrightnessController briController = light.getBrightnessController();
+            briController.setBrightness(lightUpdate.getBrightness(), lightUpdate.getBrightnessLow());
+            briController.setFadeOnly(true);
         }
+    }
+
+    private void updateRandomFadeColor() {
+        lastFadeColor = colorSet.getNextColor(lastFadeColor);
+        lightUpdate.setFadeColorForAll(this, lastFadeColor);
     }
 }

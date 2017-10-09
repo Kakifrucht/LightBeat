@@ -54,7 +54,11 @@ class BrightnessCalibrator {
         brightnessPercentage = (brightnessPercentage + 1d) / 2d;
         double brightnessDifference = brightnessPercentage - lastBrightness;
 
-        boolean doBrightnessChange = Math.abs(brightnessDifference) > BRIGHTNESS_CHANGE_PERCENTAGE;
+        // if ceilings are reached always do brightness update if necessary
+        boolean doBrightnessChange = Math.abs(brightnessDifference) > BRIGHTNESS_CHANGE_PERCENTAGE
+                || (brightnessPercentage == 1d && lastBrightness < 1d)
+                || (brightnessPercentage == 0d && lastBrightness > 0d);
+
         if (doBrightnessChange) {
             // brightnessReductionThreshold reduces unnecessary fluctuations and thus reduces latency
             if (brightnessPercentage < lastBrightness && !brightnessReductionThreshold.isMet()) {

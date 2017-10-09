@@ -15,11 +15,11 @@ public class LightStateBuilder {
         return new LightStateBuilder();
     }
 
-    private int transitionTime = 0;
-    private int brightness = Integer.MIN_VALUE;
-    private Color color = null;
-    private Boolean setOn;
-    private PHLight.PHLightAlertMode alert;
+    private volatile int transitionTime = 0;
+    private volatile int brightness = Integer.MIN_VALUE;
+    private volatile Color color = null;
+    private volatile Boolean setOn;
+    private volatile PHLight.PHLightAlertMode alert;
 
 
     private LightStateBuilder() {}
@@ -50,8 +50,13 @@ public class LightStateBuilder {
         }
     }
 
-    public LightStateBuilder addTransitionTime(int transitionTime) {
-        this.transitionTime += transitionTime;
+    LightStateBuilder setTransitionTime(int transitionTime) {
+        this.transitionTime = transitionTime;
+        return this;
+    }
+
+    LightStateBuilder setOn(boolean setOn) {
+        this.setOn = setOn;
         return this;
     }
 
@@ -67,11 +72,6 @@ public class LightStateBuilder {
 
     public LightStateBuilder setBrightness(int brightness) {
         this.brightness = brightness;
-        return this;
-    }
-
-    LightStateBuilder setOn(boolean setOn) {
-        this.setOn = setOn;
         return this;
     }
 

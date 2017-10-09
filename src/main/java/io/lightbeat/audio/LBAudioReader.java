@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class LBAudioReader implements BeatEventManager, AudioReader {
 
+    private static final double MINIMUM_AMPLITUDE = 0.0001d;
+
     private static final Logger logger = LoggerFactory.getLogger(LBAudioReader.class);
 
     private final Config config;
@@ -124,7 +126,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
                     averageMeanSquare = Math.sqrt(averageMeanSquare);
 
                     double amplitude = averageMeanSquare;
-                    if (amplitude < 0.005d) {
+                    if (amplitude < MINIMUM_AMPLITUDE) {
                         amplitude = 0d;
                     }
 

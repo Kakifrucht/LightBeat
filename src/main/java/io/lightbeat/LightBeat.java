@@ -54,7 +54,7 @@ public class LightBeat implements ComponentHolder {
     private LightBeat() {
         instance = this;
 
-        executorService = Executors.newScheduledThreadPool(4);
+        executorService = Executors.newScheduledThreadPool(2);
 
         audioReader = new LBAudioReader(config, executorService);
         frameManager = new FrameManager();
