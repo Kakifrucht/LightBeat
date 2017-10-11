@@ -20,7 +20,7 @@ public class ColorChainEffect extends AbstractThresholdEffect {
     private int currentIndex;
 
 
-    public ColorChainEffect(ColorSet colorSet, float brightnessThreshold, float activationProbability) {
+    public ColorChainEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
         super(colorSet, brightnessThreshold, activationProbability);
     }
 
@@ -38,6 +38,7 @@ public class ColorChainEffect extends AbstractThresholdEffect {
 
             for (Light light : lightUpdate.getLights()) {
                 if (light.getColorController().setControllingEffect(this)) {
+                    light.getColorController().undoColorChange(this);
                     lightsInOrder.add(light);
                 }
             }
@@ -48,7 +49,6 @@ public class ColorChainEffect extends AbstractThresholdEffect {
         }
 
         if (currentIndex++ >= lightsInOrder.size() - 1) {
-
             currentColor = currentColor != null ? currentFadeColor : colorSet.getNextColor();
             currentFadeColor = colorSet.getNextColor(currentColor);
             currentIndex = 0;
@@ -57,14 +57,6 @@ public class ColorChainEffect extends AbstractThresholdEffect {
         Light nextLight = lightsInOrder.get(currentIndex);
         nextLight.getColorController().setColor(this, currentColor);
         nextLight.getColorController().setFadeColor(this, currentFadeColor);
-
-        // undo color updates to all other
-        for (Light light : lightUpdate.getLights()) {
-            if (!nextLight.equals(light) && light.getColorController().isColorWasUpdated()) {
-                light.getColorController().setColor(this, null);
-                light.getColorController().setFadeColor(this, null);
-            }
-        }
     }
 
     @Override

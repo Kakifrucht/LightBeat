@@ -186,7 +186,7 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
         if (!lights.isEmpty()) {
 
             for (Light light : lights) {
-                if (light.isOff()) {
+                if (!light.isOn()) {
                     light.setOn(true);
                 }
             }

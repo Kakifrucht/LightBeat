@@ -1,5 +1,6 @@
 package io.lightbeat.hue.light;
 
+import com.philips.lighting.model.PHLightState;
 import io.lightbeat.hue.light.controller.BrightnessController;
 import io.lightbeat.hue.light.controller.ColorController;
 import io.lightbeat.hue.light.controller.StrobeController;
@@ -10,6 +11,8 @@ import io.lightbeat.hue.light.controller.StrobeController;
  */
 public interface Light {
 
+    PHLightState getLastKnownLightState();
+
     ColorController getColorController();
 
     BrightnessController getBrightnessController();
@@ -18,13 +21,13 @@ public interface Light {
 
     /**
      * Get the lights state builder. If light is currently turned off this method returns a builder that will
-     * be applied once the light was turned on again via {@link #setOn(boolean)}.
+     * be copied once the light was turned on again via {@link #setOn(boolean)}.
      *
      * @return builder
      */
     LightStateBuilder getStateBuilder();
 
-    boolean isOff();
+    boolean isOn();
 
     /**
      * Turn this light on or off while preparing a temporary builder to be returned via {@link #getStateBuilder()}.
@@ -36,7 +39,8 @@ public interface Light {
     void setOn(boolean on);
 
     /**
-     * Send this lights state with the information set in it's builder, retrieved with {@link #getStateBuilder()}.
+     * Adds controller update information to this lights builder (retrieved with {@link #getStateBuilder()})
+     * and updates the light accordingly. Will only send the update if resulting light state would do no changes.
      * Resets the builder for the next call of this method.
      */
     void doLightUpdate();

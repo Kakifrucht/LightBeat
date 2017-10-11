@@ -13,10 +13,10 @@ public abstract class AbstractRandomEffect extends AbstractThresholdEffect {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractRandomEffect.class);
 
-    private final float randomProbability;
+    private final double randomProbability;
 
 
-    AbstractRandomEffect(ColorSet colorSet, float brightnessThreshold, float activationProbability, float randomProbability) {
+    AbstractRandomEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability, double randomProbability) {
         super(colorSet, brightnessThreshold, activationProbability);
         this.randomProbability = randomProbability;
     }

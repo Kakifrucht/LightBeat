@@ -18,9 +18,9 @@ public class StrobeEffect extends AbstractRandomEffect {
     private int nextLightInBeats;
 
 
-    public StrobeEffect(ColorSet colorSet, float brightnessThreshold, float activationProbability, float randomProbability) {
+    public StrobeEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability, double randomProbability) {
         super(colorSet, brightnessThreshold, activationProbability, randomProbability);
-        setBrightnessDeactivationThreshold(0.7f);
+        setBrightnessDeactivationThreshold(brightnessThreshold - 0.2d);
     }
 
     @Override
@@ -47,19 +47,19 @@ public class StrobeEffect extends AbstractRandomEffect {
 
             if (activeLight != null) {
                 // turn currently active light off
-                activeLight.setOn(false);
+                activeLight.getStrobeController().setOn(false);
             } else {
                 // turn all lights off at the beginning and take control
                 for (Light controllableLight : controllableLights) {
-                    controllableLight.setOn(false);
+                    controllableLight.getStrobeController().setOn(false);
                     controllableLight.getStrobeController().setControllingEffect(this);
                 }
             }
 
             for (Light light : controllableLights) {
-                if (!light.equals(activeLight) && light.isOff()) {
+                if (!light.equals(activeLight)) {
                     activeLight = light;
-                    activeLight.setOn(true);
+                    activeLight.getStrobeController().setOn(true);
                     break;
                 }
             }
@@ -75,7 +75,7 @@ public class StrobeEffect extends AbstractRandomEffect {
             int amountToStrobe = Math.max((controllableLights.size() - 1) / 2, 1);
             for (Light light : controllableLights) {
 
-                if (!light.equals(this.activeLight) && light.isOff()) {
+                if (!light.equals(this.activeLight) && !light.getStrobeController().isStrobing()) {
 
                     light.getStrobeController().doStrobe(this, lightUpdate.getTimeSinceLastBeat());
 

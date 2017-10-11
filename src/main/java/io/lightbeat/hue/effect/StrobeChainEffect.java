@@ -15,9 +15,9 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
     private int currentIndex;
 
 
-    public StrobeChainEffect(ColorSet colorSet, float brightnessThreshold, float activationProbability) {
+    public StrobeChainEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
         super(colorSet, brightnessThreshold, activationProbability);
-        setBrightnessDeactivationThreshold(0.6f);
+        setBrightnessDeactivationThreshold(brightnessThreshold - 0.1d);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
             for (Light light : lightUpdate.getLights()) {
                 if (light.getStrobeController().setControllingEffect(this)) {
                     lightsInOrder.add(light);
-                    light.setOn(false);
+                    light.getStrobeController().setOn(false);
                 }
             }
             return;

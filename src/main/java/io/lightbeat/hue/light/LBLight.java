@@ -45,6 +45,11 @@ public class LBLight implements Light {
     }
 
     @Override
+    public PHLightState getLastKnownLightState() {
+        return light.getLastKnownLightState();
+    }
+
+    @Override
     public ColorController getColorController() {
         return colorController;
     }
@@ -65,8 +70,8 @@ public class LBLight implements Light {
     }
 
     @Override
-    public boolean isOff() {
-        return !isOn;
+    public boolean isOn() {
+        return isOn;
     }
 
     @Override
@@ -96,22 +101,15 @@ public class LBLight implements Light {
         strobeController.applyUpdates();
         colorController.applyUpdates();
 
-        // only set brightness if it was updated or other state stuff was updated
-        boolean brightnessAlreadySet = false;
-        if (brightnessController.isBrightnessWasUpdated()) {
-            brightnessController.applyUpdates();
-            brightnessAlreadySet = true;
-        }
-
         if (!currentBuilder.isDefault()) {
 
-            if (!brightnessAlreadySet
-                    && brightnessController.getBrightness() != light.getLastKnownLightState().getBrightness()) {
-                brightnessController.applyUpdates();
-            }
+            // brightness updates only need to be applied if color changed/strobing
+            brightnessController.applyUpdates();
 
             lastLightStateUpdate = currentBuilder.getLightState();
             lightQueue.addUpdate(light, currentBuilder.getLightState());
+        } else {
+            lastLightStateUpdate = null;
         }
 
         this.currentBuilder = LightStateBuilder.create();
@@ -120,34 +118,14 @@ public class LBLight implements Light {
     @Override
     public synchronized void doLightUpdateFade() {
 
-        if (isOn && !strobeController.isStrobing()) {
+        LightStateBuilder fadeBuilder = LightStateBuilder.create().setTransitionTime(fadeTime);
 
-            LightStateBuilder fadeBuilder = LightStateBuilder.create();
+        colorController.applyFadeUpdates(fadeBuilder, lastLightStateUpdate);
+        brightnessController.applyFadeUpdates(fadeBuilder, lastLightStateUpdate);
 
-            if (colorController.isFadeColorWasUpdated()
-                    || (lastLightStateUpdate != null && lastLightStateUpdate.getHue() != null)) {
-                fadeBuilder.setColor(colorController.getFadeColor());
-            }
-
-            if (lastLightStateUpdate != null) {
-
-                Integer lastUpdateBrightness = lastLightStateUpdate.getBrightness();
-                int fadeBrightness = brightnessController.getFadeBrightness();
-                if (lastUpdateBrightness != null
-                        && lastUpdateBrightness != fadeBrightness) {
-                    fadeBuilder.setBrightness(fadeBrightness);
-                }
-            } else if (brightnessController.isFadeOnly()) {
-                fadeBuilder.setBrightness(brightnessController.getFadeBrightness());
-                brightnessController.setFadeOnly(false);
-            }
-
-            if (!fadeBuilder.isDefault()) {
-                lightQueue.addUpdate(light, fadeBuilder.setTransitionTime(fadeTime).getLightState());
-            }
+        if (!fadeBuilder.isDefault()) {
+            lightQueue.addUpdate(light, fadeBuilder.getLightState());
         }
-
-        lastLightStateUpdate = null;
     }
 
     @Override

@@ -1,10 +1,9 @@
 package io.lightbeat.hue.effect;
 
-import io.lightbeat.hue.color.Color;
-import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.LightUpdate;
+import io.lightbeat.hue.color.Color;
 import io.lightbeat.hue.color.ColorSet;
-import io.lightbeat.hue.light.controller.BrightnessController;
+import io.lightbeat.hue.light.Light;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,9 +58,7 @@ public class DefaultEffect extends AbstractEffect {
     public void noBeatReceived(LightUpdate lightUpdate) {
         updateRandomFadeColor();
         for (Light light : lightUpdate.getLights()) {
-            BrightnessController briController = light.getBrightnessController();
-            briController.setBrightness(lightUpdate.getBrightness(), lightUpdate.getBrightnessLow());
-            briController.setFadeOnly(true);
+            light.getBrightnessController().setBrightness(lightUpdate.getBrightness(), lightUpdate.getBrightnessLow());
         }
     }
 

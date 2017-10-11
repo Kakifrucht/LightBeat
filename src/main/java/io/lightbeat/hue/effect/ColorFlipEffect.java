@@ -26,7 +26,7 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
     private Color color2;
 
 
-    public ColorFlipEffect(ColorSet colorSet, float brightnessThreshold, float activationProbability) {
+    public ColorFlipEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
         super(colorSet, brightnessThreshold, activationProbability);
     }
 

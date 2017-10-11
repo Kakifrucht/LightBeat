@@ -11,7 +11,7 @@ public class ColorFadeEffect extends AbstractThresholdEffect {
     private Color lastFadeColor;
 
 
-    public ColorFadeEffect(ColorSet colorSet, float brightnessThreshold, float activationProbability) {
+    public ColorFadeEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
         super(colorSet, brightnessThreshold, activationProbability);
     }
 

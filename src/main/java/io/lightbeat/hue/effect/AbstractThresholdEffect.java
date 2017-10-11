@@ -20,14 +20,14 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
     private static final long MILLIS_BETWEEN_ACTIVATION = 20000L;
 
     private final TimeThreshold activationThreshold = new TimeThreshold(0);
-    private final float brightnessThreshold;
-    private final float activationProbability;
+    private final double brightnessThreshold;
+    private final double activationProbability;
 
-    private float brightnessDeactivationThreshold;
+    private double brightnessDeactivationThreshold;
     boolean isActive = false;
 
 
-    AbstractThresholdEffect(ColorSet colorSet, float brightnessThreshold, float activationProbability) {
+    AbstractThresholdEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
         super(colorSet);
         this.brightnessThreshold = brightnessThreshold;
         this.activationProbability = activationProbability;
@@ -61,7 +61,7 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
         }
     }
 
-    void setBrightnessDeactivationThreshold(float newThreshold) {
+    void setBrightnessDeactivationThreshold(double newThreshold) {
         this.brightnessDeactivationThreshold = newThreshold;
     }
 

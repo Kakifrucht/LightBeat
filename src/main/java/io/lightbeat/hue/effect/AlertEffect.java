@@ -19,7 +19,7 @@ public class AlertEffect extends AbstractRandomEffect {
     private TimeThreshold alertThreshold;
 
 
-    public AlertEffect(ColorSet colorSet, float brightnessThreshold, float activationProbability, float randomProbability) {
+    public AlertEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability, double randomProbability) {
         super(colorSet, brightnessThreshold, activationProbability, randomProbability);
     }
 

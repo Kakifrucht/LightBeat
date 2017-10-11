@@ -1,7 +1,9 @@
 package io.lightbeat.hue.light.controller;
 
+import com.philips.lighting.model.PHLightState;
 import io.lightbeat.hue.effect.LightEffect;
 import io.lightbeat.hue.light.Light;
+import io.lightbeat.hue.light.LightStateBuilder;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -16,10 +18,11 @@ public class StrobeController extends AbstractController {
     private volatile ScheduledFuture currentStrobe;
 
     private volatile Long strobeDelay;
+    private volatile Boolean setOn;
 
 
-    public StrobeController(Light lightToControl, ScheduledExecutorService executorService) {
-        super(lightToControl);
+    public StrobeController(Light currentLight, ScheduledExecutorService executorService) {
+        super(currentLight);
         this.executorService = executorService;
     }
 
@@ -29,13 +32,22 @@ public class StrobeController extends AbstractController {
             super.unsetControllingEffect(effect);
             interruptStrobe();
 
-            if (lightToControl.isOff()) {
-                lightToControl.setOn(true);
+            if (!controlledLight.isOn()) {
+                this.setOn = true;
             }
         }
     }
 
+    @Override
+    public void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate) {}
+
     public void applyUpdates() {
+
+        if (setOn != null) {
+            controlledLight.setOn(setOn);
+            setOn = null;
+        }
+
         if (strobeDelay != null) {
 
             // strobe on beat, at least for 250 ms and at max for 500 ms
@@ -44,13 +56,13 @@ public class StrobeController extends AbstractController {
             }
             strobeDelay = Math.max(strobeDelay, 250L);
 
-            boolean onAfterStrobe = !lightToControl.isOff();
-            lightToControl.setOn(!onAfterStrobe);
+            boolean onAfterStrobe = controlledLight.isOn();
+            controlledLight.setOn(!onAfterStrobe);
 
             currentStrobe = executorService.schedule(() -> {
 
-                lightToControl.setOn(onAfterStrobe);
-                lightToControl.doLightUpdate();
+                controlledLight.setOn(onAfterStrobe);
+                controlledLight.doLightUpdate();
 
             }, strobeDelay, TimeUnit.MILLISECONDS);
 
@@ -88,15 +100,22 @@ public class StrobeController extends AbstractController {
         }
     }
 
+    public void setOn(boolean setOn) {
+        if (this.setOn != null && setOn != this.setOn) {
+            this.setOn = null;
+        } else {
+            this.setOn = setOn;
+        }
+    }
+
     /**
-     * Interrupts the current strobe while resetting it's state if the strobe was still active.
+     * Interrupts the current strobe while resetting it's state if the strobe wasn't done yet after cancelling.
      */
     private void interruptStrobe() {
         if (isStrobing()) {
-
             currentStrobe.cancel(false);
             if (!currentStrobe.isDone()) {
-                lightToControl.setOn(lightToControl.isOff());
+                controlledLight.setOn(!controlledLight.isOn());
             }
         }
     }

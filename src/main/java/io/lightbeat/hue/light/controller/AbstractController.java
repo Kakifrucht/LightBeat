@@ -1,7 +1,9 @@
 package io.lightbeat.hue.light.controller;
 
+import com.philips.lighting.model.PHLightState;
 import io.lightbeat.hue.effect.LightEffect;
 import io.lightbeat.hue.light.Light;
+import io.lightbeat.hue.light.LightStateBuilder;
 
 /**
  * Extending classes control certain aspects (like color control) of the light.
@@ -11,12 +13,12 @@ import io.lightbeat.hue.light.Light;
  */
 public abstract class AbstractController {
 
-    final Light lightToControl;
+    final Light controlledLight;
     private volatile LightEffect controllingEffect;
 
 
-    AbstractController(Light lightToControl) {
-        this.lightToControl = lightToControl;
+    AbstractController(Light controlledLight) {
+        this.controlledLight = controlledLight;
     }
 
     public boolean canControl(LightEffect effect) {
@@ -44,4 +46,12 @@ public abstract class AbstractController {
             controllingEffect = null;
         }
     }
+
+    public void applyFadeUpdates(LightStateBuilder stateBuilder, PHLightState lastUpdate) {
+        if (controlledLight.isOn() && !controlledLight.getStrobeController().isStrobing()) {
+            applyFadeUpdatesExecute(stateBuilder, lastUpdate);
+        }
+    }
+
+    public abstract void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate);
 }
