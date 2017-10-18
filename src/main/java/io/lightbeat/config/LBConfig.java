@@ -131,7 +131,7 @@ public class LBConfig implements Config {
             listToString.setLength(listToString.length() - 1);
         }
 
-        preferences.put(node.getKey(), listToString.toString());
+        put(node, listToString.toString());
     }
 
     @Override

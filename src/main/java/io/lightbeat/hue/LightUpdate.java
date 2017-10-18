@@ -29,7 +29,6 @@ public class LightUpdate {
 
         this.lights = lights;
         this.activeLights = new ArrayList<>(lights);
-        this.activeLights.removeIf(light -> !light.isOn());
 
         this.brightness = brightnessData.getBrightness();
         this.brightnessLow = brightnessData.getBrightnessLow();
