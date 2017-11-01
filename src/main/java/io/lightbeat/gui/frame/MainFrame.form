@@ -41,6 +41,7 @@
             <properties>
               <font size="14"/>
               <text value="lightbeat.io" noi18n="true"/>
+              <toolTipText value="Click to open lightbeat.io in your webbrowser."/>
             </properties>
           </component>
         </children>

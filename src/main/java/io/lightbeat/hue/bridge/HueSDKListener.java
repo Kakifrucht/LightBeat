@@ -7,6 +7,7 @@ import com.philips.lighting.hue.sdk.PHSDKListener;
 import com.philips.lighting.hue.sdk.exception.PHHeartbeatException;
 import com.philips.lighting.model.PHBridge;
 import com.philips.lighting.model.PHBridgeConfiguration;
+import com.philips.lighting.model.PHHueError;
 import com.philips.lighting.model.PHHueParsingError;
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
@@ -75,11 +76,9 @@ class HueSDKListener implements PHSDKListener {
         logger.error("Error ocurred, code {} - {}", errorCode, message);
         if (errorCode == PHMessageType.BRIDGE_NOT_FOUND) {
             callbackReceiver.setAccessPointsFound(null);
-            return;
+        } else if (errorCode == PHHueError.BRIDGE_NOT_RESPONDING) {
+            callbackReceiver.connectionWasLost();
         }
-
-        // most likely connection drop, eventually need to handle more cases seperately
-        callbackReceiver.connectionWasLost();
     }
 
     @Override

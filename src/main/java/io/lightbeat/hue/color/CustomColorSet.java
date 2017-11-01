@@ -38,7 +38,6 @@ public class CustomColorSet implements ColorSet {
 
             Collections.shuffle(colors);
 
-            colorQueue.clear();
             for (Color color : colors) {
                 colorQueue.add(color.getDerivedColor(colorRandomizationRange));
             }

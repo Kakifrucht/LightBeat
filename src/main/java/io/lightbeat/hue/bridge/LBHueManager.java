@@ -100,7 +100,6 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
 
         componentHolder.getExecutorService().shutdown();
 
-
         if (isConnected()) {
 
             hueSDK.getHeartbeatManager().disableAllHeartbeats(bridge);
@@ -155,7 +154,7 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
     @Override
     public ColorSet getColorSet() {
         String selectedColorSet = config.get(ConfigNode.COLOR_SET_SELECTED);
-        if (selectedColorSet.equals("Random")) {
+        if (selectedColorSet == null || selectedColorSet.equals("Random")) {
             return new RandomColorSet();
         } else {
             return new CustomColorSet(config, selectedColorSet);
@@ -240,8 +239,8 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
     @Override
     public void connectionWasLost() {
 
+        currentState = State.NOT_CONNECTED;
         if (currentState.equals(State.AWAITING_PUSHLINK)) {
-            currentState = State.NOT_CONNECTED;
             observerFrame.pushlinkHasFailed();
         } else {
             observerFrame = frameManager.showConnectFrame();
