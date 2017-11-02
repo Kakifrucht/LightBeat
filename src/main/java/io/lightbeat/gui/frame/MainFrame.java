@@ -68,7 +68,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JColorPanel colorsPreviewPanel;
     private JButton deviceHelpButton;
 
-    private boolean audioReaderIsRunning = false;
     private HueFrame selectionFrame = null;
 
 
@@ -193,7 +192,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
 
         startButton.addActionListener(e -> {
-            if (audioReaderIsRunning) {
+            if (audioReader.isRunning()) {
                 stopBeatDetection();
             } else {
                 startBeatDetection();
@@ -385,7 +384,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private void startBeatDetection() {
 
-        if (audioReaderIsRunning) {
+        if (audioReader.isRunning()) {
             return;
         }
 
@@ -396,10 +395,10 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             if (mixerName.equals(selectedMixerName)) {
                 config.put(ConfigNode.LAST_AUDIO_SOURCE, mixerName);
 
-                audioReaderIsRunning = getHueManager().initializeLights();
-                if (audioReaderIsRunning) {
-                    audioReaderIsRunning = audioReader.start(supportedMixer);
-                    if (audioReaderIsRunning) {
+                boolean lightsInitialized = getHueManager().initializeLights();
+                if (lightsInitialized) {
+                    boolean audioReaderStarted = audioReader.start(supportedMixer);
+                    if (audioReaderStarted) {
                         startButton.setText("Stop");
                         infoLabel.setText("Running, stop to reload any changes made");
                         componentHolder.getAudioEventManager().registerBeatObserver(this);
@@ -417,14 +416,14 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     }
 
     private void stopBeatDetection() {
-        if (audioReaderIsRunning) {
+        if (audioReader.isRunning()) {
             startButton.setText("Start");
             startButton.setEnabled(false);
             infoLabel.setText("Idle");
+
             audioReader.stop();
             componentHolder.getAudioEventManager().unregisterBeatObserver(this);
             getHueManager().recoverOriginalState();
-            audioReaderIsRunning = false;
 
             // re-enable with small delay
             executorService.schedule(() -> runOnSwingThread(() -> startButton.setEnabled(true)), 1, TimeUnit.SECONDS);

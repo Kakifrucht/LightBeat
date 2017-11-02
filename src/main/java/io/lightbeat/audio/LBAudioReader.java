@@ -56,7 +56,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     @Override
     public boolean start(Mixer mixer) {
 
-        if (dataLine != null && dataLine.isOpen()) {
+        if (isRunning()) {
             stop();
         }
 
@@ -153,8 +153,13 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     }
 
     @Override
+    public boolean isRunning() {
+        return dataLine != null && dataLine.isRunning();
+    }
+
+    @Override
     public void stop() {
-        if (dataLine != null) {
+        if (isRunning()) {
             dataLine.stop();
             dataLine.close();
         }
