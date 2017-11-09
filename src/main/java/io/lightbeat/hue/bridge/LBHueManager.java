@@ -37,7 +37,6 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
     private HueStateObserver observerFrame;
     private PHBridge bridge;
 
-    private HueBeatObserver beatObserver;
     private List<Light> lights;
     private Map<String, PHLightState> originalLightStates;
 
@@ -190,7 +189,7 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
                 }
             }
 
-            beatObserver = new HueBeatObserver(this, componentHolder.getConfig());
+            HueBeatObserver beatObserver = new HueBeatObserver(this, componentHolder.getConfig());
             componentHolder.getAudioEventManager().registerBeatObserver(beatObserver);
             return true;
         }
@@ -204,8 +203,6 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
         if (lights == null) {
             return;
         }
-
-        componentHolder.getAudioEventManager().unregisterBeatObserver(beatObserver);
 
         for (PHLight light : getLights()) {
             if (originalLightStates.containsKey(light.getUniqueId())) {

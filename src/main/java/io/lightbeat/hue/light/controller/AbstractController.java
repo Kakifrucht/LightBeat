@@ -42,7 +42,7 @@ public abstract class AbstractController {
     }
 
     public void unsetControllingEffect(LightEffect effect) {
-        if (controllingEffect.equals(effect)) {
+        if (effect.equals(controllingEffect)) {
             controllingEffect = null;
         }
     }
@@ -53,5 +53,5 @@ public abstract class AbstractController {
         }
     }
 
-    public abstract void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate);
+    abstract void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate);
 }

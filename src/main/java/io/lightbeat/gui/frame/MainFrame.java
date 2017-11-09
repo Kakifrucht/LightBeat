@@ -422,7 +422,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             infoLabel.setText("Idle");
 
             audioReader.stop();
-            componentHolder.getAudioEventManager().unregisterBeatObserver(this);
             getHueManager().recoverOriginalState();
 
             // re-enable with small delay

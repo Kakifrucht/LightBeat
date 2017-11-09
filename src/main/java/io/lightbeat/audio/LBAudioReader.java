@@ -72,10 +72,6 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
 
         captureInterpreter = new CaptureInterpreter(config);
 
-        if (future != null) {
-            future.cancel(true);
-        }
-
         future = executorService.scheduleWithFixedDelay(new Runnable() {
 
             private final int frameSize = 512;
@@ -162,6 +158,8 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
         if (isRunning()) {
             dataLine.stop();
             dataLine.close();
+            future.cancel(true);
+            beatEventObservers.clear();
         }
     }
 

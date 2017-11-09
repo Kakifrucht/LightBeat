@@ -48,7 +48,7 @@ public class ColorController extends AbstractController {
     }
 
     /**
-     * Sets the color that will be used for the {@link Light}'s {@link Light#doLightUpdateFade()}.
+     * Sets the color that will be used for the {@link Light}'s fade effect.
      *
      * @param effect effect that wants to set the color
      * @param fadeColor color to be used for the fading effect

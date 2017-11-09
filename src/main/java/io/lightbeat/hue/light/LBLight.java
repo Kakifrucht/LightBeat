@@ -26,8 +26,6 @@ public class LBLight implements Light {
     private volatile LightStateBuilder builderToCopyAfterTurningOn;
     private volatile boolean isOn;
 
-    private PHLightState lastLightStateUpdate;
-
 
     public LBLight(PHLight light, LightQueue lightQueue, ScheduledExecutorService executorService, int fadeTime) {
         this.lightQueue = lightQueue;
@@ -96,11 +94,12 @@ public class LBLight implements Light {
     }
 
     @Override
-    public synchronized void doLightUpdate() {
+    public synchronized void doLightUpdate(boolean doFade) {
 
         strobeController.applyUpdates();
         colorController.applyUpdates();
 
+        PHLightState lastLightStateUpdate = null;
         if (!currentBuilder.isDefault()) {
 
             // brightness updates only need to be applied if color changed/strobing
@@ -108,23 +107,19 @@ public class LBLight implements Light {
 
             lastLightStateUpdate = currentBuilder.getLightState();
             lightQueue.addUpdate(light, currentBuilder.getLightState());
-        } else {
-            lastLightStateUpdate = null;
         }
 
         this.currentBuilder = LightStateBuilder.create();
-    }
 
-    @Override
-    public synchronized void doLightUpdateFade() {
+        if (doFade) {
+            LightStateBuilder fadeBuilder = LightStateBuilder.create().setTransitionTime(fadeTime);
 
-        LightStateBuilder fadeBuilder = LightStateBuilder.create().setTransitionTime(fadeTime);
+            colorController.applyFadeUpdates(fadeBuilder, lastLightStateUpdate);
+            brightnessController.applyFadeUpdates(fadeBuilder, lastLightStateUpdate);
 
-        colorController.applyFadeUpdates(fadeBuilder, lastLightStateUpdate);
-        brightnessController.applyFadeUpdates(fadeBuilder, lastLightStateUpdate);
-
-        if (!fadeBuilder.isDefault()) {
-            lightQueue.addUpdate(light, fadeBuilder.getLightState());
+            if (!fadeBuilder.isDefault()) {
+                lightQueue.addUpdate(light, fadeBuilder.getLightState());
+            }
         }
     }
 

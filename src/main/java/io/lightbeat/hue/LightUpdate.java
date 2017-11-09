@@ -39,12 +39,7 @@ public class LightUpdate {
 
     void doLightUpdates() {
         for (Light light : lights) {
-            light.doLightUpdate();
-        }
-
-        // queue fade after initial updates (reduces latency in separate loop)
-        for (Light light : lights) {
-            light.doLightUpdateFade();
+            light.doLightUpdate(true);
         }
     }
 
