@@ -25,13 +25,11 @@ public class DefaultEffect extends AbstractEffect {
 
         if (lightUpdate.isBrightnessChange()) {
 
-            updateRandomFadeColor(lightUpdate);
-
-            int newBrightness = lightUpdate.getBrightness();
-            int newBrightnessLow = lightUpdate.getBrightnessLow();
-            for (Light light : lightUpdate.getLights()) {
-                light.getBrightnessController().setBrightness(newBrightness, newBrightnessLow);
+            if (lightUpdate.isBrightnessIncrease()) {
+                updateRandomFadeColor(lightUpdate);
             }
+
+            updateBrightness(lightUpdate);
         }
 
         // select random light(s) to update
@@ -56,7 +54,10 @@ public class DefaultEffect extends AbstractEffect {
 
     @Override
     public void noBeatReceived(LightUpdate lightUpdate) {
-        updateRandomFadeColor(lightUpdate);
+        updateBrightness(lightUpdate);
+    }
+
+    private void updateBrightness(LightUpdate lightUpdate) {
         for (Light light : lightUpdate.getLights()) {
             light.getBrightnessController().setBrightness(lightUpdate.getBrightness(), lightUpdate.getBrightnessLow());
         }

@@ -22,6 +22,7 @@ public class LightUpdate {
     private final int brightnessLow;
     private final double brightnessPercentage;
     private final boolean doBrightnessChange;
+    private final boolean isBrightnessIncrease;
     private final long timeSinceLastBeat;
 
 
@@ -34,6 +35,7 @@ public class LightUpdate {
         this.brightnessLow = brightnessData.getBrightnessLow();
         this.brightnessPercentage = brightnessData.getBrightnessPercentage();
         this.doBrightnessChange = brightnessData.isBrightnessChange();
+        this.isBrightnessIncrease = brightnessData.getPreviousBrightnessPercentage() < brightness;
         this.timeSinceLastBeat = timeSinceLastBeat;
     }
 
@@ -66,6 +68,10 @@ public class LightUpdate {
 
     public boolean isBrightnessChange() {
         return doBrightnessChange;
+    }
+
+    public boolean isBrightnessIncrease() {
+        return isBrightnessIncrease;
     }
 
     public long getTimeSinceLastBeat() {

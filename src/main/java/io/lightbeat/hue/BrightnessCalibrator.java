@@ -22,7 +22,7 @@ class BrightnessCalibrator {
 
     private final double sensitivityMultiplier;
 
-    private double lastBrightness = 0d;
+    private double previousBrightness = 0d;
 
     private final TimeThreshold brightnessReductionThreshold = new TimeThreshold(0L);
     private final DoubleAverageBuffer amplitudeDifferenceHistory = new DoubleAverageBuffer(75);
@@ -52,31 +52,28 @@ class BrightnessCalibrator {
         double brightnessMultiplier = 1 / (amplitudeDifferenceHistory.getMaxValue() * sensitivityMultiplier);
         double brightnessPercentage = Math.max(Math.min(amplitudeDifference * brightnessMultiplier, 1d), -1d);
         brightnessPercentage = (brightnessPercentage + 1d) / 2d;
-        double brightnessDifference = brightnessPercentage - lastBrightness;
+        double brightnessDifference = brightnessPercentage - previousBrightness;
 
         // if ceilings are reached always do brightness update if necessary
         boolean doBrightnessChange = Math.abs(brightnessDifference) > BRIGHTNESS_CHANGE_PERCENTAGE
-                || (brightnessPercentage == 1d && lastBrightness < 1d)
-                || (brightnessPercentage == 0d && lastBrightness > 0d);
+                || (brightnessPercentage == 1d && previousBrightness < 1d)
+                || (brightnessPercentage == 0d && previousBrightness > 0d);
 
         if (doBrightnessChange) {
             // brightnessReductionThreshold reduces unnecessary fluctuations and thus reduces latency
-            if (brightnessPercentage < lastBrightness && !brightnessReductionThreshold.isMet()) {
-                brightnessPercentage = lastBrightness;
+            if (brightnessPercentage < previousBrightness && !brightnessReductionThreshold.isMet()) {
+                brightnessPercentage = previousBrightness;
                 doBrightnessChange = false;
-            } else {
-                setLastBrightness(brightnessPercentage);
             }
         } else {
-            brightnessPercentage = lastBrightness;
+            brightnessPercentage = previousBrightness;
         }
 
-        return new BrightnessData(brightnessPercentage, doBrightnessChange);
+        return getBrightnessData(brightnessPercentage, doBrightnessChange);
     }
 
     BrightnessData getLowestBrightnessData() {
-        setLastBrightness(0d);
-        return new BrightnessData(0d, true);
+        return getBrightnessData(0d, true);
     }
 
     void clear() {
@@ -84,24 +81,37 @@ class BrightnessCalibrator {
         amplitudeDifferenceHistory.add(HISTORY_STARTING_VALUE);
     }
 
-    private void setLastBrightness(double brightness) {
+    private void setPreviousBrightness(double brightness) {
         brightnessReductionThreshold.setCurrentThreshold(BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS);
-        lastBrightness = brightness;
+        previousBrightness = brightness;
+    }
+
+    private BrightnessData getBrightnessData(double brightnessPercentage, boolean doBrightnessChange) {
+
+        double previousBrightness = this.previousBrightness;
+        if (doBrightnessChange) {
+            setPreviousBrightness(brightnessPercentage);
+        }
+
+        return new BrightnessData(brightnessPercentage, previousBrightness, doBrightnessChange);
     }
 
 
     class BrightnessData {
 
         private final double brightnessPercentage;
+        private final double brightnessPercentagePrevious;
         private final boolean doBrightnessChange;
 
         private final int brightness;
         private final int brightnessLow;
 
 
-        private BrightnessData(double brightnessPercentage, boolean doBrightnessChange) {
+        private BrightnessData(double brightnessPercentage,
+                               double brightnessPercentagePrevious, boolean doBrightnessChange) {
 
             this.brightnessPercentage = brightnessPercentage;
+            this.brightnessPercentagePrevious = brightnessPercentagePrevious;
             this.doBrightnessChange = doBrightnessChange;
 
             this.brightness = (int) (brightnessPercentage * brightnessRange) + minBrightness;
@@ -114,6 +124,10 @@ class BrightnessCalibrator {
 
         boolean isBrightnessChange() {
             return doBrightnessChange;
+        }
+
+        double getPreviousBrightnessPercentage() {
+            return brightnessPercentagePrevious;
         }
 
         int getBrightness() {
