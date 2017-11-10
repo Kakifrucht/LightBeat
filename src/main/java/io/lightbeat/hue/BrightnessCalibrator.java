@@ -88,30 +88,26 @@ class BrightnessCalibrator {
 
     private BrightnessData getBrightnessData(double brightnessPercentage, boolean doBrightnessChange) {
 
-        double previousBrightness = this.previousBrightness;
         if (doBrightnessChange) {
             setPreviousBrightness(brightnessPercentage);
         }
 
-        return new BrightnessData(brightnessPercentage, previousBrightness, doBrightnessChange);
+        return new BrightnessData(brightnessPercentage, doBrightnessChange);
     }
 
 
     class BrightnessData {
 
         private final double brightnessPercentage;
-        private final double brightnessPercentagePrevious;
         private final boolean doBrightnessChange;
 
         private final int brightness;
         private final int brightnessLow;
 
 
-        private BrightnessData(double brightnessPercentage,
-                               double brightnessPercentagePrevious, boolean doBrightnessChange) {
+        private BrightnessData(double brightnessPercentage, boolean doBrightnessChange) {
 
             this.brightnessPercentage = brightnessPercentage;
-            this.brightnessPercentagePrevious = brightnessPercentagePrevious;
             this.doBrightnessChange = doBrightnessChange;
 
             this.brightness = (int) (brightnessPercentage * brightnessRange) + minBrightness;
@@ -124,10 +120,6 @@ class BrightnessCalibrator {
 
         boolean isBrightnessChange() {
             return doBrightnessChange;
-        }
-
-        double getPreviousBrightnessPercentage() {
-            return brightnessPercentagePrevious;
         }
 
         int getBrightness() {

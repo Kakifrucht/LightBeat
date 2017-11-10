@@ -24,11 +24,6 @@ public class DefaultEffect extends AbstractEffect {
     void execute() {
 
         if (lightUpdate.isBrightnessChange()) {
-
-            if (lightUpdate.isBrightnessIncrease()) {
-                updateRandomFadeColor(lightUpdate);
-            }
-
             updateBrightness(lightUpdate);
         }
 
@@ -58,13 +53,17 @@ public class DefaultEffect extends AbstractEffect {
     }
 
     private void updateBrightness(LightUpdate lightUpdate) {
+
+        boolean brightnessWasIncreased = false;
         for (Light light : lightUpdate.getLights()) {
             light.getBrightnessController().setBrightness(lightUpdate.getBrightness(), lightUpdate.getBrightnessLow());
+            brightnessWasIncreased = light.getBrightnessController().isBrightnessWasIncreased();
         }
-    }
 
-    private void updateRandomFadeColor(LightUpdate lightUpdate) {
-        lastFadeColor = colorSet.getNextColor(lastFadeColor);
-        lightUpdate.setFadeColorForAll(this, lastFadeColor);
+        // update fade color if brightness was increased
+        if (brightnessWasIncreased) {
+            lastFadeColor = colorSet.getNextColor(lastFadeColor);
+            lightUpdate.setFadeColorForAll(this, lastFadeColor);
+        }
     }
 }
