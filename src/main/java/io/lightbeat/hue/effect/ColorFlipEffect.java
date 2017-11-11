@@ -8,18 +8,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Determines three colors with same distances in between and flips them between two colors at a time,
- * cycling through the colors in the process.
+ * Flips selected lights between two colors and switches colors every couple beats.
  */
 public class ColorFlipEffect extends AbstractThresholdEffect {
 
-    private Color[] colors;
     /**
      * String is light identifier, if boolean is true set to first hue of cycle, else second one
      */
     private Map<Light, Boolean> lightFlipDirection;
 
-    private int colorIndex;
     private int nextColorsInBeats;
 
     private Color color1;
@@ -33,13 +30,10 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
     @Override
     void initialize() {
 
-        colors = new Color[3];
-        this.colors[0] = colorSet.getNextColor();
-        this.colors[1] = colorSet.getNextColor(colors[0]);
-        this.colors[2] = colorSet.getNextColor(colors[1]);
+        color1 = colorSet.getNextColor();
+        color2 = colorSet.getNextColor(color1);
 
         lightFlipDirection = new HashMap<>();
-        colorIndex = 0;
         nextColorsInBeats = 0;
     }
 
@@ -50,7 +44,7 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
 
             for (Light light : lightUpdate.getLights()) {
                 if (light.getColorController().setControllingEffect(this)) {
-                    lightFlipDirection.put(light, false);
+                    lightFlipDirection.put(light, rnd.nextBoolean());
                 }
             }
 
@@ -63,10 +57,8 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
 
             nextColorsInBeats = 4 + rnd.nextInt(4);
 
-            // init lights to next colors
-            colorIndex = getNextIndex();
-            color1 = colors[colorIndex];
-            color2 = colors[getNextIndex()];
+            color1 = color2;
+            color2 = colorSet.getNextColor(color1);
 
             for (Light light : lightFlipDirection.keySet()) {
                 flipLightColor(light, rnd.nextBoolean());
@@ -91,10 +83,5 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
             light.getColorController().setFadeColor(this, color1);
             light.getColorController().unsetControllingEffect(this);
         }
-    }
-
-    private int getNextIndex() {
-        int next = colorIndex + 1;
-        return next < colors.length ? next : 0;
     }
 }
