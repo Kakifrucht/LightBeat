@@ -1,5 +1,6 @@
 package io.lightbeat.gui;
 
+import com.bulenkov.darcula.DarculaLaf;
 import io.lightbeat.gui.frame.ConnectFrame;
 import io.lightbeat.gui.frame.HueFrame;
 import io.lightbeat.gui.frame.MainFrame;
@@ -20,8 +21,8 @@ public class FrameManager {
 
     public FrameManager() {
         try {
-            // system look and feel by default
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            // darcula theme by default
+            UIManager.setLookAndFeel(new DarculaLaf());
         } catch (Exception ignored) {}
     }
 

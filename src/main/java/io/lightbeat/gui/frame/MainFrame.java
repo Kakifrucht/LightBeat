@@ -1,5 +1,6 @@
 package io.lightbeat.gui.frame;
 
+import com.bulenkov.darcula.DarculaLaf;
 import com.philips.lighting.model.PHLight;
 import io.lightbeat.LightBeat;
 import io.lightbeat.audio.AudioReader;
@@ -11,6 +12,8 @@ import io.lightbeat.gui.swing.JConfigCheckBox;
 import io.lightbeat.gui.swing.JConfigSlider;
 import io.lightbeat.gui.swing.JIconLabel;
 import io.lightbeat.util.URLConnectionReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sound.sampled.Mixer;
 import javax.swing.*;
@@ -27,6 +30,8 @@ import java.util.stream.Collectors;
  * Main application frame. Interface to set the applications settings and start the magic.
  */
 public class MainFrame extends AbstractFrame implements BeatObserver {
+
+    private static final Logger logger = LoggerFactory.getLogger(MainFrame.class);
 
     private final AudioReader audioReader;
 
@@ -61,6 +66,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JButton startButton;
     private JConfigCheckBox showAdvancedCheckbox;
     private JConfigCheckBox autoStartCheckBox;
+    private JConfigCheckBox darculaThemeCheckBox;
 
     private JLabel urlLabel;
     private JLabel infoLabel;
@@ -152,7 +158,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
             JCheckBox checkBox = new JCheckBox();
             checkBox.setText(light.getName());
-            checkBox.setBackground(Color.WHITE);
             if (!disabledLights.contains(light.getUniqueId())) {
                 checkBox.setSelected(true);
             }
@@ -251,6 +256,22 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             frame.pack();
         });
 
+        darculaThemeCheckBox.setToRunOnChange(() -> {
+            try {
+                if (darculaThemeCheckBox.isSelected()) {
+                    UIManager.setLookAndFeel(new DarculaLaf());
+                } else {
+                    //TODO fix this case
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                }
+
+                SwingUtilities.updateComponentTreeUI(frame);
+                frame.pack();
+            } catch (Exception e) {
+                logger.warn("Couldn't set look and feel", e);
+            }
+        });
+
         // restore last windows location
         long locationStore = config.getLong(ConfigNode.WINDOW_LOCATION);
         if (locationStore > 0) {
@@ -316,6 +337,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         showAdvancedCheckbox = new JConfigCheckBox(config, ConfigNode.SHOW_ADVANCED_SETTINGS);
         autoStartCheckBox = new JConfigCheckBox(config, ConfigNode.AUTOSTART);
+        darculaThemeCheckBox = new JConfigCheckBox(config, ConfigNode.WINDOW_LOOK_AND_FEEL);
     }
 
     void refreshColorSets() {
@@ -340,7 +362,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private void addRadioButton(String setName) {
         JRadioButton radioButton = new JRadioButton(setName);
-        radioButton.setBackground(Color.WHITE);
         radioButton.addActionListener(e -> {
             config.put(ConfigNode.COLOR_SET_SELECTED, setName);
             colorsPreviewPanel.setColorSet(getHueManager().getColorSet());

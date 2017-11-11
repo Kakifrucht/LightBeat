@@ -25,7 +25,8 @@ public enum ConfigNode {
     LIGHTS_DISABLED("lights.disabled"),
     LIGHTS_TRANSITION_TIME("lights.transitiontime"),
     SHOW_ADVANCED_SETTINGS("frame.showadvanced"),
-    WINDOW_LOCATION("window.location");
+    WINDOW_LOCATION("window.location"),
+    WINDOW_LOOK_AND_FEEL("window.lookandfeel");
 
 
     private String key;

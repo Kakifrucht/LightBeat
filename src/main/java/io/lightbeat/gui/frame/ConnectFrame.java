@@ -87,7 +87,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             }
 
             selectBridgeBox.addItem("Enter IP manually");
-            toggleButtonAndDropdown(true, currentAccessPoints != null ? "Bridges found, please select your bridge." : "No bridges found, type IP manually.");
+            toggleButtonAndDropdown(true, currentAccessPoints != null ? "Bridges found, please select your bridge." : "No bridges found, please type IP manually.");
         });
     }
 
