@@ -203,6 +203,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 startBeatDetection();
             }
         });
+        startButton.requestFocus();
 
         urlLabel.addMouseListener(new MouseInputAdapter() {
             @Override
@@ -446,7 +447,10 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             getHueManager().recoverOriginalState();
 
             // re-enable with small delay
-            executorService.schedule(() -> runOnSwingThread(() -> startButton.setEnabled(true)), 1, TimeUnit.SECONDS);
+            executorService.schedule(() -> runOnSwingThread(() -> {
+                startButton.setEnabled(true);
+                startButton.requestFocus();
+            }), 1, TimeUnit.SECONDS);
         }
     }
 
