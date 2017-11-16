@@ -73,7 +73,6 @@ public class HueBeatObserver implements BeatObserver {
     @Override
     public void silenceDetected() {
         noBeatReceived();
-        brightnessCalibrator.clear();
         amplitudeHistory.clear();
     }
 

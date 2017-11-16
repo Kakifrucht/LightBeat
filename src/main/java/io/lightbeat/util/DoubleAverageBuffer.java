@@ -73,6 +73,10 @@ public class DoubleAverageBuffer {
         return currentMax;
     }
 
+    public int size() {
+        return size;
+    }
+
     public void clear() {
         Arrays.fill(ringBuffer, 0.0d);
         headIndex = 0;
