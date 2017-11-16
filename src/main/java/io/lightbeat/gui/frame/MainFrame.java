@@ -52,11 +52,11 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JConfigSlider transitionTimeSlider;
 
     private JPanel lightsPanel;
+    private JConfigSlider beatTimeBetweenSlider;
 
     private JPanel advancedPanel;
     private JButton readdColorSetPresetsButton;
     private JButton restoreAdvancedButton;
-    private JConfigSlider beatTimeBetweenSlider;
     private JConfigSlider beatSensitivitySlider;
     private JConfigSlider brightnessSensitivitySlider;
     private JConfigSlider colorRandomizationSlider;
@@ -188,7 +188,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         readdColorSetPresetsButton.addActionListener(e -> addColorPresets());
         restoreAdvancedButton.addActionListener(e -> {
-            beatTimeBetweenSlider.restoreDefault();
             beatSensitivitySlider.restoreDefault();
             brightnessSensitivitySlider.restoreDefault();
             colorRandomizationSlider.restoreDefault();
