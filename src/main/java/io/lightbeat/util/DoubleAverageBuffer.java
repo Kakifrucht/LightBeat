@@ -15,7 +15,7 @@ public class DoubleAverageBuffer {
     private int size;
 
     private double currentTotal;
-    private double currentMax;
+    private double currentMax = -Double.MAX_VALUE;
     private int currentMaxIndex = -1;
 
 
@@ -30,9 +30,15 @@ public class DoubleAverageBuffer {
 
     public void add(double toAdd) {
 
+        double toRemove = ringBuffer[headIndex];
+        currentTotal -= toRemove;
+
+        ringBuffer[headIndex] = toAdd;
+        currentTotal += toAdd;
+
         if (determineMax) {
             if (headIndex == currentMaxIndex) {
-                currentMax = 0d;
+                currentMax = -Double.MAX_VALUE;
                 for (int i = 0; i < ringBuffer.length; i++) {
                     if (ringBuffer[i] > currentMax) {
                         currentMax = ringBuffer[i];
@@ -46,12 +52,6 @@ public class DoubleAverageBuffer {
                 currentMaxIndex = headIndex;
             }
         }
-
-        double toRemove = ringBuffer[headIndex];
-        currentTotal -= toRemove;
-
-        ringBuffer[headIndex] = toAdd;
-        currentTotal += toAdd;
 
         if (size < ringBuffer.length) {
             size++;
@@ -82,7 +82,7 @@ public class DoubleAverageBuffer {
         headIndex = 0;
         size = 0;
         currentTotal = 0d;
-        currentMax = 0d;
+        currentMax = -Double.MAX_VALUE;
         currentMaxIndex = -1;
     }
 }

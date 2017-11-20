@@ -22,7 +22,13 @@ public class TimeThreshold {
     }
 
     public void setCurrentThreshold(long currentThreshold) {
-        this.currentThreshold = System.currentTimeMillis() + currentThreshold;
+
+        if (currentThreshold < 0) {
+            throw new IllegalArgumentException("Parameter must be greater than 0");
+        }
+
+        long newThreshold = System.currentTimeMillis() + currentThreshold;
+        this.currentThreshold = newThreshold < System.currentTimeMillis() ? Long.MAX_VALUE : newThreshold;
         isEnabled = true;
     }
 

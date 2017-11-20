@@ -16,6 +16,7 @@ class BrightnessCalibrator {
 
     private static final double BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE = 0.25d;
     private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
+    private static final int BUFFER_SIZE = 100;
 
     private final int minBrightness;
     private final int brightnessRange;
@@ -26,7 +27,7 @@ class BrightnessCalibrator {
     private double previousBrightness = 0d;
 
     private final TimeThreshold brightnessReductionThreshold = new TimeThreshold(0L);
-    private final DoubleAverageBuffer amplitudeDifferenceHistory = new DoubleAverageBuffer(75);
+    private final DoubleAverageBuffer amplitudeDifferenceHistory = new DoubleAverageBuffer(BUFFER_SIZE);
 
 
     BrightnessCalibrator(Config config) {

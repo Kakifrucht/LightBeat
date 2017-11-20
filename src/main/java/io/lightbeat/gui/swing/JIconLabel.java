@@ -3,7 +3,7 @@ package io.lightbeat.gui.swing;
 import javax.swing.*;
 
 /**
- * Label that displays holds multiple cached {@link Icon}'s that can be swapped with {@link #flipIcon()}.
+ * Label that holds multiple cached {@link Icon}'s that can be swapped with {@link #flipIcon()}.
  */
 public class JIconLabel extends JLabel {
 

@@ -425,15 +425,14 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                         componentHolder.getAudioEventManager().registerBeatObserver(this);
                         return;
                     }
-
                 } else {
-                    infoLabel.setText("No lights were selected");
+                    showErrorMessage("No lights were selected");
                     return;
                 }
             }
         }
 
-        infoLabel.setText("Selected audio source is no longer available");
+        showErrorMessage("Selected audio source is no longer available");
     }
 
     private void stopBeatDetection() {
@@ -496,5 +495,10 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             config.putList(ConfigNode.COLOR_SET_LIST, currentSetNames);
             refreshColorSets();
         }
+    }
+
+    private void showErrorMessage(String message) {
+        infoLabel.setText(message);
+        JOptionPane.showMessageDialog(frame, message + ".", "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
