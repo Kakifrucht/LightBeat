@@ -322,7 +322,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     public void createUIComponents() {
 
-        bannerLabel = new JIconLabel("/png/banner.png", "/png/bannerflash.png");
+        bannerLabel = new JIconLabel("/png/banner.png", "/png/bannerflash.png", 482, 100);
 
         minBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MIN);
         maxBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MAX);
