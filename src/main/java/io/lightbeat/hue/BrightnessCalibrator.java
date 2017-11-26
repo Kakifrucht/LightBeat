@@ -16,7 +16,7 @@ class BrightnessCalibrator {
 
     private static final double BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE = 0.25d;
     private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
-    private static final int BUFFER_SIZE = 100;
+    private static final int BUFFER_SIZE = 150;
 
     private final int minBrightness;
     private final int brightnessRange;

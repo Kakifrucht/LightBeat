@@ -261,7 +261,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 if (darculaThemeCheckBox.isSelected()) {
                     UIManager.setLookAndFeel(new DarculaLaf());
                 } else {
-                    //TODO fix this case
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 }
 
@@ -421,7 +420,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                     boolean audioReaderStarted = audioReader.start(supportedMixer);
                     if (audioReaderStarted) {
                         startButton.setText("Stop");
-                        infoLabel.setText("Running, stop to reload any changes made");
+                        infoLabel.setText("Running | Stop to reload any changes made to the settings");
                         componentHolder.getAudioEventManager().registerBeatObserver(this);
                         return;
                     }
@@ -439,7 +438,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         if (audioReader.isRunning()) {
             startButton.setText("Start");
             startButton.setEnabled(false);
-            infoLabel.setText("Idle");
+            infoLabel.setText("Idle | Hover over a setting to get a description");
 
             audioReader.stop();
             getHueManager().recoverOriginalState();
