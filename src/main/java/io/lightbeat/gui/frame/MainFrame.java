@@ -19,6 +19,7 @@ import javax.sound.sampled.Mixer;
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -105,10 +106,21 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         deviceHelpButton.addActionListener(e -> openLinkInBrowser("https://lightbeat.io/audioguide.php"));
 
+        colorsPreviewPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                String selectedName = getSelectedSetButton().getText();
+                if (!selectedName.equals("Random")) {
+                    openColorSelectionFrame(selectedName);
+                }
+            }
+        });
+
         addCustomColorsButton.addActionListener(e -> openColorSelectionFrame(null));
         editSelectedButton.addActionListener(e -> {
 
-            String selectedSetName = setAndGetSelectedButton().getText();
+            String selectedSetName = getSelectedSetButton().getText();
             if (selectedSetName.equals("Random")) {
                 JOptionPane.showMessageDialog(frame,
                         "You cannot edit this set.",
@@ -122,7 +134,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         deleteCustomColorsButton.addActionListener(e -> {
 
-            String selected = setAndGetSelectedButton().getText();
+            String selected = getSelectedSetButton().getText();
             if (selected.equals("Random")) {
                 JOptionPane.showMessageDialog(frame,
                         "You cannot delete this set.",
@@ -349,7 +361,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             addRadioButton(setName);
         }
 
-        JRadioButton selectedSetButton = setAndGetSelectedButton();
+        JRadioButton selectedSetButton = getSelectedSetButton();
         if (!selectedSetButton.getText().equals(config.get(ConfigNode.COLOR_SET_SELECTED))) {
             config.put(ConfigNode.COLOR_SET_SELECTED, selectedSetButton.getText());
         }
@@ -370,7 +382,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         colorButtonGroup.add(radioButton);
     }
 
-    private JRadioButton setAndGetSelectedButton() {
+    private JRadioButton getSelectedSetButton() {
 
         JRadioButton toReturn = null;
         String selectedButton = config.get(ConfigNode.COLOR_SET_SELECTED);
