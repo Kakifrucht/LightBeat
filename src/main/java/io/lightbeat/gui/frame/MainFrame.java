@@ -244,7 +244,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                     if (!isCurrentVersion) {
                         int answerCode = JOptionPane.showConfirmDialog(
                                 frame,
-                                "A new update is available (version " + currentVersion + ").\n\nUpdate now?",
+                                "A new update is available (version " + currentVersion + ").\n\nDownload now?",
                                 "Update Found",
                                 JOptionPane.YES_NO_OPTION);
                         if (answerCode == 0) {

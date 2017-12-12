@@ -80,7 +80,7 @@
                 </constraints>
                 <properties>
                   <text value="Auto Start On Launch"/>
-                  <toolTipText value="Auto start music detection when application is started."/>
+                  <toolTipText value="Automatically start music detection when application is started."/>
                 </properties>
               </component>
               <component id="a975e" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="darculaThemeCheckBox" custom-create="true" default-binding="true">

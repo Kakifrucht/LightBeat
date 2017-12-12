@@ -14,7 +14,7 @@ import io.lightbeat.util.DoubleAverageBuffer;
  */
 class BrightnessCalibrator {
 
-    private static final double BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE = 0.25d;
+    private static final double BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE = 0.2d;
     private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
     private static final int BUFFER_SIZE = 150;
 
@@ -120,7 +120,7 @@ class BrightnessCalibrator {
             this.doBrightnessChange = doBrightnessChange;
 
             this.brightness = (int) (brightnessPercentage * brightnessRange) + minBrightness;
-            this.brightnessLow = ((brightness - minBrightness) / 2) + minBrightness;
+            this.brightnessLow = (brightness + minBrightness) / 2;
         }
 
         double getBrightnessPercentage() {
