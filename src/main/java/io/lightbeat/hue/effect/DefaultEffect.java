@@ -42,8 +42,9 @@ public class DefaultEffect extends AbstractEffect {
             lightsToChange.add(lights.get(i));
         }
 
+        Color color = colorSet.getNextColor();
         for (Light light : lightsToChange) {
-            light.getColorController().setColor(this, colorSet.getNextColor());
+            light.getColorController().setColor(this, color);
         }
     }
 
