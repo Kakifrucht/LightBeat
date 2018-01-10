@@ -31,7 +31,7 @@ public class BrightnessController extends AbstractController {
     }
 
     @Override
-    public void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate) {
+    protected void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate) {
         if (brightnessWasUpdated) {
             stateBuilder.setBrightness(fadeBrightness);
         } else if (lastUpdate != null) {

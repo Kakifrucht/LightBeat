@@ -53,5 +53,5 @@ public abstract class AbstractController {
         }
     }
 
-    abstract void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate);
+    protected abstract void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate);
 }

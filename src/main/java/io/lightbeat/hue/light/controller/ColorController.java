@@ -30,7 +30,7 @@ public class ColorController extends AbstractController {
     }
 
     @Override
-    public void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate) {
+    protected void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate) {
         if (fadeColorWasUpdated || (lastUpdate != null && lastUpdate.getHue() != null)) {
             stateBuilder.setColor(fadeColor);
 
@@ -58,6 +58,10 @@ public class ColorController extends AbstractController {
             fadeColorWasUpdated = fadeColor != null && !fadeColor.equals(this.fadeColor);
             this.fadeColor = fadeColor;
         }
+    }
+
+    public boolean wasUpdated() {
+        return colorWasUpdated || fadeColorWasUpdated;
     }
 
     public void undoColorChange(LightEffect effect) {

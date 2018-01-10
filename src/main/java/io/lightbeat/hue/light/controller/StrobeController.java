@@ -39,7 +39,7 @@ public class StrobeController extends AbstractController {
     }
 
     @Override
-    public void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate) {}
+    protected void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate) {}
 
     public void applyUpdates() {
 
@@ -49,12 +49,6 @@ public class StrobeController extends AbstractController {
         }
 
         if (strobeDelay != null) {
-
-            // strobe on beat, at least for 250 ms and at max for 500 ms
-            while (strobeDelay > 500L) {
-                strobeDelay /= 2;
-            }
-            strobeDelay = Math.max(strobeDelay, 250L);
 
             boolean onAfterStrobe = controlledLight.isOn();
             controlledLight.setOn(!onAfterStrobe);
@@ -91,7 +85,13 @@ public class StrobeController extends AbstractController {
             interruptStrobe();
         }
 
-        strobeDelay = timeSinceLastBeat;
+        long strobeDelay = timeSinceLastBeat;
+        // strobe on beat, at least for 250 ms and at max for 500 ms
+        while (strobeDelay > 500L) {
+            strobeDelay /= 2;
+        }
+
+        this.strobeDelay = Math.max(strobeDelay, 250L);
     }
 
     public void cancelStrobe() {
