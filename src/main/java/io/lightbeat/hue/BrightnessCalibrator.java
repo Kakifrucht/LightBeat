@@ -17,14 +17,12 @@ class BrightnessCalibrator {
     private static final double BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE = 0.2d;
     private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
     private static final int BUFFER_SIZE = 150;
+    private static final int CALIBRATION_SIZE = 10;
 
     private final int minBrightness;
     private final int brightnessRange;
 
-    private final double sensitivityMultiplier;
-
-    private boolean isFirstBeat = true;
-    private double previousBrightness = 0d;
+    private double currentBrightness = 0d;
 
     private final TimeThreshold brightnessReductionThreshold = new TimeThreshold(0L);
     private final DoubleAverageBuffer amplitudeDifferenceHistory = new DoubleAverageBuffer(BUFFER_SIZE);
@@ -34,8 +32,6 @@ class BrightnessCalibrator {
         this.minBrightness = config.getInt(ConfigNode.BRIGHTNESS_MIN);
         int maxBrightness = config.getInt(ConfigNode.BRIGHTNESS_MAX);
         this.brightnessRange = maxBrightness - minBrightness;
-
-        this.sensitivityMultiplier = 1.0d - (config.getInt(ConfigNode.BRIGHTNESS_SENSITIVITY) / 200.0d);
     }
 
     /**
@@ -46,62 +42,43 @@ class BrightnessCalibrator {
      */
     BrightnessData getBrightness(double amplitudeDifference) {
 
-        // if is first beat set lights to 50%
-        if (isFirstBeat) {
-            isFirstBeat = false;
-            if (amplitudeDifference != 0d) {
-                amplitudeDifferenceHistory.add(amplitudeDifference);
-            }
-            return getBrightnessData(0.5d, true);
-        }
-
         amplitudeDifferenceHistory.add(amplitudeDifference);
 
         // calibration phase
-        if (amplitudeDifferenceHistory.size() < 5) {
-            return getBrightnessData(0.5d, false);
+        if (amplitudeDifferenceHistory.size() < CALIBRATION_SIZE) {
+            return getBrightnessData(0.5d);
         }
 
         // multiplier is calibrated in regards to the currently highest amplitude, which will set brightness to max if received
-        double brightnessMultiplier = 1 / (amplitudeDifferenceHistory.getMaxValue() * sensitivityMultiplier);
+        double brightnessMultiplier = 1 / amplitudeDifferenceHistory.getMaxValue();
         double brightnessPercentage = Math.max(Math.min(amplitudeDifference * brightnessMultiplier, 1d), -1d);
         brightnessPercentage = (brightnessPercentage + 1d) / 2d;
-        double brightnessDifference = brightnessPercentage - previousBrightness;
 
-        // if ceilings are reached always do brightness update if necessary
-        boolean doBrightnessChange = Math.abs(brightnessDifference) > BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE
-                || (brightnessPercentage == 1d && previousBrightness < 1d)
-                || (brightnessPercentage == 0d && previousBrightness > 0d);
-
-        if (doBrightnessChange) {
-            // brightnessReductionThreshold reduces unnecessary fluctuations and thus reduces latency
-            if (brightnessPercentage < previousBrightness && !brightnessReductionThreshold.isMet()) {
-                brightnessPercentage = previousBrightness;
-                doBrightnessChange = false;
-            }
-        } else {
-            brightnessPercentage = previousBrightness;
-        }
-
-        return getBrightnessData(brightnessPercentage, doBrightnessChange);
+        return getBrightnessData(brightnessPercentage);
     }
 
     BrightnessData getLowestBrightnessData() {
-        return getBrightnessData(0d, true);
+        brightnessReductionThreshold.setCurrentThreshold(0L);
+        return getBrightnessData(0d);
     }
 
-    private void setPreviousBrightness(double brightness) {
-        brightnessReductionThreshold.setCurrentThreshold(BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS);
-        previousBrightness = brightness;
-    }
+    private BrightnessData getBrightnessData(double brightnessPercentage) {
 
-    private BrightnessData getBrightnessData(double brightnessPercentage, boolean doBrightnessChange) {
+        double brightnessDifference = brightnessPercentage - currentBrightness;
+
+        // if ceilings are reached always do brightness update if necessary
+        // if reducing brightness ensure that reduction threshold is met
+        boolean doBrightnessChange = (Math.abs(brightnessDifference) > BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE
+                || (brightnessPercentage == 1d && currentBrightness < 1d)
+                || (brightnessPercentage == 0d && currentBrightness > 0d))
+                && (brightnessPercentage > currentBrightness || brightnessReductionThreshold.isMet());
 
         if (doBrightnessChange) {
-            setPreviousBrightness(brightnessPercentage);
+            brightnessReductionThreshold.setCurrentThreshold(BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS);
+            currentBrightness = brightnessPercentage;
         }
 
-        return new BrightnessData(brightnessPercentage, doBrightnessChange);
+        return new BrightnessData(currentBrightness, doBrightnessChange);
     }
 
 

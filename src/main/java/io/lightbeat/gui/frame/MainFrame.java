@@ -59,7 +59,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JButton readdColorSetPresetsButton;
     private JButton restoreAdvancedButton;
     private JConfigSlider beatSensitivitySlider;
-    private JConfigSlider brightnessSensitivitySlider;
     private JConfigSlider colorRandomizationSlider;
     private JConfigCheckBox strobeCheckBox;
     private JConfigCheckBox glowCheckBox;
@@ -201,7 +200,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         readdColorSetPresetsButton.addActionListener(e -> addColorPresets());
         restoreAdvancedButton.addActionListener(e -> {
             beatSensitivitySlider.restoreDefault();
-            brightnessSensitivitySlider.restoreDefault();
             colorRandomizationSlider.restoreDefault();
             strobeCheckBox.restoreDefault();
             glowCheckBox.restoreDefault();
@@ -231,8 +229,10 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             componentHolder.getExecutorService().schedule(() -> {
 
                 long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
-                if (updateDisableNotificationTime + 172800 > (System.currentTimeMillis() / 1000)) {
-                    // only show update notification every two days
+
+                // only notification show every 4 days
+                long TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS = 345600;
+                if (updateDisableNotificationTime + TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS > (System.currentTimeMillis() / 1000)) {
                     return;
                 }
 
@@ -341,7 +341,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
         beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
-        brightnessSensitivitySlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_SENSITIVITY);
         colorRandomizationSlider = new JConfigSlider(config, ConfigNode.COLOR_RANDOMIZATION_RANGE);
         strobeCheckBox = new JConfigCheckBox(config, ConfigNode.BRIGHTNESS_STROBE);
         glowCheckBox = new JConfigCheckBox(config, ConfigNode.BRIGHTNESS_GLOW);

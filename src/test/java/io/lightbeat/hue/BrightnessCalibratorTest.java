@@ -32,13 +32,14 @@ class BrightnessCalibratorTest {
         BrightnessCalibrator.BrightnessData data;
 
         // test calibration phase
-        for (int i = 0; i < 5; i++) {
-            data = calibrator.getBrightness(i < 4 ? 0d : 1d);
+        for (int i = 0; i < 9; i++) {
+            System.out.println(i);
+            data = calibrator.getBrightness(i < 8 ? 0d : 1d);
             assertEquals(MEDIAN_BRIGHTNESS, data.getBrightness());
             assertEquals(MEDIAN_BRIGHTNESS / 2, data.getBrightnessLow());
         }
 
-        // verify that 0d as difference gives us middle brightness
+        // verify that 0d as difference gives us median brightness
         data = calibrator.getBrightness(0d);
         assertEquals(MEDIAN_BRIGHTNESS, data.getBrightness());
 
@@ -46,7 +47,7 @@ class BrightnessCalibratorTest {
         data = calibrator.getBrightness(-1d);
         assertEquals(MEDIAN_BRIGHTNESS, data.getBrightness());
 
-        // verify that brightness doesn't with unsignificant amplitudes differences
+        // verify that brightness doesn't change with insignificant amplitude differences
         data = calibrator.getBrightness(0.1d);
         assertEquals(MEDIAN_BRIGHTNESS, data.getBrightness());
 
@@ -68,8 +69,11 @@ class BrightnessCalibratorTest {
     void getLowestBrightnessData() {
         BrightnessCalibrator.BrightnessData data = calibrator.getLowestBrightnessData();
         assertAll("lowestData",
-                () -> assertEquals(true, data.isBrightnessChange()),
+                () -> assertEquals(false, data.isBrightnessChange()),
                 () -> assertEquals(0, data.getBrightness())
         );
+
+        calibrator.getBrightness(1d);
+        assertEquals(true, calibrator.getLowestBrightnessData().isBrightnessChange());
     }
 }
