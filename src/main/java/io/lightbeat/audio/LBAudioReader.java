@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class LBAudioReader implements BeatEventManager, AudioReader {
 
-    private static final double MINIMUM_AMPLITUDE = 0.0001d;
+    private static final double MINIMUM_AMPLITUDE = 0.005d;
 
     private static final Logger logger = LoggerFactory.getLogger(LBAudioReader.class);
 

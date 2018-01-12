@@ -33,7 +33,6 @@ class BrightnessCalibratorTest {
 
         // test calibration phase
         for (int i = 0; i < 9; i++) {
-            System.out.println(i);
             data = calibrator.getBrightness(i < 8 ? 0d : 1d);
             assertEquals(MEDIAN_BRIGHTNESS, data.getBrightness());
             assertEquals(MEDIAN_BRIGHTNESS / 2, data.getBrightnessLow());
