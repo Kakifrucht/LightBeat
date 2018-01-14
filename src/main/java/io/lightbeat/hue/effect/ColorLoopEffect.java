@@ -8,12 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Selects three colors and loops through them for all lights that received an update from another effect.
+ * Selects three colors and loops through them for one random light at a time.
  */
 public class ColorLoopEffect extends AbstractThresholdEffect {
 
     private Map<Light, Integer> lightCurrentColorIndex;
     private Color[] colors;
+
 
     public ColorLoopEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
         super(colorSet, brightnessThreshold, activationProbability);
@@ -35,7 +36,7 @@ public class ColorLoopEffect extends AbstractThresholdEffect {
         if (lightCurrentColorIndex.isEmpty()) {
 
             for (Light light : lightUpdate.getLights()) {
-                if (light.getColorController().canControl(this)) {
+                if (light.getColorController().setControllingEffect(this)) {
                     lightCurrentColorIndex.put(light, 0);
                     light.getColorController().setFadeColor(this, colors[0]);
                 }
@@ -46,26 +47,29 @@ public class ColorLoopEffect extends AbstractThresholdEffect {
             }
         }
 
-        for (Light light : lightUpdate.getLights()) {
-            if (lightCurrentColorIndex.containsKey(light) && light.getColorController().wasUpdated()) {
-                light.getColorController().setFadeColor(this, getCurrentColor(light));
-                light.getColorController().setColor(this, getNextColor(light));
-            }
-        }
-    }
+        Light lightToUpdate = lightUpdate.getLights().get(0);
+        int lightColorIndex = lightCurrentColorIndex.get(lightToUpdate);
 
-    private Color getCurrentColor(Light light) {
-        return colors[lightCurrentColorIndex.get(light)];
-    }
+        Color fadeColor = colors[lightColorIndex];
+        Color nextColor;
 
-    private Color getNextColor(Light light) {
-
-        int currentIndex = lightCurrentColorIndex.get(light) + 1;
-        if (currentIndex > 2) {
-            currentIndex = 0;
+        lightColorIndex += 1;
+        if (lightColorIndex > 2) {
+            lightColorIndex = 0;
         }
 
-        lightCurrentColorIndex.put(light, currentIndex);
-        return colors[currentIndex];
+        lightCurrentColorIndex.put(lightToUpdate, lightColorIndex);
+        nextColor = colors[lightColorIndex];
+
+        lightToUpdate.getColorController().setFadeColor(this, fadeColor);
+        lightToUpdate.getColorController().setColor(this, nextColor);
+    }
+
+    @Override
+    void executionDone() {
+        for (Light light : lightCurrentColorIndex.keySet()) {
+            light.getColorController().setFadeColor(this, colors[0]);
+            light.getColorController().unsetControllingEffect(this);
+        }
     }
 }
