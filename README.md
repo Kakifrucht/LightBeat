@@ -1,5 +1,5 @@
 ![logo](https://lightbeat.io/images/banner.png)
 
-[![Join the chat at https://gitter.im/LightBeat-io/Lobby](https://badges.gitter.im/LightBeat-io/Lobby.svg)](https://gitter.im/LightBeat-io/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Discord](https://img.shields.io/discord/355919094026993665.svg)](https://discordapp.com/channels/355919094026993665/355919115573264386)
 
 Visit [lightbeat.io](https://lightbeat.io) to download and for more information.
