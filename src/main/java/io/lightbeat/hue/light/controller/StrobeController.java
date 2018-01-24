@@ -27,15 +27,22 @@ public class StrobeController extends AbstractController {
     }
 
     @Override
-    public void unsetControllingEffect(LightEffect effect) {
-        if (canControl(effect)) {
-            super.unsetControllingEffect(effect);
-            interruptStrobe();
+    public boolean unsetControllingEffect(LightEffect effect) {
 
-            if (!controlledLight.isOn()) {
-                this.setOn = true;
+        boolean wasUnset = false;
+        if (canControl(effect)) {
+
+            wasUnset = super.unsetControllingEffect(effect);
+            if (wasUnset) {
+                interruptStrobe();
+
+                if (!controlledLight.isOn()) {
+                    this.setOn = true;
+                }
             }
         }
+
+        return wasUnset;
     }
 
     @Override

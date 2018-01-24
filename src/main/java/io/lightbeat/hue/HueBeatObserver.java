@@ -22,12 +22,13 @@ import java.util.List;
 public class HueBeatObserver implements BeatObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(HueBeatObserver.class);
+    private static final int AMPLITUDE_HISTORY_SIZE = 75;
 
     private final HueManager hueManager;
     private final BrightnessCalibrator brightnessCalibrator;
     private final List<LightEffect> effectPipe;
 
-    private final DoubleAverageBuffer amplitudeHistory = new DoubleAverageBuffer(75, false);
+    private final DoubleAverageBuffer amplitudeHistory = new DoubleAverageBuffer(AMPLITUDE_HISTORY_SIZE, false);
     private long lastBeatTimeStamp = System.currentTimeMillis();
 
 
@@ -43,8 +44,8 @@ public class HueBeatObserver implements BeatObserver {
             effectPipe.add(new AlertEffect(colorSet, 0.8d, 0.4d, 0.05d));
         }
 
+        effectPipe.add(new ColorStrobeEffect(colorSet, 0.8d, 0.15d));
         effectPipe.add(new ColorFlipEffect(colorSet, 0.7d, 0.15d));
-        effectPipe.add(new ColorLoopEffect(colorSet, 0.6d, 0.125d));
         effectPipe.add(new ColorFadeEffect(colorSet, 0.6d, 0.125d));
         effectPipe.add(new ColorChainEffect(colorSet, 0.5d, 0.1d));
 

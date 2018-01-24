@@ -30,7 +30,7 @@ public abstract class AbstractController {
      * Usually control must be manually given back by calling {@link #unsetControllingEffect(LightEffect)}.
      *
      * @param effect effect that reserves the right to change this controllers values
-     * @return true if control was given to the specified effect
+     * @return true if control was given to or {@link #canControl(LightEffect)} returns true
      */
     public boolean setControllingEffect(LightEffect effect) {
         if (canControl(effect)) {
@@ -41,10 +41,19 @@ public abstract class AbstractController {
         return false;
     }
 
-    public void unsetControllingEffect(LightEffect effect) {
+    /**
+     * Unreserve this controller.
+     *
+     * @param effect effect to deregister
+     * @return true if effect was deregistered
+     */
+    public boolean unsetControllingEffect(LightEffect effect) {
         if (effect.equals(controllingEffect)) {
             controllingEffect = null;
+            return true;
         }
+
+        return false;
     }
 
     public void applyFadeUpdates(LightStateBuilder stateBuilder, PHLightState lastUpdate) {
