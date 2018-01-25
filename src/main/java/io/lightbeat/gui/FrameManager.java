@@ -5,6 +5,8 @@ import io.lightbeat.gui.frame.ConnectFrame;
 import io.lightbeat.gui.frame.HueFrame;
 import io.lightbeat.gui.frame.MainFrame;
 import io.lightbeat.hue.bridge.HueStateObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 
@@ -14,6 +16,8 @@ import javax.swing.*;
  */
 public class FrameManager {
 
+    private static final Logger logger = LoggerFactory.getLogger(FrameManager.class);
+
     private HueFrame currentFrame;
     private int lastX = 100;
     private int lastY = 100;
@@ -22,8 +26,11 @@ public class FrameManager {
     public FrameManager() {
         try {
             // darcula theme by default
+            UIManager.getFont("Label.font"); // workaround due to bug in initializer (bulenkov/Darcula issue #29)
             UIManager.setLookAndFeel(new DarculaLaf());
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            logger.warn("Exception caught during initialization of Darcula look and feel", e);
+        }
     }
 
     public HueStateObserver showConnectFrame() {
