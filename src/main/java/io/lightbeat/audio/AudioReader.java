@@ -25,9 +25,9 @@ public interface AudioReader {
     boolean start(Mixer mixer);
 
     /**
-     * @return true if the audio reader is currently running
+     * @return true if the audio reader is currently opened and can be stopped via {@link #stop()}
      */
-    boolean isRunning();
+    boolean isOpen();
 
     /**
      * Stop reading and interpreting audio data.

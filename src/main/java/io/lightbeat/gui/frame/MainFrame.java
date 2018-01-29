@@ -187,7 +187,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
 
         startButton.addActionListener(e -> {
-            if (audioReader.isRunning()) {
+            if (audioReader.isOpen()) {
                 stopBeatDetection();
             } else {
                 startBeatDetection();
@@ -419,9 +419,35 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     @Override
     public void silenceDetected() {}
 
+    @Override
+    public void readerStopped(StopStatus status) {
+        runOnSwingThread(() -> {
+
+            startButton.setText("Start");
+            startButton.setEnabled(false);
+
+            getHueManager().recoverOriginalState();
+
+            setDeviceSelectComboBox();
+
+            // re-enable with small delay
+            executorService.schedule(() -> runOnSwingThread(() -> {
+                startButton.setEnabled(true);
+                startButton.requestFocus();
+            }), 1, TimeUnit.SECONDS);
+
+            if (status.equals(StopStatus.ERROR)) {
+                showErrorMessage("Selected audio source could not be read");
+                infoLabel.setText("Idle | Selected audio source could no longer be read");
+            } else {
+                infoLabel.setText("Idle | Hover over a setting to get a description");
+            }
+        });
+    }
+
     private void startBeatDetection() {
 
-        if (audioReader.isRunning()) {
+        if (audioReader.isOpen()) {
             return;
         }
 
@@ -452,21 +478,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     }
 
     private void stopBeatDetection() {
-        if (audioReader.isRunning()) {
-            startButton.setText("Start");
-            startButton.setEnabled(false);
-            infoLabel.setText("Idle | Hover over a setting to get a description");
-
+        if (audioReader.isOpen()) {
             audioReader.stop();
-            getHueManager().recoverOriginalState();
-
-            setDeviceSelectComboBox();
-
-            // re-enable with small delay
-            executorService.schedule(() -> runOnSwingThread(() -> {
-                startButton.setEnabled(true);
-                startButton.requestFocus();
-            }), 1, TimeUnit.SECONDS);
         }
     }
 

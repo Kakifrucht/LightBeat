@@ -23,4 +23,20 @@ public interface BeatObserver {
      * Called when silence in the audio data was detected.
      */
     void silenceDetected();
+
+    /**
+     * Called when the audio reader is no longer listening to audio input.
+     *
+     * @param status reason for stopping, {@link StopStatus#ERROR} if not through user input
+     */
+    void readerStopped(StopStatus status);
+
+
+    /**
+     * Status enumerator for {@link #readerStopped(StopStatus)}.
+     */
+    enum StopStatus {
+        USER,
+        ERROR
+    }
 }
