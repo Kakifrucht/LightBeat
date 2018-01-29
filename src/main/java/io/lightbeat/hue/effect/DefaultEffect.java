@@ -1,5 +1,6 @@
 package io.lightbeat.hue.effect;
 
+import io.lightbeat.config.Config;
 import io.lightbeat.hue.LightUpdate;
 import io.lightbeat.hue.color.Color;
 import io.lightbeat.hue.color.ColorSet;
@@ -16,8 +17,8 @@ public class DefaultEffect extends AbstractEffect {
     private Color lastFadeColor;
 
 
-    public DefaultEffect(ColorSet colorSet) {
-        super(colorSet);
+    public DefaultEffect(Config config, ColorSet colorSet) {
+        super(config, colorSet);
     }
 
     @Override

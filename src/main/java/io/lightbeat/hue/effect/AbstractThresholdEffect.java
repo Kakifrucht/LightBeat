@@ -1,5 +1,6 @@
 package io.lightbeat.hue.effect;
 
+import io.lightbeat.config.Config;
 import io.lightbeat.hue.LightUpdate;
 import io.lightbeat.hue.color.ColorSet;
 import io.lightbeat.util.TimeThreshold;
@@ -27,8 +28,8 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
     boolean isActive = false;
 
 
-    AbstractThresholdEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
-        super(colorSet);
+    AbstractThresholdEffect(Config config, ColorSet colorSet, double brightnessThreshold, double activationProbability) {
+        super(config, colorSet);
         this.brightnessThreshold = brightnessThreshold;
         this.activationProbability = activationProbability;
         this.brightnessDeactivationThreshold = brightnessThreshold;

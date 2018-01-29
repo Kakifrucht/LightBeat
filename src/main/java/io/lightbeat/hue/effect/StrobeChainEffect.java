@@ -1,7 +1,8 @@
 package io.lightbeat.hue.effect;
 
-import io.lightbeat.hue.light.Light;
+import io.lightbeat.config.Config;
 import io.lightbeat.hue.color.ColorSet;
+import io.lightbeat.hue.light.Light;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,12 +12,14 @@ import java.util.List;
  */
 public class StrobeChainEffect extends AbstractThresholdEffect {
 
+    private static final double ADDITIONAL_LIGHT_PROBABILITY = 0.2d;
+
     private List<Light> lightsInOrder;
     private int currentIndex;
 
 
-    public StrobeChainEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
-        super(colorSet, brightnessThreshold, activationProbability);
+    public StrobeChainEffect(Config config, ColorSet colorSet, double brightnessThreshold, double activationProbability) {
+        super(config, colorSet, brightnessThreshold, activationProbability);
         setBrightnessDeactivationThreshold(brightnessThreshold - 0.1d);
     }
 
@@ -39,12 +42,18 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
             return;
         }
 
-        lightsInOrder.get(currentIndex++)
-                .getStrobeController()
-                .doStrobe(this, lightUpdate.getTimeSinceLastBeat());
+        boolean isFirstLight = true;
+        while (isFirstLight || Math.random() < ADDITIONAL_LIGHT_PROBABILITY) {
 
-        if (currentIndex >= lightsInOrder.size()) {
-            currentIndex = 0;
+            isFirstLight = false;
+
+            lightsInOrder.get(currentIndex++)
+                    .getStrobeController()
+                    .doStrobe(this, lightUpdate.getTimeSinceLastBeat());
+
+            if (currentIndex >= lightsInOrder.size()) {
+                currentIndex = 0;
+            }
         }
     }
 

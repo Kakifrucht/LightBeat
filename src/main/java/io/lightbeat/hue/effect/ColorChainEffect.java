@@ -1,5 +1,6 @@
 package io.lightbeat.hue.effect;
 
+import io.lightbeat.config.Config;
 import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.color.Color;
 import io.lightbeat.hue.color.ColorSet;
@@ -13,6 +14,8 @@ import java.util.List;
  */
 public class ColorChainEffect extends AbstractThresholdEffect {
 
+    private static final double ADDITIONAL_LIGHT_PROBABILITY = 0.2d;
+
     private List<Light> lightsInOrder;
 
     private Color currentColor;
@@ -20,8 +23,8 @@ public class ColorChainEffect extends AbstractThresholdEffect {
     private int currentIndex;
 
 
-    public ColorChainEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
-        super(colorSet, brightnessThreshold, activationProbability);
+    public ColorChainEffect(Config config, ColorSet colorSet, double brightnessThreshold, double activationProbability) {
+        super(config, colorSet, brightnessThreshold, activationProbability);
     }
 
     @Override
@@ -48,15 +51,20 @@ public class ColorChainEffect extends AbstractThresholdEffect {
             }
         }
 
-        if (currentIndex++ >= lightsInOrder.size() - 1) {
-            currentColor = currentColor != null ? currentFadeColor : colorSet.getNextColor();
-            currentFadeColor = colorSet.getNextColor(currentColor);
-            currentIndex = 0;
-        }
+        boolean isFirstLight = true;
+        while (isFirstLight || Math.random() < ADDITIONAL_LIGHT_PROBABILITY) {
 
-        Light nextLight = lightsInOrder.get(currentIndex);
-        nextLight.getColorController().setColor(this, currentColor);
-        nextLight.getColorController().setFadeColor(this, currentFadeColor);
+            isFirstLight = false;
+            if (currentIndex++ >= lightsInOrder.size() - 1) {
+                currentColor = currentColor != null ? currentFadeColor : colorSet.getNextColor();
+                currentFadeColor = colorSet.getNextColor(currentColor);
+                currentIndex = 0;
+            }
+
+            Light nextLight = lightsInOrder.get(currentIndex);
+            nextLight.getColorController().setColor(this, currentColor);
+            nextLight.getColorController().setFadeColor(this, currentFadeColor);
+        }
     }
 
     @Override

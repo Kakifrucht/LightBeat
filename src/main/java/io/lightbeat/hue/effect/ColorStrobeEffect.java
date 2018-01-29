@@ -1,6 +1,8 @@
 package io.lightbeat.hue.effect;
 
 import io.lightbeat.LightBeat;
+import io.lightbeat.config.Config;
+import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.color.Color;
 import io.lightbeat.hue.color.ColorSet;
 import io.lightbeat.hue.light.Light;
@@ -10,23 +12,26 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Rapidly loops through three selected colors, which change every {@link #COLOR_CHANGE_IN_MILLIS} milliseconds,
+ * Rapidly loops through three selected colors, which update every {@link #COLOR_CHANGE_IN_MILLIS} milliseconds,
  * for one selected and controllable light until the next beat is received.
  */
 public class ColorStrobeEffect extends AbstractThresholdEffect {
 
-    private static final long COLOR_CHANGE_IN_MILLIS = 3000L;
-    private static final long MAXIMUM_DELAY_MILLIS = 400L;
+    private static final long COLOR_CHANGE_IN_MILLIS = 5000L;
 
     private Color[] colors;
     private TimeThreshold newColorThreshold = new TimeThreshold();
+    private long maximumStrobeDelayMillis;
 
     private Future currentFuture;
     private Light currentLight;
 
 
-    public ColorStrobeEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
-        super(colorSet, brightnessThreshold, activationProbability);
+    public ColorStrobeEffect(Config config, ColorSet colorSet, double brightnessThreshold, double activationProbability) {
+        super(config, colorSet, brightnessThreshold, activationProbability);
+
+        // maximum strobe delay, if last beat delay is higher than this value it will halve it as the strobe delay
+        maximumStrobeDelayMillis = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN) * 2;
     }
 
     @Override
@@ -38,7 +43,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
     void execute() {
 
         if (currentFuture != null) {
-            currentFuture.cancel(false);
+            currentFuture.cancel(true);
             currentLight.getColorController().setFadeColor(this, colors[0]);
         }
 
@@ -58,7 +63,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
         }
 
         long delay = lightUpdate.getTimeSinceLastBeat();
-        while (delay > MAXIMUM_DELAY_MILLIS) {
+        while (delay > maximumStrobeDelayMillis) {
             delay /= 2;
         }
 
@@ -68,6 +73,10 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
 
             @Override
             public void run() {
+
+                if (currentLight.getStrobeController().isStrobing()) {
+                    return;
+                }
 
                 if (++currentColor > 2) {
                     currentColor = 0;

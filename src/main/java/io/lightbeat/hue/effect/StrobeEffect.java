@@ -1,8 +1,9 @@
 package io.lightbeat.hue.effect;
 
 import com.philips.lighting.model.PHLight;
-import io.lightbeat.hue.light.Light;
+import io.lightbeat.config.Config;
 import io.lightbeat.hue.color.ColorSet;
+import io.lightbeat.hue.light.Light;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +19,8 @@ public class StrobeEffect extends AbstractRandomEffect {
     private int nextLightInBeats;
 
 
-    public StrobeEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability, double randomProbability) {
-        super(colorSet, brightnessThreshold, activationProbability, randomProbability);
+    public StrobeEffect(Config config, ColorSet colorSet, double brightnessThreshold, double activationProbability, double randomProbability) {
+        super(config, colorSet, brightnessThreshold, activationProbability, randomProbability);
         setBrightnessDeactivationThreshold(brightnessThreshold - 0.2d);
     }
 
