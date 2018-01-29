@@ -81,6 +81,12 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
             @Override
             public void run() {
 
+                if (!dataLine.isOpen()) {
+                    logger.error("Selected audio stream is no longer available");
+                    stop();
+                    return;
+                }
+
                 double highestAmplitude = -1d;
                 while (dataLine.available() >= frameSize && dataLine.read(audioInputBuffer, 0, frameSize) > 0) {
 
@@ -145,21 +151,26 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
             }
         }, 8L, 8L, TimeUnit.MILLISECONDS);
 
+        logger.info("Now listening to audio input from mixer {}", mixer.getMixerInfo().getName());
         return true;
     }
 
     @Override
     public boolean isRunning() {
-        return dataLine != null && dataLine.isRunning();
+        return dataLine != null;
     }
 
     @Override
     public void stop() {
         if (isRunning()) {
+
             dataLine.stop();
             dataLine.close();
+            dataLine = null;
+
             future.cancel(true);
             beatEventObservers.clear();
+            logger.info("No longer listening to audio input");
         }
     }
 

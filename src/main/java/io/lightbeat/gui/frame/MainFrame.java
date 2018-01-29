@@ -82,27 +82,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         audioReader = componentHolder.getAudioReader();
 
-        // add mixer names to dropdown
-        List<String> mixerNames = audioReader.getSupportedMixers().stream()
-                .map(mixer -> mixer.getMixerInfo().getName())
-                .collect(Collectors.toList());
 
-        String lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE);
-        if (lastSource != null) {
-            for (String mixerName : mixerNames) {
-                if (mixerName.equals(lastSource)) {
-                    deviceSelectComboBox.addItem(mixerName);
-                    break;
-                }
-            }
-        }
-
-        for (String mixerName : mixerNames) {
-            if (!mixerName.equals(lastSource)) {
-                deviceSelectComboBox.addItem(mixerName);
-            }
-        }
-
+        setDeviceSelectComboBox();
         deviceHelpButton.addActionListener(e -> openLinkInBrowser("https://lightbeat.io/audioguide.php"));
 
         colorsPreviewPanel.addMouseListener(new MouseAdapter() {
@@ -370,6 +351,31 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         frame.pack();
     }
 
+    private void setDeviceSelectComboBox() {
+
+        deviceSelectComboBox.removeAllItems();
+
+        // add mixer names to dropdown
+        List<String> mixerNames = audioReader.getSupportedMixers().stream()
+                .map(mixer -> mixer.getMixerInfo().getName())
+                .collect(Collectors.toList());
+
+        String lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE);
+        if (lastSource != null) {
+            for (String mixerName : mixerNames) {
+                if (mixerName.equals(lastSource)) {
+                    deviceSelectComboBox.addItem(mixerName);
+                    break;
+                }
+            }
+        }
+        for (String mixerName : mixerNames) {
+            if (!mixerName.equals(lastSource)) {
+                deviceSelectComboBox.addItem(mixerName);
+            }
+        }
+    }
+
     private void addRadioButton(String setName) {
         JRadioButton radioButton = new JRadioButton(setName);
         radioButton.addActionListener(e -> {
@@ -453,6 +459,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
             audioReader.stop();
             getHueManager().recoverOriginalState();
+
+            setDeviceSelectComboBox();
 
             // re-enable with small delay
             executorService.schedule(() -> runOnSwingThread(() -> {
