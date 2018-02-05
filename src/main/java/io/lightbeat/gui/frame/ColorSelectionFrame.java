@@ -6,6 +6,7 @@ import io.lightbeat.gui.swing.JColorTile;
 import io.lightbeat.gui.swing.WrapLayout;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
@@ -110,9 +111,21 @@ public class ColorSelectionFrame extends AbstractFrame {
 
         currentColorPanel.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
                 addColorTile(currentColorPanel.getBackground());
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                currentColorPanel.setBorder(new LineBorder(Color.LIGHT_GRAY));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                currentColorPanel.setBorder(new LineBorder(Color.BLACK));
             }
         });
 
