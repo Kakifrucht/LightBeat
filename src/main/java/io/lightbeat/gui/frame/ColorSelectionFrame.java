@@ -26,8 +26,7 @@ public class ColorSelectionFrame extends AbstractFrame {
 
     private JColorPanel colorSelectorPanel;
     private JPanel currentColorPanel;
-    private JButton addColorButton;
-    private JButton addRandomColorsToButton;
+    private JButton colorRandomizerButton;
 
     private JPanel selectedColorsPanel;
 
@@ -109,11 +108,17 @@ public class ColorSelectionFrame extends AbstractFrame {
         colorSelectorPanel.addMouseListener(selectorEvent);
         colorSelectorPanel.addMouseMotionListener(selectorEvent);
 
-        addColorButton.addActionListener(e -> addColorTile(currentColorPanel.getBackground()));
+        currentColorPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                addColorTile(currentColorPanel.getBackground());
+            }
+        });
 
-        addRandomColorsToButton.addActionListener(e -> {
+        colorRandomizerButton.addActionListener(e -> {
             int rgb = Color.HSBtoRGB((float) Math.random(), selectedSaturation, 1.0f);
-            addColorTile(new Color(rgb));
+            currentColorPanel.setBackground(new Color(rgb));
         });
 
         selectedColorsPanel.setLayout(new WrapLayout(0));

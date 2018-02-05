@@ -69,6 +69,8 @@ public abstract class AbstractFrame implements HueFrame {
                 public void windowClosing(WindowEvent e) {
                     if (isForegroundFrame) {
                         LightBeat.shutdown();
+                    } else {
+                        dispose();
                     }
                 }
             });
