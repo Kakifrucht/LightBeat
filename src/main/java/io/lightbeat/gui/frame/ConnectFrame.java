@@ -154,7 +154,9 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             selectBridgeBox.setEnabled(setEnabled);
             refreshButton.setEnabled(setEnabled);
             connectButton.setEnabled(setEnabled && selectBridgeBox.getItemCount() > 0);
+            manualField.setEnabled(setEnabled);
             statusLabel.setText(labelText);
+            frame.pack();
         });
     }
 }
