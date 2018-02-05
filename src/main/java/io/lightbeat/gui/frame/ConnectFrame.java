@@ -1,6 +1,7 @@
 package io.lightbeat.gui.frame;
 
 import com.philips.lighting.hue.sdk.PHAccessPoint;
+import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.bridge.HueStateObserver;
 
 import javax.swing.*;
@@ -33,35 +34,47 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
         super("Connect", x, y);
 
         selectBridgeBox.addActionListener(e -> {
+
             boolean setVisible = false;
-            if (currentAccessPoints == null || selectBridgeBox.getSelectedIndex() >= currentAccessPoints.size()) {
+            if (selectBridgeBox.getSelectedIndex() + 1 == selectBridgeBox.getItemCount()) {
                 setVisible = true;
             }
 
             if (setVisible != manualField.isVisible()) {
                 manualField.setVisible(setVisible);
-                getJFrame().setVisible(true);
+                getJFrame().pack();
             }
         });
 
         refreshButton.addActionListener(e -> {
             currentAccessPoints = null;
-            getHueManager().doBridgesScan();
+            toggleButtonAndDropdown(false, "Refreshing ...");
+            hueManager.doBridgesScan();
         });
 
         connectButton.addActionListener(e -> {
-            if (currentAccessPoints == null || selectBridgeBox.getSelectedIndex() >= currentAccessPoints.size()) {
+
+            int selectedIndex = selectBridgeBox.getSelectedIndex();
+            if (currentAccessPoints == null || selectedIndex >= currentAccessPoints.size()) {
+
                 // manual connect
-                String address = manualField.getText();
-                if (address.length() > 0) {
-                    PHAccessPoint accessPoint = new PHAccessPoint();
-                    accessPoint.setIpAddress(address);
-                    getHueManager().setAttemptConnection(accessPoint);
+                if (selectBridgeBox.getItemCount() == selectedIndex + 1) {
+                    String address = manualField.getText();
+                    if (address.length() > 0) {
+                        PHAccessPoint accessPoint = new PHAccessPoint();
+                        accessPoint.setIpAddress(address);
+                        hueManager.setAttemptConnection(accessPoint);
+                    }
+                } else {
+                    if (hueManager.attemptStoredConnection()) {
+                        isAttemptingConnection();
+                    }
                 }
+
             } else {
                 PHAccessPoint accessPoint = currentAccessPoints.get(selectBridgeBox.getSelectedIndex());
                 currentAccessPoints = null;
-                getHueManager().setAttemptConnection(accessPoint);
+                hueManager.setAttemptConnection(accessPoint);
             }
         });
 
@@ -86,9 +99,20 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
                 currentAccessPoints.forEach(phAccessPoint -> selectBridgeBox.addItem("Bridge at " + phAccessPoint.getIpAddress()));
             }
 
+            String previousAddress = config.get(ConfigNode.BRIDGE_IPADDRESS);
+            if (previousAddress != null) {
+                selectBridgeBox.addItem("Previous bridge at " + previousAddress);
+            }
+
             selectBridgeBox.addItem("Enter IP manually");
-            toggleButtonAndDropdown(true, currentAccessPoints != null ? "Bridges found, please select your bridge." : "No bridges found, please type IP manually.");
+            selectBridgeBox.setSelectedIndex(0);
+            toggleButtonAndDropdown(true, currentAccessPoints != null ? "Bridges found, please select your bridge." : "No bridges found.");
         });
+    }
+
+    @Override
+    public void isAttemptingConnection() {
+        toggleButtonAndDropdown(false, "Requesting connection...");
     }
 
     @Override
@@ -114,11 +138,6 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     }
 
     @Override
-    public void isAttemptingConnection() {
-        toggleButtonAndDropdown(false, "Requesting connection...");
-    }
-
-    @Override
     public void pushlinkHasFailed() {
         runOnSwingThread(() -> {
             pushlinkProgressBar.setVisible(false);
@@ -126,6 +145,9 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             toggleButtonAndDropdown(true, "Pushlinking timed out, please try again.");
         });
     }
+
+    @Override
+    public void hasConnected() {}
 
     private void toggleButtonAndDropdown(boolean setEnabled, String labelText) {
         runOnSwingThread(() -> {

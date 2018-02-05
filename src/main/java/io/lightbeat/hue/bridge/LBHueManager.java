@@ -7,17 +7,14 @@ import com.philips.lighting.model.PHBridge;
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
 import io.lightbeat.ComponentHolder;
-import io.lightbeat.LightBeat;
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
-import io.lightbeat.gui.FrameManager;
 import io.lightbeat.hue.HueBeatObserver;
-import io.lightbeat.hue.light.LBLight;
-import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.color.ColorSet;
 import io.lightbeat.hue.color.CustomColorSet;
 import io.lightbeat.hue.color.RandomColorSet;
-import io.lightbeat.util.TimeThreshold;
+import io.lightbeat.hue.light.LBLight;
+import io.lightbeat.hue.light.Light;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -28,42 +25,29 @@ import java.util.concurrent.TimeUnit;
 public class LBHueManager implements HueManager, SDKCallbackReceiver {
 
     private final ComponentHolder componentHolder;
-    private final PHHueSDK hueSDK;
-    private final FrameManager frameManager;
     private final Config config;
+    private final PHHueSDK hueSDK;
+
     private final LightQueue lightQueue;
 
     private State currentState = State.NOT_CONNECTED;
-    private HueStateObserver observerFrame;
+    private HueStateObserver stateObserver;
     private PHBridge bridge;
 
     private List<Light> lights;
     private Map<String, PHLightState> originalLightStates;
 
 
-    public LBHueManager() {
+    public LBHueManager(ComponentHolder componentHolder) {
+
+        this.componentHolder = componentHolder;
+        this.config = componentHolder.getConfig();
+
         hueSDK = PHHueSDK.create();
         hueSDK.setAppName("LightBeat");
         hueSDK.setDeviceName(System.getProperty("os.name"));
 
-        componentHolder = LightBeat.getComponentHolder();
-        config = componentHolder.getConfig();
-        this.frameManager = componentHolder.getFrameManager();
-        observerFrame = frameManager.showConnectFrame();
-
-        hueSDK.getNotificationManager().registerSDKListener(new HueSDKListener(this));
-
-        String bridgeUsername = config.get(ConfigNode.BRIDGE_USERNAME);
-        String bridgeIP = config.get(ConfigNode.BRIDGE_IPADDRESS);
-        if (bridgeUsername != null && bridgeIP != null) {
-            PHAccessPoint accessPoint = new PHAccessPoint();
-            accessPoint.setUsername(bridgeUsername);
-            accessPoint.setIpAddress(bridgeIP);
-            setAttemptConnection(accessPoint);
-        } else {
-            doBridgesScan();
-        }
-
+        hueSDK.getNotificationManager().registerSDKListener(new HueSDKListener(config, this));
         this.lightQueue = new LightQueue(this);
     }
 
@@ -73,11 +57,33 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
     }
 
     @Override
+    public void setStateObserver(HueStateObserver observer) {
+        this.stateObserver = observer;
+    }
+
+    @Override
+    public boolean attemptStoredConnection() {
+
+        String bridgeUsername = config.get(ConfigNode.BRIDGE_USERNAME);
+        String bridgeIP = config.get(ConfigNode.BRIDGE_IPADDRESS);
+
+        if (bridgeUsername != null && bridgeIP != null) {
+            PHAccessPoint accessPoint = new PHAccessPoint();
+            accessPoint.setUsername(bridgeUsername);
+            accessPoint.setIpAddress(bridgeIP);
+            setAttemptConnection(accessPoint);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
     public void doBridgesScan() {
         if (!currentState.equals(State.SCANNING_FOR_BRIDGES)) {
             PHBridgeSearchManager searchManager = (PHBridgeSearchManager) hueSDK.getSDKService(PHHueSDK.SEARCH_BRIDGE);
             searchManager.search(true, true);
-            observerFrame.isScanningForBridges(currentState.equals(State.ATTEMPTING_CONNECTION));
+            stateObserver.isScanningForBridges(currentState.equals(State.ATTEMPTING_CONNECTION));
             currentState = State.SCANNING_FOR_BRIDGES;
         }
     }
@@ -85,7 +91,7 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
     @Override
     public void setAttemptConnection(PHAccessPoint accessPoint) {
         currentState = State.ATTEMPTING_CONNECTION;
-        observerFrame.isAttemptingConnection();
+        stateObserver.isAttemptingConnection();
         hueSDK.connect(accessPoint);
     }
 
@@ -96,8 +102,6 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
 
     @Override
     public void shutdown() {
-
-        componentHolder.getExecutorService().shutdown();
 
         if (isConnected()) {
 
@@ -117,22 +121,6 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
         }
 
         hueSDK.destroySDK();
-
-        // dispatch thread that force exits if still running after 10 seconds
-        // fixes bug with hueSDK, for example after failed pushlink shutdown doesn't seem to work properly
-        TimeThreshold forceShutdownThreshold = new TimeThreshold(10000L);
-        new Thread(() -> {
-            // under normal circumstances the thread count won't fall below 4
-            while (Thread.activeCount() > 4) {
-                if (forceShutdownThreshold.isMet()) {
-                    Runtime.getRuntime().exit(0);
-                }
-
-                try {
-                    Thread.sleep(1000L);
-                } catch (InterruptedException ignored) {}
-            }
-        }).start();
     }
 
     @Override
@@ -218,29 +206,26 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
     public void setConnected(PHBridge bridge) {
         currentState = State.CONNECTED;
         this.bridge = bridge;
-        frameManager.showMainFrame();
+        stateObserver.hasConnected();
     }
 
     @Override
     public void setAccessPointsFound(List<PHAccessPoint> accessPoints) {
         currentState = State.NOT_CONNECTED;
-        observerFrame.displayFoundBridges(accessPoints);
+        stateObserver.displayFoundBridges(accessPoints);
     }
 
     @Override
     public void setAwaitingPushlink() {
         currentState = State.AWAITING_PUSHLINK;
-        observerFrame.requestPushlink();
+        stateObserver.requestPushlink();
     }
 
     @Override
     public void connectionWasLost() {
-
-        currentState = State.NOT_CONNECTED;
         if (currentState.equals(State.AWAITING_PUSHLINK)) {
-            observerFrame.pushlinkHasFailed();
+            stateObserver.pushlinkHasFailed();
         } else {
-            observerFrame = frameManager.showConnectFrame();
             doBridgesScan();
         }
     }

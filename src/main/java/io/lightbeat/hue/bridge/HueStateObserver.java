@@ -14,9 +14,11 @@ public interface HueStateObserver {
 
     void displayFoundBridges(List<PHAccessPoint> list);
 
-    void requestPushlink();
-
     void isAttemptingConnection();
 
+    void requestPushlink();
+
     void pushlinkHasFailed();
+
+    void hasConnected();
 }

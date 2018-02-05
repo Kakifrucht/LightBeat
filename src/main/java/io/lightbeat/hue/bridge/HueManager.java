@@ -20,6 +20,20 @@ public interface HueManager {
     PHBridge getBridge();
 
     /**
+     * Sets the given parameter as the state observer to receive api callbacks.
+     *
+     * @param observer to receive callbacks from state changes
+     */
+    void setStateObserver(HueStateObserver observer);
+
+    /**
+     * Attempts to connect to the last connected bridge.
+     *
+     * @return true if there is a previous bridge stored
+     */
+    boolean attemptStoredConnection();
+
+    /**
      * Causes a scan for bridges in the connected network.
      */
     void doBridgesScan();

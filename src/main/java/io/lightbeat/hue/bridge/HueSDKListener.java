@@ -13,7 +13,6 @@ import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.lightbeat.LightBeat;
 
 import java.util.List;
 
@@ -25,11 +24,13 @@ class HueSDKListener implements PHSDKListener {
 
     private static final Logger logger = LoggerFactory.getLogger(HueSDKListener.class);
 
+    private final Config config;
     private final SDKCallbackReceiver callbackReceiver;
     private final PHHueSDK hueSDK = PHHueSDK.getStoredSDKObject();
 
 
-    HueSDKListener(SDKCallbackReceiver callbackReceiver) {
+    HueSDKListener(Config config, SDKCallbackReceiver callbackReceiver) {
+        this.config = config;
         this.callbackReceiver = callbackReceiver;
     }
 
@@ -39,7 +40,6 @@ class HueSDKListener implements PHSDKListener {
         PHBridgeConfiguration bridgeConfiguration = phBridge.getResourceCache().getBridgeConfiguration();
         logger.info("Connected to bridge at {} with username {}", bridgeConfiguration.getIpAddress(), username);
 
-        Config config = LightBeat.getComponentHolder().getConfig();
         config.put(ConfigNode.BRIDGE_USERNAME, username);
         config.put(ConfigNode.BRIDGE_IPADDRESS, bridgeConfiguration.getIpAddress());
 
@@ -76,7 +76,7 @@ class HueSDKListener implements PHSDKListener {
         logger.error("Error ocurred, code {} - {}", errorCode, message);
         if (errorCode == PHMessageType.BRIDGE_NOT_FOUND) {
             callbackReceiver.setAccessPointsFound(null);
-        } else if (errorCode == PHHueError.BRIDGE_NOT_RESPONDING) {
+        } else if (errorCode == PHHueError.BRIDGE_NOT_RESPONDING || errorCode == PHMessageType.PUSHLINK_AUTHENTICATION_FAILED) {
             callbackReceiver.connectionWasLost();
         }
     }

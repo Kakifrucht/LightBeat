@@ -6,7 +6,7 @@ import com.philips.lighting.model.PHBridge;
 import java.util.List;
 
 /**
- * Implementing class can receives callbacks from {@link com.philips.lighting.hue.sdk.PHSDKListener} instance.
+ * Implementing class can receive callbacks from {@link com.philips.lighting.hue.sdk.PHSDKListener} instance.
  */
 interface SDKCallbackReceiver {
 

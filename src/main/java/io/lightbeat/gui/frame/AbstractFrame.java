@@ -21,6 +21,7 @@ public abstract class AbstractFrame implements HueFrame {
     final ComponentHolder componentHolder = LightBeat.getComponentHolder();
     final Config config = componentHolder.getConfig();
     final ScheduledExecutorService executorService = componentHolder.getExecutorService();
+    final HueManager hueManager = componentHolder.getHueManager();
 
     final JFrame frame = new JFrame();
 
@@ -66,9 +67,8 @@ public abstract class AbstractFrame implements HueFrame {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    dispose();
                     if (isForegroundFrame) {
-                        componentHolder.getHueManager().shutdown();
+                        LightBeat.shutdown();
                     }
                 }
             });
@@ -84,10 +84,6 @@ public abstract class AbstractFrame implements HueFrame {
         } else {
             SwingUtilities.invokeLater(toRun);
         }
-    }
-
-    HueManager getHueManager() {
-        return componentHolder.getHueManager();
     }
 
     @Override
