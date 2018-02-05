@@ -11,7 +11,7 @@ import io.lightbeat.gui.swing.JColorPanel;
 import io.lightbeat.gui.swing.JConfigCheckBox;
 import io.lightbeat.gui.swing.JConfigSlider;
 import io.lightbeat.gui.swing.JIconLabel;
-import io.lightbeat.util.URLConnectionReader;
+import io.lightbeat.util.UpdateChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,7 +144,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
 
         // setup lights toggle panel
-        List<PHLight> allLights = getHueManager().getLights();
+        List<PHLight> allLights = hueManager.getLights();
         List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
         for (PHLight light : allLights) {
 
@@ -211,21 +211,20 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
                 long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
 
-                // only notification show every 4 days
+                // only show notification every 4 days, disable if on snapshot version
                 long TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS = 345600;
-                if (updateDisableNotificationTime + TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS > (System.currentTimeMillis() / 1000)) {
+                if (updateDisableNotificationTime + TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS > (System.currentTimeMillis() / 1000)
+                        || version.endsWith("SNAPSHOT")) {
                     return;
                 }
 
-                URLConnectionReader reader = new URLConnectionReader("https://lightbeat.io/latest.php");
+                UpdateChecker updateChecker = new UpdateChecker(version);
                 try {
-                    String currentVersion = reader.getFirstLine();
-                    boolean isCurrentVersion = version.equals(currentVersion);
 
-                    if (!isCurrentVersion) {
+                    if (updateChecker.isUpdateAvailable()) {
                         int answerCode = JOptionPane.showConfirmDialog(
                                 frame,
-                                "A new update is available (version " + currentVersion + ").\n\nDownload now?",
+                                "A new update is available (version " + updateChecker.getVersionString() + ").\n\nDownload now?",
                                 "Update Found",
                                 JOptionPane.YES_NO_OPTION);
                         if (answerCode == 0) {
@@ -346,7 +345,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             config.put(ConfigNode.COLOR_SET_SELECTED, selectedSetButton.getText());
         }
 
-        colorsPreviewPanel.setColorSet(getHueManager().getColorSet());
+        colorsPreviewPanel.setColorSet(hueManager.getColorSet());
         colorSelectPanel.repaint();
         frame.pack();
     }
@@ -380,7 +379,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         JRadioButton radioButton = new JRadioButton(setName);
         radioButton.addActionListener(e -> {
             config.put(ConfigNode.COLOR_SET_SELECTED, setName);
-            colorsPreviewPanel.setColorSet(getHueManager().getColorSet());
+            colorsPreviewPanel.setColorSet(hueManager.getColorSet());
         });
 
         colorSelectPanel.add(radioButton);
@@ -426,11 +425,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             startButton.setText("Start");
             startButton.setEnabled(false);
 
-            getHueManager().recoverOriginalState();
-
             setDeviceSelectComboBox();
 
-            // re-enable with small delay
+            // re-enable startbutton with small delay
             executorService.schedule(() -> runOnSwingThread(() -> {
                 startButton.setEnabled(true);
                 startButton.requestFocus();
@@ -438,7 +435,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
             if (status.equals(StopStatus.ERROR)) {
                 showErrorMessage("Selected audio source could not be read");
-                infoLabel.setText("Idle | Selected audio source could no longer be read");
+                infoLabel.setText("Idle | Selected audio source could not be read");
             } else {
                 infoLabel.setText("Idle | Hover over a setting to get a description");
             }
@@ -458,7 +455,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             if (mixerName.equals(selectedMixerName)) {
                 config.put(ConfigNode.LAST_AUDIO_SOURCE, mixerName);
 
-                boolean lightsInitialized = getHueManager().initializeLights();
+                boolean lightsInitialized = hueManager.initializeLights();
                 if (lightsInitialized) {
                     boolean audioReaderStarted = audioReader.start(supportedMixer);
                     if (audioReaderStarted) {
