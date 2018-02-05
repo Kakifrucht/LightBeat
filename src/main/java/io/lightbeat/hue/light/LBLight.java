@@ -28,8 +28,8 @@ public class LBLight implements Light {
 
 
     public LBLight(PHLight light, LightQueue lightQueue, ScheduledExecutorService executorService, int fadeTime) {
-        this.lightQueue = lightQueue;
         this.light = light;
+        this.lightQueue = lightQueue;
         this.fadeTime = fadeTime;
 
         this.colorController = new ColorController(this);
@@ -83,7 +83,7 @@ public class LBLight implements Light {
             return;
         }
 
-        if (on) {
+        if (/* turned */ on) {
             currentBuilder.copyFromBuilder(builderToCopyAfterTurningOn);
         } else {
             builderToCopyAfterTurningOn = LightStateBuilder.create();

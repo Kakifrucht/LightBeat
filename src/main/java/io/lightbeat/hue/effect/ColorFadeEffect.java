@@ -1,6 +1,5 @@
 package io.lightbeat.hue.effect;
 
-import io.lightbeat.config.Config;
 import io.lightbeat.hue.color.Color;
 import io.lightbeat.hue.color.ColorSet;
 
@@ -12,8 +11,8 @@ public class ColorFadeEffect extends AbstractThresholdEffect {
     private Color lastFadeColor;
 
 
-    public ColorFadeEffect(Config config, ColorSet colorSet, double brightnessThreshold, double activationProbability) {
-        super(config, colorSet, brightnessThreshold, activationProbability);
+    public ColorFadeEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
+        super(colorSet, brightnessThreshold, activationProbability);
     }
 
     @Override

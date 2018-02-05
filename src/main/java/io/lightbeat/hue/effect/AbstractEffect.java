@@ -1,6 +1,7 @@
 package io.lightbeat.hue.effect;
 
-import io.lightbeat.config.Config;
+import io.lightbeat.ComponentHolder;
+import io.lightbeat.LightBeat;
 import io.lightbeat.hue.LightUpdate;
 import io.lightbeat.hue.color.ColorSet;
 
@@ -13,15 +14,16 @@ import java.util.Random;
  */
 abstract class AbstractEffect implements LightEffect {
 
-    final Config config;
+    final ComponentHolder componentHolder;
+
     final ColorSet colorSet;
     final Random rnd = new Random();
 
     LightUpdate lightUpdate;
 
 
-    AbstractEffect(Config config, ColorSet colorSet) {
-        this.config = config;
+    AbstractEffect(ColorSet colorSet) {
+        this.componentHolder = LightBeat.getComponentHolder();
         this.colorSet = colorSet;
     }
 

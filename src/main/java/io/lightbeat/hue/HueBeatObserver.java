@@ -39,19 +39,19 @@ public class HueBeatObserver implements BeatObserver {
         // effects at the end of pipe have highest priority
         ColorSet colorSet = hueManager.getColorSet();
         effectPipe = new ArrayList<>();
-        effectPipe.add(new DefaultEffect(config, colorSet));
+        effectPipe.add(new DefaultEffect(colorSet));
         if (config.getBoolean(ConfigNode.BRIGHTNESS_GLOW)) {
-            effectPipe.add(new AlertEffect(config, colorSet, 0.8d, 0.4d, 0.05d));
+            effectPipe.add(new AlertEffect(colorSet, 0.8d, 0.4d, 0.05d));
         }
 
-        effectPipe.add(new ColorStrobeEffect(config, colorSet, 0.8d, 0.15d));
-        effectPipe.add(new ColorFlipEffect(config,colorSet, 0.7d, 0.15d));
-        effectPipe.add(new ColorFadeEffect(config, colorSet, 0.6d, 0.125d));
-        effectPipe.add(new ColorChainEffect(config, colorSet, 0.5d, 0.1d));
+        effectPipe.add(new ColorStrobeEffect(colorSet, 0.8d, 0.15d));
+        effectPipe.add(new ColorFlipEffect(colorSet, 0.7d, 0.15d));
+        effectPipe.add(new ColorFadeEffect(colorSet, 0.6d, 0.125d));
+        effectPipe.add(new ColorChainEffect(colorSet, 0.5d, 0.1d));
 
         if (config.getBoolean(ConfigNode.BRIGHTNESS_STROBE)) {
-            effectPipe.add(new StrobeEffect(config, colorSet, 0.95d, 0.4d, 0.02d));
-            effectPipe.add(new StrobeChainEffect(config, colorSet, 0.8d, 0.1d));
+            effectPipe.add(new StrobeEffect(colorSet, 0.95d, 0.4d, 0.02d));
+            effectPipe.add(new StrobeChainEffect(colorSet, 0.8d, 0.1d));
         }
     }
 
@@ -79,7 +79,11 @@ public class HueBeatObserver implements BeatObserver {
     }
 
     @Override
-    public void readerStopped(StopStatus status) {}
+    public void readerStopped(StopStatus status) {
+        // gracefully disable effects that may still be running scheduler threads
+        noBeatReceived();
+        hueManager.recoverOriginalState();
+    }
 
     private void passDataToEffectPipe(BrightnessCalibrator.BrightnessData data, boolean receivedBeat) {
         LightUpdate lightUpdate = new LightUpdate(hueManager.getSelectedLights(), data, getTimeSinceLastBeat());

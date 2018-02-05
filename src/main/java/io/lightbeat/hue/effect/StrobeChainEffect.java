@@ -1,6 +1,5 @@
 package io.lightbeat.hue.effect;
 
-import io.lightbeat.config.Config;
 import io.lightbeat.hue.color.ColorSet;
 import io.lightbeat.hue.light.Light;
 
@@ -18,8 +17,8 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
     private int currentIndex;
 
 
-    public StrobeChainEffect(Config config, ColorSet colorSet, double brightnessThreshold, double activationProbability) {
-        super(config, colorSet, brightnessThreshold, activationProbability);
+    public StrobeChainEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
+        super(colorSet, brightnessThreshold, activationProbability);
         setBrightnessDeactivationThreshold(brightnessThreshold - 0.1d);
     }
 

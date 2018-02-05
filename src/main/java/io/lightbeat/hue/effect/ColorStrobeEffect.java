@@ -1,7 +1,5 @@
 package io.lightbeat.hue.effect;
 
-import io.lightbeat.LightBeat;
-import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.color.Color;
 import io.lightbeat.hue.color.ColorSet;
@@ -27,11 +25,11 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
     private Light currentLight;
 
 
-    public ColorStrobeEffect(Config config, ColorSet colorSet, double brightnessThreshold, double activationProbability) {
-        super(config, colorSet, brightnessThreshold, activationProbability);
+    public ColorStrobeEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
+        super(colorSet, brightnessThreshold, activationProbability);
 
         // maximum strobe delay, if last beat delay is higher than this value it will halve it as the strobe delay
-        maximumStrobeDelayMillis = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN) * 2;
+        maximumStrobeDelayMillis = componentHolder.getConfig().getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN) * 2;
     }
 
     @Override
@@ -67,7 +65,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
             delay /= 2;
         }
 
-        currentFuture = LightBeat.getComponentHolder().getExecutorService().scheduleAtFixedRate(new Runnable() {
+        currentFuture = componentHolder.getExecutorService().scheduleAtFixedRate(new Runnable() {
 
             int currentColor = 0;
 

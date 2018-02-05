@@ -51,8 +51,8 @@ class BrightnessCalibratorTest {
         assertEquals(MEDIAN_BRIGHTNESS, data.getBrightness());
 
         // brightness corrected upwards, difference significant enough
-        data = calibrator.getBrightness(0.4d);
-        assertEquals(183, data.getBrightness());
+        data = calibrator.getBrightness(0.44d);
+        assertEquals(182, data.getBrightness());
 
         // change brightness to max
         data = calibrator.getBrightness(1d);

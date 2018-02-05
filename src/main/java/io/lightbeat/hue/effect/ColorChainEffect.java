@@ -1,9 +1,8 @@
 package io.lightbeat.hue.effect;
 
-import io.lightbeat.config.Config;
-import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.color.Color;
 import io.lightbeat.hue.color.ColorSet;
+import io.lightbeat.hue.light.Light;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +22,8 @@ public class ColorChainEffect extends AbstractThresholdEffect {
     private int currentIndex;
 
 
-    public ColorChainEffect(Config config, ColorSet colorSet, double brightnessThreshold, double activationProbability) {
-        super(config, colorSet, brightnessThreshold, activationProbability);
+    public ColorChainEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
+        super(colorSet, brightnessThreshold, activationProbability);
     }
 
     @Override
