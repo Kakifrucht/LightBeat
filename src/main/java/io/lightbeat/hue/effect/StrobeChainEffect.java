@@ -1,6 +1,6 @@
 package io.lightbeat.hue.effect;
 
-import io.lightbeat.hue.color.ColorSet;
+import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.light.Light;
 
 import java.util.ArrayList;
@@ -17,8 +17,8 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
     private int currentIndex;
 
 
-    public StrobeChainEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
-        super(colorSet, brightnessThreshold, activationProbability);
+    public StrobeChainEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability) {
+        super(componentHolder, brightnessThreshold, activationProbability);
         setBrightnessDeactivationThreshold(brightnessThreshold - 0.1d);
     }
 

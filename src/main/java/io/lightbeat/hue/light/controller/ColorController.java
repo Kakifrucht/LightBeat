@@ -60,10 +60,6 @@ public class ColorController extends AbstractController {
         }
     }
 
-    public boolean wasUpdated() {
-        return colorWasUpdated || fadeColorWasUpdated;
-    }
-
     public void undoColorChange(LightEffect effect) {
         if (canControl(effect)) {
             if (colorWasUpdated) {

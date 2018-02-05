@@ -1,7 +1,7 @@
 package io.lightbeat.hue.effect;
 
+import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.LightUpdate;
-import io.lightbeat.hue.color.ColorSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +16,8 @@ public abstract class AbstractRandomEffect extends AbstractThresholdEffect {
     private final double randomProbability;
 
 
-    AbstractRandomEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability, double randomProbability) {
-        super(colorSet, brightnessThreshold, activationProbability);
+    AbstractRandomEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability, double randomProbability) {
+        super(componentHolder, brightnessThreshold, activationProbability);
         this.randomProbability = randomProbability;
     }
 

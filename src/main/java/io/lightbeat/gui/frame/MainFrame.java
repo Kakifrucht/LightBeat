@@ -2,7 +2,7 @@ package io.lightbeat.gui.frame;
 
 import com.bulenkov.darcula.DarculaLaf;
 import com.philips.lighting.model.PHLight;
-import io.lightbeat.LightBeat;
+import io.lightbeat.ComponentHolder;
 import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
@@ -77,8 +77,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private HueFrame selectionFrame = null;
 
 
-    public MainFrame(int x, int y) {
-        super(x, y);
+    public MainFrame(ComponentHolder componentHolder, int x, int y) {
+        super(componentHolder, x, y);
 
         audioReader = componentHolder.getAudioReader();
 
@@ -202,7 +202,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             }
         });
 
-        String version = LightBeat.getVersion();
+        String version = componentHolder.getVersion();
         if (version != null) {
             urlLabel.setText("v" + version + " | " + urlLabel.getText());
 

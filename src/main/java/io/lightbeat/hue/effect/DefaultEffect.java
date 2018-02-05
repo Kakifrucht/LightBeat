@@ -1,8 +1,8 @@
 package io.lightbeat.hue.effect;
 
+import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.LightUpdate;
 import io.lightbeat.hue.color.Color;
-import io.lightbeat.hue.color.ColorSet;
 import io.lightbeat.hue.light.Light;
 
 import java.util.ArrayList;
@@ -16,8 +16,8 @@ public class DefaultEffect extends AbstractEffect {
     private Color lastFadeColor;
 
 
-    public DefaultEffect(ColorSet colorSet) {
-        super(colorSet);
+    public DefaultEffect(ComponentHolder componentHolder) {
+        super(componentHolder);
     }
 
     @Override

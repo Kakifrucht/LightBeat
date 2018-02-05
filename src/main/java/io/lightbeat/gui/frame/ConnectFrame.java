@@ -1,6 +1,7 @@
 package io.lightbeat.gui.frame;
 
 import com.philips.lighting.hue.sdk.PHAccessPoint;
+import io.lightbeat.ComponentHolder;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.bridge.HueStateObserver;
 
@@ -30,8 +31,8 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     private List<PHAccessPoint> currentAccessPoints = null;
 
 
-    public ConnectFrame(int x, int y) {
-        super("Connect", x, y);
+    public ConnectFrame(ComponentHolder componentHolder, int x, int y) {
+        super(componentHolder, "Connect", x, y);
 
         selectBridgeBox.addActionListener(e -> {
 

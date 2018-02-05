@@ -1,7 +1,6 @@
 package io.lightbeat.hue.effect;
 
 import io.lightbeat.ComponentHolder;
-import io.lightbeat.LightBeat;
 import io.lightbeat.hue.LightUpdate;
 import io.lightbeat.hue.color.ColorSet;
 
@@ -22,9 +21,9 @@ abstract class AbstractEffect implements LightEffect {
     LightUpdate lightUpdate;
 
 
-    AbstractEffect(ColorSet colorSet) {
-        this.componentHolder = LightBeat.getComponentHolder();
-        this.colorSet = colorSet;
+    AbstractEffect(ComponentHolder componentHolder) {
+        this.componentHolder = componentHolder;
+        this.colorSet = componentHolder.getHueManager().getColorSet();
     }
 
     @Override

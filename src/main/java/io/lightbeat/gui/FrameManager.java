@@ -2,7 +2,7 @@ package io.lightbeat.gui;
 
 import com.bulenkov.darcula.DarculaLaf;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
-import io.lightbeat.LightBeat;
+import io.lightbeat.ComponentHolder;
 import io.lightbeat.gui.frame.ConnectFrame;
 import io.lightbeat.gui.frame.HueFrame;
 import io.lightbeat.gui.frame.MainFrame;
@@ -24,14 +24,17 @@ public class FrameManager implements HueStateObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(FrameManager.class);
 
+    private final ComponentHolder componentHolder;
+
     private HueFrame currentFrame;
     private int lastX = 100;
     private int lastY = 100;
 
 
-    public FrameManager() {
+    public FrameManager(ComponentHolder componentHolder) {
 
-        HueManager hueManager = LightBeat.getComponentHolder().getHueManager();
+        this.componentHolder = componentHolder;
+        HueManager hueManager = componentHolder.getHueManager();
         hueManager.setStateObserver(this);
 
         try { // set darcula theme by default
@@ -92,7 +95,7 @@ public class FrameManager implements HueStateObserver {
         }
 
         disposeCurrentWindow();
-        currentFrame = new ConnectFrame(lastX, lastY);
+        currentFrame = new ConnectFrame(componentHolder, lastX, lastY);
         return (HueStateObserver) currentFrame;
     }
 
@@ -102,7 +105,7 @@ public class FrameManager implements HueStateObserver {
         }
 
         disposeCurrentWindow();
-        currentFrame = new MainFrame(lastX, lastY);
+        currentFrame = new MainFrame(componentHolder, lastX, lastY);
     }
 
     private void disposeCurrentWindow() {

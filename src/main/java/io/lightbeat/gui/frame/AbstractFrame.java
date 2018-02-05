@@ -1,7 +1,6 @@
 package io.lightbeat.gui.frame;
 
 import io.lightbeat.ComponentHolder;
-import io.lightbeat.LightBeat;
 import io.lightbeat.config.Config;
 import io.lightbeat.hue.bridge.HueManager;
 
@@ -18,10 +17,10 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public abstract class AbstractFrame implements HueFrame {
 
-    final ComponentHolder componentHolder = LightBeat.getComponentHolder();
-    final Config config = componentHolder.getConfig();
-    final ScheduledExecutorService executorService = componentHolder.getExecutorService();
-    final HueManager hueManager = componentHolder.getHueManager();
+    final ComponentHolder componentHolder;
+    final ScheduledExecutorService executorService;
+    final Config config;
+    final HueManager hueManager;
 
     final JFrame frame = new JFrame();
 
@@ -30,14 +29,19 @@ public abstract class AbstractFrame implements HueFrame {
     private final int y;
 
 
-    AbstractFrame(int x, int y) {
-        this(null, x, y);
+    AbstractFrame(ComponentHolder componentHolder, int x, int y) {
+        this(componentHolder, null, x, y);
     }
 
-    AbstractFrame(String frameTitle, int x, int y) {
+    AbstractFrame(ComponentHolder componentHolder, String frameTitle, int x, int y) {
         this.frameTitle = "LightBeat" + (frameTitle != null ? (" - " + frameTitle) : "" );
         this.x = x;
         this.y = y;
+
+        this.componentHolder = componentHolder;
+        this.config = componentHolder.getConfig();
+        this.executorService = componentHolder.getExecutorService();
+        this.hueManager = componentHolder.getHueManager();
     }
 
     void drawFrame(Container mainContainer, boolean isForegroundFrame) {
@@ -68,7 +72,7 @@ public abstract class AbstractFrame implements HueFrame {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     if (isForegroundFrame) {
-                        LightBeat.shutdown();
+                        componentHolder.shutdownAll();
                     } else {
                         dispose();
                     }

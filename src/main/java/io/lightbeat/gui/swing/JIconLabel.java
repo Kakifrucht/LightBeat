@@ -11,8 +11,8 @@ public class JIconLabel extends JLabel {
     private final int width;
     private final int height;
 
-    private ImageIcon icon;
-    private ImageIcon secondIcon;
+    private final ImageIcon icon;
+    private final ImageIcon secondIcon;
 
     private boolean firstIconSelected = true;
 

@@ -1,7 +1,7 @@
 package io.lightbeat.hue.effect;
 
+import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.color.Color;
-import io.lightbeat.hue.color.ColorSet;
 import io.lightbeat.hue.light.Light;
 
 import java.util.HashMap;
@@ -23,8 +23,8 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
     private Color color2;
 
 
-    public ColorFlipEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability) {
-        super(colorSet, brightnessThreshold, activationProbability);
+    public ColorFlipEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability) {
+        super(componentHolder, brightnessThreshold, activationProbability);
     }
 
     @Override

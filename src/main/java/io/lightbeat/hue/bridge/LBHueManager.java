@@ -177,7 +177,7 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
                 }
             }
 
-            HueBeatObserver beatObserver = new HueBeatObserver(this, componentHolder.getConfig());
+            HueBeatObserver beatObserver = new HueBeatObserver(componentHolder);
             componentHolder.getAudioEventManager().registerBeatObserver(beatObserver);
             return true;
         }

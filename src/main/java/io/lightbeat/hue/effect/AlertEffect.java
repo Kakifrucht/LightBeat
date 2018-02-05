@@ -1,7 +1,7 @@
 package io.lightbeat.hue.effect;
 
 import com.philips.lighting.model.PHLight;
-import io.lightbeat.hue.color.ColorSet;
+import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.light.LightStateBuilder;
 import io.lightbeat.util.TimeThreshold;
@@ -19,8 +19,8 @@ public class AlertEffect extends AbstractRandomEffect {
     private TimeThreshold alertThreshold;
 
 
-    public AlertEffect(ColorSet colorSet, double brightnessThreshold, double activationProbability, double randomProbability) {
-        super(colorSet, brightnessThreshold, activationProbability, randomProbability);
+    public AlertEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability, double randomProbability) {
+        super(componentHolder, brightnessThreshold, activationProbability, randomProbability);
     }
 
     @Override
