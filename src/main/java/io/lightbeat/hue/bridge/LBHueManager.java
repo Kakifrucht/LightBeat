@@ -1,11 +1,8 @@
 package io.lightbeat.hue.bridge;
 
-import com.philips.lighting.hue.sdk.PHAccessPoint;
-import com.philips.lighting.hue.sdk.PHBridgeSearchManager;
-import com.philips.lighting.hue.sdk.PHHueSDK;
-import com.philips.lighting.model.PHBridge;
-import com.philips.lighting.model.PHLight;
-import com.philips.lighting.model.PHLightState;
+import com.philips.lighting.hue.sdk.*;
+import com.philips.lighting.hue.sdk.exception.PHHeartbeatException;
+import com.philips.lighting.model.*;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
@@ -15,14 +12,17 @@ import io.lightbeat.hue.color.CustomColorSet;
 import io.lightbeat.hue.color.RandomColorSet;
 import io.lightbeat.hue.light.LBLight;
 import io.lightbeat.hue.light.Light;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Default {@link HueManager} implementation.
  */
-public class LBHueManager implements HueManager, SDKCallbackReceiver {
+public class LBHueManager implements HueManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(LBHueManager.class);
 
     private final ComponentHolder componentHolder;
     private final Config config;
@@ -47,7 +47,93 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
         hueSDK.setAppName("LightBeat");
         hueSDK.setDeviceName(System.getProperty("os.name"));
 
-        hueSDK.getNotificationManager().registerSDKListener(new HueSDKListener(config, this));
+        PHSDKListener listener = new PHSDKListener() {
+            @Override
+            public void onBridgeConnected(PHBridge phBridge, String username) {
+
+                PHBridgeConfiguration bridgeConfiguration = phBridge.getResourceCache().getBridgeConfiguration();
+                logger.info("Connected to bridge at {} with username {}", bridgeConfiguration.getIpAddress(), username);
+
+                config.put(ConfigNode.BRIDGE_USERNAME, username);
+                config.put(ConfigNode.BRIDGE_IPADDRESS, bridgeConfiguration.getIpAddress());
+
+                hueSDK.setSelectedBridge(phBridge);
+                try {
+                    hueSDK.getHeartbeatManager().enableLightsHeartbeat(phBridge, PHHueSDK.HB_INTERVAL);
+                } catch (PHHeartbeatException e) {
+                    logger.warn("Exception while enabling lights heartbeat", e);
+                }
+
+                bridge = phBridge;
+                currentState = State.CONNECTED;
+                stateObserver.hasConnected();
+            }
+
+            @Override
+            public void onAuthenticationRequired(PHAccessPoint phAccessPoint) {
+                logger.info("Authentication to connect to bridge at {} is required", phAccessPoint.getIpAddress());
+                hueSDK.startPushlinkAuthentication(phAccessPoint);
+
+                currentState = State.AWAITING_PUSHLINK;
+                stateObserver.requestPushlink();
+            }
+
+            @Override
+            public void onAccessPointsFound(List<PHAccessPoint> list) {
+                logger.info("Access point scan finished, found {} bridges", list.size());
+                currentState = State.NOT_CONNECTED;
+                stateObserver.displayFoundBridges(list);
+            }
+
+            @Override
+            public void onError(int errorCode, String message) {
+
+                if (errorCode == PHMessageType.PUSHLINK_BUTTON_NOT_PRESSED || errorCode == 42) {
+                    return;
+                }
+
+                logger.error("Error ocurred, code {} - {}", errorCode, message);
+                if (errorCode == PHMessageType.BRIDGE_NOT_FOUND) {
+                    onAccessPointsFound(Collections.emptyList());
+                } else if (errorCode == PHHueError.BRIDGE_NOT_RESPONDING || errorCode == PHMessageType.PUSHLINK_AUTHENTICATION_FAILED) {
+
+                    if (currentState.equals(State.AWAITING_PUSHLINK)) {
+                        stateObserver.pushlinkHasFailed();
+                    } else {
+                        currentState = State.CONNECTION_LOST;
+                        stateObserver.connectionWasLost();
+                    }
+                }
+            }
+
+            @Override
+            public void onConnectionLost(PHAccessPoint phAccessPoint) {
+                logger.warn("Connection to bridge at {} was lost", phAccessPoint.getIpAddress());
+                PHBridge selectedBridge = hueSDK.getSelectedBridge();
+                hueSDK.getHeartbeatManager().disableAllHeartbeats(selectedBridge);
+                hueSDK.disconnect(selectedBridge);
+                hueSDK.setSelectedBridge(null);
+                stateObserver.connectionWasLost();
+                currentState = State.CONNECTION_LOST;
+            }
+
+            @Override
+            public void onParsingErrors(List<PHHueParsingError> list) {
+                logger.warn("{} parsing error(s) has/have occurred:", list.size());
+                for (int i = 0; i < list.size(); i++) {
+                    PHHueParsingError error = list.get(i);
+                    logger.warn(" Error #{}: {}", i + 1, error.getMessage());
+                }
+            }
+
+            @Override
+            public void onCacheUpdated(List<Integer> list, PHBridge phBridge) {}
+
+            @Override
+            public void onConnectionResumed(PHBridge phBridge) {}
+        };
+
+        hueSDK.getNotificationManager().registerSDKListener(listener);
         this.lightQueue = new LightQueue(this);
     }
 
@@ -83,7 +169,7 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
         if (!currentState.equals(State.SCANNING_FOR_BRIDGES)) {
             PHBridgeSearchManager searchManager = (PHBridgeSearchManager) hueSDK.getSDKService(PHHueSDK.SEARCH_BRIDGE);
             searchManager.search(true, true);
-            stateObserver.isScanningForBridges(currentState.equals(State.ATTEMPTING_CONNECTION));
+            stateObserver.isScanningForBridges(currentState.equals(State.CONNECTION_LOST));
             currentState = State.SCANNING_FOR_BRIDGES;
         }
     }
@@ -106,15 +192,9 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
         if (isConnected()) {
 
             hueSDK.getHeartbeatManager().disableAllHeartbeats(bridge);
-
-            if (originalLightStates != null) {
-                try {
-                    componentHolder.getExecutorService().awaitTermination(500, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException ignored) {}
-                recoverOriginalState();
-            }
-
+            recoverOriginalState();
             lightQueue.markShutdown();
+
             return;
         } else if (currentState.equals(State.AWAITING_PUSHLINK)) {
             hueSDK.stopPushlinkAuthentication();
@@ -188,7 +268,7 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
     @Override
     public void recoverOriginalState() {
 
-        if (lights == null) {
+        if (lights == null || originalLightStates == null) {
             return;
         }
 
@@ -202,39 +282,12 @@ public class LBHueManager implements HueManager, SDKCallbackReceiver {
         originalLightStates = null;
     }
 
-    @Override
-    public void setConnected(PHBridge bridge) {
-        currentState = State.CONNECTED;
-        this.bridge = bridge;
-        stateObserver.hasConnected();
-    }
-
-    @Override
-    public void setAccessPointsFound(List<PHAccessPoint> accessPoints) {
-        currentState = State.NOT_CONNECTED;
-        stateObserver.displayFoundBridges(accessPoints);
-    }
-
-    @Override
-    public void setAwaitingPushlink() {
-        currentState = State.AWAITING_PUSHLINK;
-        stateObserver.requestPushlink();
-    }
-
-    @Override
-    public void connectionWasLost() {
-        if (currentState.equals(State.AWAITING_PUSHLINK)) {
-            stateObserver.pushlinkHasFailed();
-        } else {
-            doBridgesScan();
-        }
-    }
-
     enum State {
         NOT_CONNECTED,
         SCANNING_FOR_BRIDGES,
         ATTEMPTING_CONNECTION,
         AWAITING_PUSHLINK,
-        CONNECTED
+        CONNECTED,
+        CONNECTION_LOST
     }
 }

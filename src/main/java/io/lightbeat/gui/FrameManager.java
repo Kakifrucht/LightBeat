@@ -89,6 +89,11 @@ public class FrameManager implements HueStateObserver {
         showMainFrame();
     }
 
+    @Override
+    public void connectionWasLost() {
+        showConnectFrame().connectionWasLost();
+    }
+
     private HueStateObserver showConnectFrame() {
         if (currentFrame instanceof ConnectFrame) {
             return (HueStateObserver) currentFrame;

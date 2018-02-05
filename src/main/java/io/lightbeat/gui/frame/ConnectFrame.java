@@ -94,11 +94,9 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     public void displayFoundBridges(List<PHAccessPoint> list) {
         runOnSwingThread(() -> {
             selectBridgeBox.removeAllItems();
-            currentAccessPoints = list;
+            currentAccessPoints = list.isEmpty() ? null : list;
 
-            if (currentAccessPoints != null) {
-                currentAccessPoints.forEach(phAccessPoint -> selectBridgeBox.addItem("Bridge at " + phAccessPoint.getIpAddress()));
-            }
+            list.forEach(phAccessPoint -> selectBridgeBox.addItem("Bridge at " + phAccessPoint.getIpAddress()));
 
             String previousAddress = config.get(ConfigNode.BRIDGE_IPADDRESS);
             if (previousAddress != null) {
@@ -107,7 +105,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
             selectBridgeBox.addItem("Enter IP manually");
             selectBridgeBox.setSelectedIndex(0);
-            toggleButtonAndDropdown(true, currentAccessPoints != null ? "Bridges found, please select your bridge." : "No bridges found.");
+            toggleButtonAndDropdown(true, list.isEmpty() ? "No bridges found." : "Bridges found, please select your bridge.");
         });
     }
 
@@ -149,6 +147,11 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
     @Override
     public void hasConnected() {}
+
+    @Override
+    public void connectionWasLost() {
+        hueManager.doBridgesScan();
+    }
 
     private void toggleButtonAndDropdown(boolean setEnabled, String labelText) {
         runOnSwingThread(() -> {

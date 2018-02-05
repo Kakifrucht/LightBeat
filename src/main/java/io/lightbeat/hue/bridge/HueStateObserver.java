@@ -21,4 +21,6 @@ public interface HueStateObserver {
     void pushlinkHasFailed();
 
     void hasConnected();
+
+    void connectionWasLost();
 }
