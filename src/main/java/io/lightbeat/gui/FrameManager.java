@@ -66,7 +66,9 @@ public class FrameManager implements HueStateObserver {
 
     @Override
     public void isAttemptingConnection() {
-        showConnectFrame().isAttemptingConnection();
+        if (currentFrame != null) {
+            showConnectFrame().isAttemptingConnection();
+        }
     }
 
     @Override
@@ -85,7 +87,7 @@ public class FrameManager implements HueStateObserver {
     }
 
     private HueStateObserver showConnectFrame() {
-        if (isConnectFrame()) {
+        if (currentFrame instanceof ConnectFrame) {
             return (HueStateObserver) currentFrame;
         }
 
@@ -95,16 +97,12 @@ public class FrameManager implements HueStateObserver {
     }
 
     private void showMainFrame() {
-        if (!isConnectFrame()) {
+        if (currentFrame instanceof MainFrame) {
             return;
         }
 
         disposeCurrentWindow();
         currentFrame = new MainFrame(lastX, lastY);
-    }
-
-    private boolean isConnectFrame() {
-        return currentFrame instanceof ConnectFrame;
     }
 
     private void disposeCurrentWindow() {
