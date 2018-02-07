@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Passes one color to all lights one by one and selects a new one after all have the new color.
- * Keeps the order of the lights and always overwrites other color based effects.
+ * Keeps the order of the lights and may update two lights at once.
  */
 public class ColorChainEffect extends AbstractThresholdEffect {
 
@@ -63,6 +63,7 @@ public class ColorChainEffect extends AbstractThresholdEffect {
             Light nextLight = lightsInOrder.get(currentIndex);
             nextLight.getColorController().setColor(this, currentColor);
             nextLight.getColorController().setFadeColor(this, currentFadeColor);
+            nextLight.getBrightnessController().forceBrightnessUpdate();
         }
     }
 

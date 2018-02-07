@@ -44,6 +44,11 @@ public class BrightnessController extends AbstractController {
         this.fadeBrightness = fadeBrightness;
     }
 
+    public void forceBrightnessUpdate() {
+        brightnessWasIncreased = true;
+        lastSetBrightness = -1;
+    }
+
     public boolean isBrightnessWasIncreased() {
         return brightnessWasIncreased;
     }
