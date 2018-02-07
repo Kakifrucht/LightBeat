@@ -1,10 +1,8 @@
 package io.lightbeat.hue.light.controller;
 
-import com.philips.lighting.model.PHLightState;
 import io.lightbeat.hue.color.Color;
 import io.lightbeat.hue.effect.LightEffect;
 import io.lightbeat.hue.light.Light;
-import io.lightbeat.hue.light.LightStateBuilder;
 
 /**
  * Controls the lights color and fade color.
@@ -14,6 +12,7 @@ public class ColorController extends AbstractController {
     private volatile Color color;
     private volatile Color fadeColor;
 
+    private volatile Color lastSetColor;
     private volatile boolean colorWasUpdated;
     private volatile boolean fadeColorWasUpdated;
 
@@ -24,19 +23,18 @@ public class ColorController extends AbstractController {
 
     public void applyUpdates() {
         if (colorWasUpdated) {
-            controlledLight.getStateBuilder().setColor(color);
-            colorWasUpdated = false;
+            updateColor(color);
+            if (colorWasUpdated) {
+                colorWasUpdated = false;
+            }
         }
     }
 
     @Override
-    protected void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate) {
-        if (fadeColorWasUpdated || (lastUpdate != null && lastUpdate.getHue() != null)) {
-            stateBuilder.setColor(fadeColor);
-
-            if (fadeColorWasUpdated) {
-                fadeColorWasUpdated = false;
-            }
+    protected void applyFadeUpdatesExecute() {
+        updateColor(fadeColor);
+        if (fadeColorWasUpdated) {
+            fadeColorWasUpdated = false;
         }
     }
 
@@ -69,6 +67,13 @@ public class ColorController extends AbstractController {
             if (fadeColorWasUpdated) {
                 setFadeColor(effect, null);
             }
+        }
+    }
+
+    private void updateColor(Color color) {
+        if (color != null && !color.equals(lastSetColor)) {
+            controlledLight.getStateBuilder().setColor(color);
+            lastSetColor = color;
         }
     }
 }

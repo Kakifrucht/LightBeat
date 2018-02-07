@@ -1,9 +1,7 @@
 package io.lightbeat.hue.light.controller;
 
-import com.philips.lighting.model.PHLightState;
 import io.lightbeat.hue.effect.LightEffect;
 import io.lightbeat.hue.light.Light;
-import io.lightbeat.hue.light.LightStateBuilder;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -46,7 +44,7 @@ public class StrobeController extends AbstractController {
     }
 
     @Override
-    protected void applyFadeUpdatesExecute(LightStateBuilder stateBuilder, PHLightState lastUpdate) {}
+    protected void applyFadeUpdatesExecute() {}
 
     public void applyUpdates() {
 

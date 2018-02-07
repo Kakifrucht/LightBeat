@@ -1,6 +1,5 @@
 package io.lightbeat.hue.light;
 
-import com.philips.lighting.model.PHLightState;
 import io.lightbeat.hue.light.controller.BrightnessController;
 import io.lightbeat.hue.light.controller.ColorController;
 import io.lightbeat.hue.light.controller.StrobeController;
@@ -10,8 +9,6 @@ import io.lightbeat.hue.light.controller.StrobeController;
  * or by getting the current builder with {@link #getStateBuilder()} and send it via {@link #doLightUpdate(boolean)}.
  */
 public interface Light {
-
-    PHLightState getLastKnownLightState();
 
     ColorController getColorController();
 
@@ -40,7 +37,7 @@ public interface Light {
 
     /**
      * Adds controller update information to this lights builder (retrieved with {@link #getStateBuilder()})
-     * and updates the light accordingly. Will only send the update if resulting light state would do no changes.
+     * and updates the light accordingly. Will only send the update if resulting light state would cause an update.
      * Resets the builder for the next call of this method.
      *
      * @param doFade true if light should fade

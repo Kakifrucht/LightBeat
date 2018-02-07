@@ -42,7 +42,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
 
         if (currentFuture != null) {
             currentFuture.cancel(true);
-            currentLight.getColorController().setFadeColor(this, colors[0]);
+            resetFadeColor(currentLight);
         }
 
         if (newColorThreshold.isMet()) {
@@ -114,8 +114,12 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
 
         for (Light light : lightUpdate.getLights()) {
             if (light.getColorController().setControllingEffect(this)) {
-                light.getColorController().setFadeColor(this, colors[0]);
+                resetFadeColor(light);
             }
         }
+    }
+
+    private void resetFadeColor(Light light) {
+        light.getColorController().setFadeColor(this, colors[0]);
     }
 }

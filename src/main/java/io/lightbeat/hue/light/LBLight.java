@@ -1,7 +1,6 @@
 package io.lightbeat.hue.light;
 
 import com.philips.lighting.model.PHLight;
-import com.philips.lighting.model.PHLightState;
 import io.lightbeat.hue.bridge.LightQueue;
 import io.lightbeat.hue.light.controller.BrightnessController;
 import io.lightbeat.hue.light.controller.ColorController;
@@ -40,11 +39,6 @@ public class LBLight implements Light {
         this.builderToCopyAfterTurningOn = LightStateBuilder.create();
 
         this.isOn = light.getLastKnownLightState().isOn();
-    }
-
-    @Override
-    public PHLightState getLastKnownLightState() {
-        return light.getLastKnownLightState();
     }
 
     @Override
@@ -102,7 +96,6 @@ public class LBLight implements Light {
             brightnessController.applyUpdates();
         }
 
-        PHLightState lastLightStateUpdate = null;
         if (!currentBuilder.isDefault()) {
 
             // brightness updates only need to be applied if color changed/strobing and if it wasn't yet applied
@@ -110,22 +103,21 @@ public class LBLight implements Light {
                 brightnessController.applyUpdates();
             }
 
-            lastLightStateUpdate = currentBuilder.getLightState();
             lightQueue.addUpdate(light, currentBuilder.getLightState());
         }
 
-        this.currentBuilder = LightStateBuilder.create();
-
         if (doFade) {
-            LightStateBuilder fadeBuilder = LightStateBuilder.create().setTransitionTime(fadeTime);
+            currentBuilder = LightStateBuilder.create().setTransitionTime(fadeTime);
 
-            colorController.applyFadeUpdates(fadeBuilder, lastLightStateUpdate);
-            brightnessController.applyFadeUpdates(fadeBuilder, lastLightStateUpdate);
+            colorController.applyFadeUpdates();
+            brightnessController.applyFadeUpdates();
 
-            if (!fadeBuilder.isDefault()) {
-                lightQueue.addUpdate(light, fadeBuilder.getLightState());
+            if (!currentBuilder.isDefault()) {
+                lightQueue.addUpdate(light, currentBuilder.getLightState());
             }
         }
+
+        this.currentBuilder = LightStateBuilder.create();
     }
 
     @Override
