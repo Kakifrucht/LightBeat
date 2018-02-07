@@ -172,6 +172,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
 
             dataLine.stop();
             dataLine.close();
+            dataLine = null;
 
             beatEventObservers.clear();
             logger.info("No longer listening to audio input");
