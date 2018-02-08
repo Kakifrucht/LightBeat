@@ -6,6 +6,7 @@ import com.philips.lighting.model.PHBridgeResource;
 import com.philips.lighting.model.PHHueError;
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
+import io.lightbeat.hue.light.Light;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,7 @@ public class LightQueue {
     private static final Logger logger = LoggerFactory.getLogger(LightQueue.class);
 
     private final HueManager hueManager;
-    private final Map<String, Queue<QueueEntry>> queue;
+    private final Map<Light, Queue<QueueEntry>> queue;
 
     private volatile boolean shutdownWasMarked = false;
 
@@ -34,7 +35,7 @@ public class LightQueue {
         queue = new ConcurrentHashMap<>();
     }
 
-    public void addUpdate(PHLight light, PHLightState state) {
+    public void addUpdate(Light light, PHLightState state) {
 
         if (light == null || state == null) {
             throw new IllegalArgumentException("Light and state cannot be null");
@@ -44,16 +45,16 @@ public class LightQueue {
 
             if (shutdownWasMarked) {
                 throw new IllegalStateException("Tried to add update for light "
-                        + light.getName() + " when shutdown was already marked");
+                        + light.getBase().getName() + " when shutdown was already marked");
             }
 
             QueueEntry entry = new QueueEntry(light, state);
-            if (queue.containsKey(light.getUniqueId())) {
-                queue.get(light.getUniqueId()).add(entry);
+            if (queue.containsKey(light)) {
+                queue.get(light).add(entry);
             } else {
                 Queue<QueueEntry> lightQueue = new LinkedList<>();
                 lightQueue.add(entry);
-                queue.put(light.getUniqueId(), lightQueue);
+                queue.put(light, lightQueue);
                 next(light);
             }
         }
@@ -71,13 +72,13 @@ public class LightQueue {
         }
     }
 
-    private void next(PHLight light) {
+    private void next(Light light) {
         synchronized (queue) {
-            Queue<QueueEntry> lightQueue = queue.get(light.getUniqueId());
+            Queue<QueueEntry> lightQueue = queue.get(light);
             if (!lightQueue.isEmpty()) {
                 lightQueue.poll().doUpdate();
             } else {
-                queue.remove(light.getUniqueId());
+                queue.remove(light);
             }
 
             if (shutdownWasMarked && queue.isEmpty()) {
@@ -87,11 +88,11 @@ public class LightQueue {
     }
 
     private class QueueEntry {
-        private final PHLight light;
+        private final Light light;
         private final PHLightState state;
         private final LBLightListener lightListener;
 
-        QueueEntry(PHLight light, PHLightState state) {
+        QueueEntry(Light light, PHLightState state) {
             this.light = light;
             this.state = state;
             this.lightListener = new LBLightListener(this);
@@ -99,7 +100,7 @@ public class LightQueue {
 
         void doUpdate() {
             if (hueManager.isConnected()) {
-                hueManager.getBridge().updateLightState(light, state, lightListener);
+                hueManager.getBridge().updateLightState(light.getBase(), state, lightListener);
             } else {
                 logger.warn("Purged {} light updates", queue.size() + 1);
                 queue.clear();
@@ -125,6 +126,7 @@ public class LightQueue {
         @Override
         public void onError(int code, String message) {
             logger.warn("Error ocurred during update of light {}, code {} - {}", getLightInfo(), code, message);
+            work.light.recoverFromError(code);
             next(work.light);
         }
 
@@ -146,7 +148,7 @@ public class LightQueue {
                 mode = newState.getAlertMode().toString();
             }
 
-            return work.light.getName()
+            return work.light.getBase().getName()
                     + " (time " + newState.getTransitionTime()
                     + " | bri " + newState.getBrightness()
                     + " | color " + newState.getHue() + "/" + newState.getSaturation()

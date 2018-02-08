@@ -42,6 +42,11 @@ public class LBLight implements Light {
     }
 
     @Override
+    public PHLight getBase() {
+        return light;
+    }
+
+    @Override
     public ColorController getColorController() {
         return colorController;
     }
@@ -79,6 +84,7 @@ public class LBLight implements Light {
 
         if (/* turned */ on) {
             currentBuilder.copyFromBuilder(builderToCopyAfterTurningOn);
+            brightnessController.forceBrightnessUpdate();
         } else {
             builderToCopyAfterTurningOn = LightStateBuilder.create();
         }
@@ -103,7 +109,7 @@ public class LBLight implements Light {
                 brightnessController.applyUpdates();
             }
 
-            lightQueue.addUpdate(light, currentBuilder.getLightState());
+            lightQueue.addUpdate(this, currentBuilder.getLightState());
         }
 
         if (doFade) {
@@ -113,11 +119,21 @@ public class LBLight implements Light {
             brightnessController.applyFadeUpdates();
 
             if (!currentBuilder.isDefault()) {
-                lightQueue.addUpdate(light, currentBuilder.getLightState());
+                lightQueue.addUpdate(this, currentBuilder.getLightState());
             }
         }
 
         this.currentBuilder = LightStateBuilder.create();
+    }
+
+    @Override
+    public void recoverFromError(int errorCode) {
+        if (errorCode == 201) { // error description: parameter, hue, is not modifiable. Device is set to off.
+            if (isOn) {
+                isOn = false;
+            }
+            setOn(true);
+        }
     }
 
     @Override

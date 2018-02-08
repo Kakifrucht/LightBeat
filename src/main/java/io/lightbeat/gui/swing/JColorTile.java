@@ -17,7 +17,7 @@ public class JColorTile extends JPanel {
         super();
 
         setBackground(color);
-        setPreferredSize(new Dimension(20, 20));
+        setPreferredSize(new Dimension(30, 30));
         setToolTipText("Click to remove");
 
         Border border = new LineBorder(Color.BLACK);

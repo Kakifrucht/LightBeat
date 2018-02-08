@@ -44,7 +44,7 @@ public abstract class AbstractFrame implements HueFrame {
         this.hueManager = componentHolder.getHueManager();
     }
 
-    void drawFrame(Container mainContainer, boolean isForegroundFrame) {
+    void drawFrame(Container mainContainer, boolean isPrimaryFrame) {
         runOnSwingThread(() -> {
 
             frame.setTitle(frameTitle);
@@ -62,7 +62,7 @@ public abstract class AbstractFrame implements HueFrame {
 
             frame.setBounds(x, y, 10, 10);
 
-            if (!isForegroundFrame) {
+            if (!isPrimaryFrame) {
                 frame.setType(Window.Type.UTILITY);
             }
 
@@ -71,7 +71,7 @@ public abstract class AbstractFrame implements HueFrame {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    if (isForegroundFrame) {
+                    if (isPrimaryFrame) {
                         componentHolder.shutdownAll();
                     } else {
                         dispose();

@@ -75,6 +75,7 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
         lightFlipDirection.put(light, !useColor1);
         light.getColorController().setColor(this, useColor1 ? color1 : color2);
         light.getColorController().setFadeColor(this, useColor1 ? color2 : color1);
+        light.getBrightnessController().forceBrightnessUpdate();
     }
 
     @Override

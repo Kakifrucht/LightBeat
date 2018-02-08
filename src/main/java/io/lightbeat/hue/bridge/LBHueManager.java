@@ -31,11 +31,10 @@ public class LBHueManager implements HueManager {
     private final LightQueue lightQueue;
 
     private State currentState = State.NOT_CONNECTED;
-    private HueStateObserver stateObserver;
     private PHBridge bridge;
 
-    private List<Light> lights;
-    private Map<String, PHLightState> originalLightStates;
+    private HueStateObserver stateObserver;
+    private Map<Light, PHLightState> originalLightStates;
 
 
     public LBHueManager(ComponentHolder componentHolder) {
@@ -209,16 +208,6 @@ public class LBHueManager implements HueManager {
     }
 
     @Override
-    public List<Light> getSelectedLights() {
-
-        List<Light> toReturn = new ArrayList<>(lights);
-        if (toReturn.size() > 1) {
-            Collections.shuffle(toReturn);
-        }
-        return toReturn;
-    }
-
-    @Override
     public ColorSet getColorSet() {
         String selectedColorSet = config.get(ConfigNode.COLOR_SET_SELECTED);
         if (selectedColorSet == null || selectedColorSet.equals("Random")) {
@@ -231,8 +220,8 @@ public class LBHueManager implements HueManager {
     @Override
     public boolean initializeLights() {
 
+        List<Light> lights = new ArrayList<>();
         originalLightStates = new HashMap<>();
-        lights = new ArrayList<>();
 
         int transitionTime = config.getInt(ConfigNode.LIGHTS_TRANSITION_TIME);
         List<String> disabledLights = componentHolder.getConfig().getStringList(ConfigNode.LIGHTS_DISABLED);
@@ -244,9 +233,10 @@ public class LBHueManager implements HueManager {
 
             PHLightState currentState = new PHLightState(phLight.getLastKnownLightState());
             currentState.setReachable(null);
-            originalLightStates.put(phLight.getUniqueId(), currentState);
 
-            lights.add(new LBLight(phLight, lightQueue, componentHolder.getExecutorService(), transitionTime));
+            Light light = new LBLight(phLight, lightQueue, componentHolder.getExecutorService(), transitionTime);
+            originalLightStates.put(light, currentState);
+            lights.add(light);
         }
 
         if (!lights.isEmpty()) {
@@ -257,7 +247,7 @@ public class LBHueManager implements HueManager {
                 }
             }
 
-            HueBeatObserver beatObserver = new HueBeatObserver(componentHolder);
+            HueBeatObserver beatObserver = new HueBeatObserver(componentHolder, new ArrayList<>(lights));
             componentHolder.getAudioEventManager().registerBeatObserver(beatObserver);
             return true;
         }
@@ -268,18 +258,14 @@ public class LBHueManager implements HueManager {
     @Override
     public void recoverOriginalState() {
 
-        if (lights == null || originalLightStates == null) {
-            return;
-        }
+        if (originalLightStates != null) {
 
-        for (PHLight light : getLights()) {
-            if (originalLightStates.containsKey(light.getUniqueId())) {
-                lightQueue.addUpdate(light, originalLightStates.get(light.getUniqueId()));
+            for (Light light : originalLightStates.keySet()) {
+                lightQueue.addUpdate(light, originalLightStates.get(light));
             }
-        }
 
-        lights = null;
-        originalLightStates = null;
+            originalLightStates = null;
+        }
     }
 
     enum State {

@@ -90,6 +90,18 @@ public class ColorSelectionFrame extends AbstractFrame {
                 updateCurrentColorPanel(e.getX(), e.getY());
             }
 
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                colorSelectorPanel.setBorder(new LineBorder(Color.LIGHT_GRAY));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                colorSelectorPanel.setBorder(new LineBorder(Color.BLACK));
+            }
+
             private void updateCurrentColorPanel(int x, int y) {
 
                 int width = colorSelectorPanel.getWidth();
@@ -217,12 +229,12 @@ public class ColorSelectionFrame extends AbstractFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 selectedColorsPanel.remove(tile);
-                revalidatePanel();
+                revalidateSelectedColorsPanel();
             }
         });
 
         selectedColorsPanel.add(tile);
-        revalidatePanel();
+        revalidateSelectedColorsPanel();
     }
 
     private void updateSaveButton(int textFieldLength) {
@@ -240,7 +252,7 @@ public class ColorSelectionFrame extends AbstractFrame {
                 JOptionPane.ERROR_MESSAGE);
     }
 
-    private void revalidatePanel() {
+    private void revalidateSelectedColorsPanel() {
         selectedColorsPanel.revalidate();
         selectedColorsPanel.repaint();
         updateSaveButton(-1);

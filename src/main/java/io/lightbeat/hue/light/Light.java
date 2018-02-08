@@ -1,5 +1,6 @@
 package io.lightbeat.hue.light;
 
+import com.philips.lighting.model.PHLight;
 import io.lightbeat.hue.light.controller.BrightnessController;
 import io.lightbeat.hue.light.controller.ColorController;
 import io.lightbeat.hue.light.controller.StrobeController;
@@ -9,6 +10,8 @@ import io.lightbeat.hue.light.controller.StrobeController;
  * or by getting the current builder with {@link #getStateBuilder()} and send it via {@link #doLightUpdate(boolean)}.
  */
 public interface Light {
+
+    PHLight getBase();
 
     ColorController getColorController();
 
@@ -43,4 +46,13 @@ public interface Light {
      * @param doFade true if light should fade
      */
     void doLightUpdate(boolean doFade);
+
+    /**
+     * When an error has ocurred during the update.
+     *
+     * @param errorCode specific error to recover from
+     */
+    void recoverFromError(int errorCode);
+
+
 }

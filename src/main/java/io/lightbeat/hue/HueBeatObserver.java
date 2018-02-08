@@ -5,13 +5,14 @@ import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
-import io.lightbeat.hue.bridge.HueManager;
 import io.lightbeat.hue.effect.*;
+import io.lightbeat.hue.light.Light;
 import io.lightbeat.util.DoubleAverageBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,7 +25,8 @@ public class HueBeatObserver implements BeatObserver {
     private static final Logger logger = LoggerFactory.getLogger(HueBeatObserver.class);
     private static final int AMPLITUDE_HISTORY_SIZE = 75;
 
-    private final HueManager hueManager;
+    private final ComponentHolder componentHolder;
+    private final List<Light> selectedLights;
     private final BrightnessCalibrator brightnessCalibrator;
     private final List<LightEffect> effectPipe;
 
@@ -32,8 +34,10 @@ public class HueBeatObserver implements BeatObserver {
     private long lastBeatTimeStamp = System.currentTimeMillis();
 
 
-    public HueBeatObserver(ComponentHolder componentHolder) {
-        this.hueManager = componentHolder.getHueManager();
+    public HueBeatObserver(ComponentHolder componentHolder, List<Light> selectedLights) {
+
+        this.componentHolder = componentHolder;
+        this.selectedLights = selectedLights;
 
         Config config = componentHolder.getConfig();
         this.brightnessCalibrator = new BrightnessCalibrator(config);
@@ -83,11 +87,14 @@ public class HueBeatObserver implements BeatObserver {
     public void readerStopped(StopStatus status) {
         // gracefully disable effects that may still be running scheduler threads
         noBeatReceived();
-        hueManager.recoverOriginalState();
+        componentHolder.getHueManager().recoverOriginalState();
     }
 
     private void passDataToEffectPipe(BrightnessCalibrator.BrightnessData data, boolean receivedBeat) {
-        LightUpdate lightUpdate = new LightUpdate(hueManager.getSelectedLights(), data, getTimeSinceLastBeat());
+
+        Collections.shuffle(selectedLights);
+        LightUpdate lightUpdate = new LightUpdate(selectedLights, data, getTimeSinceLastBeat());
+
         try {
             effectPipe.forEach(effect -> {
                 if (receivedBeat) {

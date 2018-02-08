@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class StrobeController extends AbstractController {
 
     private final ScheduledExecutorService executorService;
+
     private volatile ScheduledFuture currentStrobe;
 
     private volatile Long strobeDelay;
@@ -27,16 +28,13 @@ public class StrobeController extends AbstractController {
     @Override
     public boolean unsetControllingEffect(LightEffect effect) {
 
-        boolean wasUnset = false;
-        if (canControl(effect)) {
+        boolean wasUnset = super.unsetControllingEffect(effect);
 
-            wasUnset = super.unsetControllingEffect(effect);
-            if (wasUnset) {
-                interruptStrobe();
+        if (wasUnset) {
+            interruptStrobe();
 
-                if (!controlledLight.isOn()) {
-                    this.setOn = true;
-                }
+            if (!controlledLight.isOn()) {
+                this.setOn = true;
             }
         }
 

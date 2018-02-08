@@ -3,7 +3,6 @@ package io.lightbeat.hue.bridge;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 import com.philips.lighting.model.PHBridge;
 import com.philips.lighting.model.PHLight;
-import io.lightbeat.hue.light.Light;
 import io.lightbeat.hue.color.ColorSet;
 
 import java.util.List;
@@ -61,13 +60,6 @@ public interface HueManager {
      * @return list of lights
      */
     List<PHLight> getLights();
-
-    /**
-     * Get all selected lights. {@link #initializeLights()} must be called at least one time.
-     *
-     * @return list of selected (not disabled) lights
-     */
-    List<Light> getSelectedLights();
 
     /**
      * @return the currently selected color set
