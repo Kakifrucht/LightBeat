@@ -90,18 +90,6 @@ public class ColorSelectionFrame extends AbstractFrame {
                 updateCurrentColorPanel(e.getX(), e.getY());
             }
 
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                colorSelectorPanel.setBorder(new LineBorder(Color.LIGHT_GRAY));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                colorSelectorPanel.setBorder(new LineBorder(Color.BLACK));
-            }
-
             private void updateCurrentColorPanel(int x, int y) {
 
                 int width = colorSelectorPanel.getWidth();

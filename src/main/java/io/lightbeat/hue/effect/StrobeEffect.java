@@ -18,7 +18,8 @@ public class StrobeEffect extends AbstractRandomEffect {
     private int nextLightInBeats;
 
 
-    public StrobeEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability, double randomProbability) {
+    public StrobeEffect(ComponentHolder componentHolder,
+                        double brightnessThreshold, double activationProbability, double randomProbability) {
         super(componentHolder, brightnessThreshold, activationProbability, randomProbability);
         setBrightnessDeactivationThreshold(brightnessThreshold - 0.2d);
     }

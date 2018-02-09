@@ -8,6 +8,8 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -25,12 +27,28 @@ public class JColorPanel extends JPanel {
 
     public JColorPanel() {
         super();
+
         setBorder(new LineBorder(java.awt.Color.BLACK));
         repaintCanvas();
+
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 repaintCanvas();
+            }
+        });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                setBorder(new LineBorder(java.awt.Color.LIGHT_GRAY));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                setBorder(new LineBorder(java.awt.Color.BLACK));
             }
         });
     }

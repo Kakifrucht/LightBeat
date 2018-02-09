@@ -88,29 +88,14 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         colorsPreviewPanel.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-
-                String selectedName = getSelectedSetButton().getText();
-                if (!selectedName.equals("Random")) {
-                    openColorSelectionFrame(selectedName);
-                }
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                openColorSelectionFrame(getSelectedSetButton().getText());
             }
         });
 
         addCustomColorsButton.addActionListener(e -> openColorSelectionFrame(null));
-        editSelectedButton.addActionListener(e -> {
-
-            String selectedSetName = getSelectedSetButton().getText();
-            if (selectedSetName.equals("Random")) {
-                JOptionPane.showMessageDialog(frame,
-                        "You cannot edit this set.",
-                        "Cannot Edit",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            openColorSelectionFrame(selectedSetName);
-        });
+        editSelectedButton.addActionListener(e -> openColorSelectionFrame(getSelectedSetButton().getText()));
 
         deleteCustomColorsButton.addActionListener(e -> {
 
@@ -495,7 +480,14 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private void openColorSelectionFrame(String setName) {
 
-        if (isSelectionFrameActive()) {
+        if ("Random".equals(setName)) {
+
+            JOptionPane.showMessageDialog(frame,
+                    "You cannot edit this set.",
+                    "Cannot Edit",
+                    JOptionPane.ERROR_MESSAGE);
+
+        } else if (isSelectionFrameActive()) {
             JOptionPane.showMessageDialog(frame,
                     "Color set editor is already open.",
                     "Editor Open",
