@@ -47,7 +47,7 @@ class CaptureInterpreter {
 
             // beat was received
             noBeatThreshold.setCurrentThreshold(NO_BEAT_RECEIVED_MILLIS);
-            silenceThreshold.disable();
+            disableSilenceThreshold();
 
             beatThreshold = amplitude;
 
@@ -83,10 +83,8 @@ class CaptureInterpreter {
                 }
 
             } else {
-                silenceThreshold.disable();
-                if (isSilent) {
-                    isSilent = false;
-                }
+
+                disableSilenceThreshold();
 
                 // check if no beat was received for a while
                 if (noBeatThreshold.isMet()) {
@@ -98,5 +96,12 @@ class CaptureInterpreter {
         }
 
         return null;
+    }
+
+    private void disableSilenceThreshold() {
+        silenceThreshold.disable();
+        if (isSilent) {
+            isSilent = false;
+        }
     }
 }
