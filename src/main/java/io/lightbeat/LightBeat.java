@@ -112,6 +112,11 @@ public class LightBeat implements ComponentHolder {
         } catch (IOException e) {
             return null;
         }
-        return properties.getProperty("version");
+
+        String version = properties.getProperty("version");
+        if (version == null) {
+            version = "Error";
+        }
+        return version;
     }
 }

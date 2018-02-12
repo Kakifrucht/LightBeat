@@ -82,10 +82,11 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         audioReader = componentHolder.getAudioReader();
 
-
-        setDeviceSelectComboBox();
+        // audio source panel
+        refreshDeviceSelectComboBox();
         deviceHelpButton.addActionListener(e -> openLinkInBrowser("https://lightbeat.io/audioguide.php"));
 
+        // colors panel
         colorsPreviewPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -128,7 +129,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             addColorPresets();
         }
 
-        // setup lights toggle panel
+        // lights panel
         List<PHLight> allLights = hueManager.getLights();
         List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
         for (PHLight light : allLights) {
@@ -155,6 +156,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             });
         }
 
+        // brightness panel
         restoreBrightnessButton.addActionListener(e -> {
             minBrightnessSlider.restoreDefault();
             maxBrightnessSlider.restoreDefault();
@@ -163,6 +165,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         minBrightnessSlider.setBoundedSlider(maxBrightnessSlider, true, 10);
         maxBrightnessSlider.setBoundedSlider(minBrightnessSlider, false, 10);
 
+        // advanced panel
         readdColorSetPresetsButton.addActionListener(e -> addColorPresets());
         restoreAdvancedButton.addActionListener(e -> {
             beatSensitivitySlider.restoreDefault();
@@ -180,51 +183,14 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
         startButton.requestFocus();
 
+        String version = componentHolder.getVersion();
+        urlLabel.setText("v" + version + " | " + urlLabel.getText());
         urlLabel.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 openLinkInBrowser("https://lightbeat.io");
             }
         });
-
-        String version = componentHolder.getVersion();
-        if (version != null) {
-            urlLabel.setText("v" + version + " | " + urlLabel.getText());
-
-            // schedule updater task
-            componentHolder.getExecutorService().schedule(() -> {
-
-                long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
-
-                // only show notification every 4 days, disable if on snapshot version
-                long TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS = 345600;
-                if (updateDisableNotificationTime + TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS > (System.currentTimeMillis() / 1000)
-                        || version.endsWith("SNAPSHOT")) {
-                    return;
-                }
-
-                UpdateChecker updateChecker = new UpdateChecker(version);
-                try {
-
-                    if (updateChecker.isUpdateAvailable()) {
-                        int answerCode = JOptionPane.showConfirmDialog(
-                                frame,
-                                "A new update is available (version " + updateChecker.getVersionString() + ").\n\nDownload now?",
-                                "Update Found",
-                                JOptionPane.YES_NO_OPTION);
-                        if (answerCode == 0) {
-                            openLinkInBrowser("https://lightbeat.io/?downloads");
-                        } else if (answerCode == 1) {
-                            config.putLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, (int) (System.currentTimeMillis() / 1000));
-                        }
-                    }
-
-                } catch (Exception ignored) {
-                    // fail silently
-                }
-
-            }, 5, TimeUnit.SECONDS);
-        }
 
         drawFrame(mainPanel, true);
 
@@ -272,6 +238,40 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 });
             }
         }
+
+        // schedule updater task
+        componentHolder.getExecutorService().schedule(() -> {
+
+            long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
+
+            // only show notification every 4 days, disable if on snapshot version
+            long TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS = 345600;
+            if (updateDisableNotificationTime + TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS > (System.currentTimeMillis() / 1000)
+                    || version.endsWith("SNAPSHOT")) {
+                return;
+            }
+
+            UpdateChecker updateChecker = new UpdateChecker(version);
+            try {
+
+                if (updateChecker.isUpdateAvailable()) {
+                    int answerCode = JOptionPane.showConfirmDialog(
+                            frame,
+                            "A new update is available (version " + updateChecker.getVersionString() + ").\n\nDownload now?",
+                            "Update Found",
+                            JOptionPane.YES_NO_OPTION);
+                    if (answerCode == 0) {
+                        openLinkInBrowser("https://lightbeat.io/?downloads");
+                    } else if (answerCode == 1) {
+                        config.putLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, (int) (System.currentTimeMillis() / 1000));
+                    }
+                }
+
+            } catch (Exception ignored) {
+                // fail silently
+            }
+
+        }, 5, TimeUnit.SECONDS);
 
         if (config.getBoolean(ConfigNode.AUTOSTART)) {
             runOnSwingThread(this::startBeatDetection);
@@ -335,7 +335,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         frame.pack();
     }
 
-    private void setDeviceSelectComboBox() {
+    private void refreshDeviceSelectComboBox() {
 
         deviceSelectComboBox.removeAllItems();
 
@@ -410,7 +410,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             startButton.setText("Start");
             startButton.setEnabled(false);
 
-            setDeviceSelectComboBox();
+            refreshDeviceSelectComboBox();
 
             // re-enable startbutton with small delay
             executorService.schedule(() -> runOnSwingThread(() -> {

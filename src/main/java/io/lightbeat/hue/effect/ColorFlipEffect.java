@@ -45,6 +45,7 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
             for (Light light : lightUpdate.getLights()) {
                 if (light.getColorController().setControllingEffect(this)) {
                     lightFlipDirection.put(light, rnd.nextBoolean());
+                    light.getColorController().undoColorChange(this);
                 }
             }
 
@@ -72,10 +73,11 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
     }
 
     private void flipLightColor(Light light, boolean useColor1) {
-        lightFlipDirection.put(light, !useColor1);
-        light.getColorController().setColor(this, useColor1 ? color1 : color2);
+
         light.getColorController().setFadeColor(this, useColor1 ? color2 : color1);
         light.getBrightnessController().forceBrightnessUpdate();
+
+        lightFlipDirection.put(light, !useColor1);
     }
 
     @Override
