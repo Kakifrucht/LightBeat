@@ -98,17 +98,9 @@ public class LBLight implements Light {
 
         strobeController.applyUpdates();
         colorController.applyUpdates();
-        if (brightnessController.isBrightnessWasIncreased()) {
+
+        if (!currentBuilder.isDefault() || brightnessController.isBrightnessWasIncreased()) {
             brightnessController.applyUpdates();
-        }
-
-        if (!currentBuilder.isDefault()) {
-
-            // brightness updates only need to be applied if color changed/strobing and if it wasn't yet applied
-            if (!brightnessController.isBrightnessWasIncreased()) {
-                brightnessController.applyUpdates();
-            }
-
             lightQueue.addUpdate(this, currentBuilder.getLightState());
         }
 

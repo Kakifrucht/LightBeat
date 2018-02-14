@@ -10,17 +10,29 @@ import io.lightbeat.util.DoubleAverageBuffer;
  * amplitude received. Calling {@link #getBrightness(double)} returns a {@link BrightnessData}
  * object, which contains the relevant information for the next light update, and if a brightness
  * change is needed in the first place. The first call to the method will always return {@link BrightnessData}
- * that sets the brightness to 50%, and keeps sending the same amount.
+ * that sets the brightness to 50%, and keeps sending the same amount. Brightness only changes if difference
+ * in percentage since last brightness is higher than {@link #BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE}. The last
+ * brightness change must also have ocurred at least {@link #BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS} milliseconds
+ * apart.
+ * <br><br>
+ * Brightness itself is calibrated in regards to the current percentage, where the {@link #brightnessFadeDifference}
+ * (dependant on {@link #BRIGHTNESS_DIFFERENCE_PERCENTAGE} is substracted to get the fade brightness and added to get the
+ * beat brightness. The {@link #BRIGHTNESS_HIGH_MINIMUM_PERCENTAGE} determines the minimum brightness value if a beat is
+ * received.
  */
 class BrightnessCalibrator {
 
     private static final double BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE = 0.2d;
+    private static final double BRIGHTNESS_DIFFERENCE_PERCENTAGE = 0.03d;
+    private static final double BRIGHTNESS_HIGH_MINIMUM_PERCENTAGE = 0.25d;
+
     private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
     private static final int BUFFER_SIZE = 150;
     private static final int CALIBRATION_SIZE = 10;
 
-    private final int minBrightness;
+    private final int brightnessMin;
     private final int brightnessRange;
+    private final double brightnessFadeDifference;
 
     private double currentBrightness = 0d;
 
@@ -29,9 +41,9 @@ class BrightnessCalibrator {
 
 
     BrightnessCalibrator(Config config) {
-        this.minBrightness = config.getInt(ConfigNode.BRIGHTNESS_MIN);
-        int maxBrightness = config.getInt(ConfigNode.BRIGHTNESS_MAX);
-        this.brightnessRange = maxBrightness - minBrightness;
+        this.brightnessMin = config.getInt(ConfigNode.BRIGHTNESS_MIN);
+        this.brightnessRange = config.getInt(ConfigNode.BRIGHTNESS_MAX) - brightnessMin;
+        this.brightnessFadeDifference = (double) config.getInt(ConfigNode.BRIGHTNESS_FADE_DIFFERENCE) * BRIGHTNESS_DIFFERENCE_PERCENTAGE;
     }
 
     /**
@@ -87,8 +99,8 @@ class BrightnessCalibrator {
         private final double brightnessPercentage;
         private final boolean doBrightnessChange;
 
+        private final int brightnessFade;
         private final int brightness;
-        private final int brightnessLow;
 
 
         private BrightnessData(double brightnessPercentage, boolean doBrightnessChange) {
@@ -96,8 +108,12 @@ class BrightnessCalibrator {
             this.brightnessPercentage = brightnessPercentage;
             this.doBrightnessChange = doBrightnessChange;
 
-            this.brightness = (int) (brightnessPercentage * brightnessRange) + minBrightness;
-            this.brightnessLow = (brightness + minBrightness) / 2;
+            double brightnessPercentageLow = Math.max(brightnessPercentage - brightnessFadeDifference, 0d);
+            double brightnessPercentageHigh = Math.min(brightnessPercentage + brightnessFadeDifference, 1d);
+            brightnessPercentageHigh = Math.max(brightnessPercentageHigh, BRIGHTNESS_HIGH_MINIMUM_PERCENTAGE);
+
+            this.brightnessFade = (int) (brightnessRange * brightnessPercentageLow) + brightnessMin;
+            this.brightness = (int) (brightnessRange * brightnessPercentageHigh) + brightnessMin;
         }
 
         double getBrightnessPercentage() {
@@ -108,12 +124,12 @@ class BrightnessCalibrator {
             return doBrightnessChange;
         }
 
-        int getBrightness() {
-            return brightness;
+        int getBrightnessFade() {
+            return brightnessFade;
         }
 
-        int getBrightnessLow() {
-            return brightnessLow;
+        int getBrightness() {
+            return brightness;
         }
     }
 }
