@@ -223,7 +223,7 @@ public class LBHueManager implements HueManager {
         List<Light> lights = new ArrayList<>();
         originalLightStates = new HashMap<>();
 
-        int transitionTime = config.getInt(ConfigNode.LIGHTS_TRANSITION_TIME);
+        int transitionTime = config.getInt(ConfigNode.BRIGHTNESS_FADE_TIME);
         List<String> disabledLights = componentHolder.getConfig().getStringList(ConfigNode.LIGHTS_DISABLED);
         for (PHLight phLight : getLights()) {
 

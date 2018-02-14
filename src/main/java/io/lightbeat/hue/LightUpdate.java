@@ -19,7 +19,7 @@ public class LightUpdate {
     private final List<Light> activeLights;
 
     private final int brightness;
-    private final int brightnessLow;
+    private final int brightnessFade;
     private final double brightnessPercentage;
     private final boolean doBrightnessChange;
     private final long timeSinceLastBeat;
@@ -31,7 +31,7 @@ public class LightUpdate {
         this.activeLights = new ArrayList<>(lights);
 
         this.brightness = brightnessData.getBrightness();
-        this.brightnessLow = brightnessData.getBrightnessLow();
+        this.brightnessFade = brightnessData.getBrightnessFade();
         this.brightnessPercentage = brightnessData.getBrightnessPercentage();
         this.doBrightnessChange = brightnessData.isBrightnessChange();
         this.timeSinceLastBeat = timeSinceLastBeat;
@@ -56,8 +56,8 @@ public class LightUpdate {
         return brightness;
     }
 
-    public int getBrightnessLow() {
-        return brightnessLow;
+    public int getBrightnessFade() {
+        return brightnessFade;
     }
 
     public double getBrightnessPercentage() {

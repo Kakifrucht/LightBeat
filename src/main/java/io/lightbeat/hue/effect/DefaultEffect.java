@@ -57,7 +57,7 @@ public class DefaultEffect extends AbstractEffect {
 
         boolean brightnessWasIncreased = false;
         for (Light light : lightUpdate.getLights()) {
-            light.getBrightnessController().setBrightness(lightUpdate.getBrightness(), lightUpdate.getBrightnessLow());
+            light.getBrightnessController().setBrightness(lightUpdate.getBrightness(), lightUpdate.getBrightnessFade());
             brightnessWasIncreased = light.getBrightnessController().isBrightnessWasIncreased();
         }
 

@@ -60,7 +60,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JButton restoreAdvancedButton;
     private JConfigSlider beatSensitivitySlider;
     private JConfigSlider colorRandomizationSlider;
+    private JConfigSlider fadeBrightnessSlider;
     private JConfigCheckBox strobeCheckBox;
+    private JConfigCheckBox colorStrobeCheckbox;
     private JConfigCheckBox glowCheckBox;
 
     private JButton startButton;
@@ -170,7 +172,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         restoreAdvancedButton.addActionListener(e -> {
             beatSensitivitySlider.restoreDefault();
             colorRandomizationSlider.restoreDefault();
+            fadeBrightnessSlider.restoreDefault();
             strobeCheckBox.restoreDefault();
+            colorStrobeCheckbox.restoreDefault();
             glowCheckBox.restoreDefault();
         });
 
@@ -302,13 +306,15 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         minBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MIN);
         maxBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MAX);
-        transitionTimeSlider = new JConfigSlider(config, ConfigNode.LIGHTS_TRANSITION_TIME);
+        transitionTimeSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_FADE_TIME);
 
         beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
         beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
         colorRandomizationSlider = new JConfigSlider(config, ConfigNode.COLOR_RANDOMIZATION_RANGE);
-        strobeCheckBox = new JConfigCheckBox(config, ConfigNode.BRIGHTNESS_STROBE);
-        glowCheckBox = new JConfigCheckBox(config, ConfigNode.BRIGHTNESS_GLOW);
+        fadeBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_FADE_DIFFERENCE);
+        strobeCheckBox = new JConfigCheckBox(config, ConfigNode.EFFECT_STROBE);
+        colorStrobeCheckbox = new JConfigCheckBox(config, ConfigNode.EFFECT_COLOR_STROBE);
+        glowCheckBox = new JConfigCheckBox(config, ConfigNode.EFFECT_ALERT);
 
         showAdvancedCheckbox = new JConfigCheckBox(config, ConfigNode.SHOW_ADVANCED_SETTINGS);
         autoStartCheckBox = new JConfigCheckBox(config, ConfigNode.AUTOSTART);
