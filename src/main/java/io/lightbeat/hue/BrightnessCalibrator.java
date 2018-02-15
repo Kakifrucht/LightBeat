@@ -23,7 +23,7 @@ import io.lightbeat.util.DoubleAverageBuffer;
 class BrightnessCalibrator {
 
     private static final double BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE = 0.2d;
-    private static final double BRIGHTNESS_DIFFERENCE_PERCENTAGE = 0.03d;
+    private static final double BRIGHTNESS_DIFFERENCE_PERCENTAGE = 0.04d;
     private static final double BRIGHTNESS_HIGH_MINIMUM_PERCENTAGE = 0.25d;
 
     private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;

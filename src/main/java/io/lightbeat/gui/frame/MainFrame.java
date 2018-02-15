@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(MainFrame.class);
+    private static final int MINIMUM_BRIGHTNESS_DIFFERENCE = 36;
 
     private final AudioReader audioReader;
 
@@ -164,8 +165,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             maxBrightnessSlider.restoreDefault();
             transitionTimeSlider.restoreDefault();
         });
-        minBrightnessSlider.setBoundedSlider(maxBrightnessSlider, true, 10);
-        maxBrightnessSlider.setBoundedSlider(minBrightnessSlider, false, 10);
+
+        minBrightnessSlider.setBoundedSlider(maxBrightnessSlider, true, MINIMUM_BRIGHTNESS_DIFFERENCE);
+        maxBrightnessSlider.setBoundedSlider(minBrightnessSlider, false, MINIMUM_BRIGHTNESS_DIFFERENCE);
 
         // advanced panel
         readdColorSetPresetsButton.addActionListener(e -> addColorPresets());

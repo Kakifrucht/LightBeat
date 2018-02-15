@@ -37,7 +37,11 @@ public class LightQueue {
 
     public void addUpdate(Light light, PHLightState state) {
 
-        if (light == null || state == null) {
+        if (state == null) {
+            return;
+        }
+
+        if (light == null) {
             throw new IllegalArgumentException("Light and state cannot be null");
         }
 
