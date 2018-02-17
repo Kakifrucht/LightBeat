@@ -19,7 +19,7 @@ public class LightStateBuilder {
     private volatile int brightness = Integer.MIN_VALUE;
     private volatile Color color = null;
     private volatile Boolean setOn;
-    private volatile PHLight.PHLightAlertMode alert;
+    private volatile Boolean alert;
 
 
     private LightStateBuilder() {}
@@ -60,8 +60,8 @@ public class LightStateBuilder {
         return this;
     }
 
-    public LightStateBuilder setAlertMode(PHLight.PHLightAlertMode alert) {
-        this.alert = alert;
+    public LightStateBuilder setAlertMode(boolean doAlert) {
+        this.alert = doAlert;
         return this;
     }
 
@@ -104,8 +104,8 @@ public class LightStateBuilder {
             newLightState.setOn(setOn);
         }
 
-        if (alert != null) {
-            newLightState.setAlertMode(alert);
+        if (alert != null && alert) {
+            newLightState.setAlertMode(PHLight.PHLightAlertMode.ALERT_SELECT);
         }
 
         return newLightState;

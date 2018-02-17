@@ -12,6 +12,7 @@ public class BrightnessController extends AbstractController {
 
     private volatile int lastSetBrightness;
     private volatile boolean brightnessWasIncreased;
+    private volatile boolean doAlert;
 
 
     public BrightnessController(Light controlledLight) {
@@ -21,6 +22,10 @@ public class BrightnessController extends AbstractController {
     public void applyUpdates() {
 
         updateBrightness(brightness);
+        if (doAlert) {
+            controlledLight.getStateBuilder().setAlertMode(true);
+            doAlert = false;
+        }
 
         if (brightnessWasIncreased) {
             brightnessWasIncreased = false;
@@ -42,6 +47,11 @@ public class BrightnessController extends AbstractController {
         brightnessWasIncreased = brightness > this.brightness;
         this.brightness = brightness;
         this.fadeBrightness = fadeBrightness;
+    }
+
+    public void setAlertMode() {
+        brightnessWasIncreased = true;
+
     }
 
     public void forceBrightnessUpdate() {

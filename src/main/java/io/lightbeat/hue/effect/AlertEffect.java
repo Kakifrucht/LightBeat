@@ -1,9 +1,7 @@
 package io.lightbeat.hue.effect;
 
-import com.philips.lighting.model.PHLight;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.light.Light;
-import io.lightbeat.hue.light.LightStateBuilder;
 import io.lightbeat.util.TimeThreshold;
 
 import java.util.List;
@@ -32,7 +30,7 @@ public class AlertEffect extends AbstractRandomEffect {
     public void execute() {
 
         if (alertThreshold.isMet()) {
-            lightUpdate.copyBuilderToAll(LightStateBuilder.create().setAlertMode(PHLight.PHLightAlertMode.ALERT_SELECT));
+            lightUpdate.getLights().forEach(l -> l.getBrightnessController().setAlertMode());
             alertThreshold.setCurrentThreshold(ALERT_THRESHOLD_MILLIS); // ~time until effect is done
         }
     }
@@ -43,8 +41,8 @@ public class AlertEffect extends AbstractRandomEffect {
         if (!activeLights.isEmpty()) {
             activeLights
                     .get(0)
-                    .getStateBuilder()
-                    .setAlertMode(PHLight.PHLightAlertMode.ALERT_SELECT);
+                    .getBrightnessController()
+                    .setAlertMode();
         }
     }
 }

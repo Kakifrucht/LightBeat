@@ -14,17 +14,11 @@ import io.lightbeat.util.DoubleAverageBuffer;
  * in percentage since last brightness is higher than {@link #BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE}. The last
  * brightness change must also have ocurred at least {@link #BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS} milliseconds
  * apart.
- * <br><br>
- * Brightness itself is calibrated in regards to the current percentage, where the {@link #brightnessFadeDifference}
- * (dependant on {@link #BRIGHTNESS_DIFFERENCE_PERCENTAGE} is substracted to get the fade brightness and added to get the
- * beat brightness. The {@link #BRIGHTNESS_HIGH_MINIMUM_PERCENTAGE} determines the minimum brightness value if a beat is
- * received.
  */
 class BrightnessCalibrator {
 
     private static final double BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE = 0.2d;
     private static final double BRIGHTNESS_DIFFERENCE_PERCENTAGE = 0.04d;
-    private static final double BRIGHTNESS_HIGH_MINIMUM_PERCENTAGE = 0.25d;
 
     private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
     private static final int BUFFER_SIZE = 150;
@@ -110,7 +104,9 @@ class BrightnessCalibrator {
 
             double brightnessPercentageLow = Math.max(brightnessPercentage - brightnessFadeDifference, 0d);
             double brightnessPercentageHigh = Math.min(brightnessPercentage + brightnessFadeDifference, 1d);
-            brightnessPercentageHigh = Math.max(brightnessPercentageHigh, BRIGHTNESS_HIGH_MINIMUM_PERCENTAGE);
+
+            brightnessPercentageLow = Math.min(brightnessPercentageLow, 1d - (brightnessFadeDifference * 2));
+            brightnessPercentageHigh = Math.max(brightnessPercentageHigh, brightnessFadeDifference * 2);
 
             this.brightnessFade = (int) (brightnessRange * brightnessPercentageLow) + brightnessMin;
             this.brightness = (int) (brightnessRange * brightnessPercentageHigh) + brightnessMin;

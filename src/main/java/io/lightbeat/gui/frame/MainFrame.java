@@ -73,7 +73,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private JLabel urlLabel;
     private JLabel infoLabel;
-    private JButton editSelectedButton;
     private JColorPanel colorsPreviewPanel;
     private JButton deviceHelpButton;
 
@@ -99,7 +98,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
 
         addCustomColorsButton.addActionListener(e -> openColorSelectionFrame(null));
-        editSelectedButton.addActionListener(e -> openColorSelectionFrame(getSelectedSetButton().getText()));
 
         deleteCustomColorsButton.addActionListener(e -> {
 
@@ -428,7 +426,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
             if (status.equals(StopStatus.ERROR)) {
                 showErrorMessage("Selected audio source could not be read");
-                infoLabel.setText("Idle | Selected audio source could not be read");
             } else {
                 infoLabel.setText("Idle | Hover over a setting to get a description");
             }
@@ -458,7 +455,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                         return;
                     }
                 } else {
-                    showErrorMessage("No lights were selected");
+                    showErrorMessage("Please select at least one light");
                     return;
                 }
             }
@@ -526,7 +523,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     }
 
     private void showErrorMessage(String message) {
-        infoLabel.setText(message);
+        infoLabel.setText("Idle | " + message);
         JOptionPane.showMessageDialog(frame, message + ".", "Error", JOptionPane.ERROR_MESSAGE);
     }
 }

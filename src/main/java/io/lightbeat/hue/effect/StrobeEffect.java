@@ -1,6 +1,5 @@
 package io.lightbeat.hue.effect;
 
-import com.philips.lighting.model.PHLight;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.light.Light;
 
@@ -69,8 +68,7 @@ public class StrobeEffect extends AbstractRandomEffect {
 
         } else {
 
-            // add alert to main light
-            activeLight.getStateBuilder().setAlertMode(PHLight.PHLightAlertMode.ALERT_SELECT);
+            activeLight.getBrightnessController().setAlertMode();
 
             // strobe random lights, depending on how many lights are in the configuration (minimum 1)
             int amountToStrobe = Math.max((controllableLights.size() - 1) / 2, 1);
