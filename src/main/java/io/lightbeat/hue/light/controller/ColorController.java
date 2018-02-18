@@ -58,6 +58,10 @@ public class ColorController extends AbstractController {
         }
     }
 
+    public void forceColorUpdate() {
+        colorWasUpdated = true;
+    }
+
     public void undoColorChange(LightEffect effect) {
         if (canControl(effect)) {
             if (colorWasUpdated) {

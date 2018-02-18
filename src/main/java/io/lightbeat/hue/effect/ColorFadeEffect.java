@@ -2,6 +2,7 @@ package io.lightbeat.hue.effect;
 
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.color.Color;
+import io.lightbeat.hue.light.Light;
 
 /**
  * Sends the same fade color to all lights to cause a continous light update fade effect.
@@ -22,9 +23,10 @@ public class ColorFadeEffect extends AbstractThresholdEffect {
 
     @Override
     public void execute() {
-        Color singleColor = colorSet.getNextColor(lastFadeColor);
-        lastFadeColor = colorSet.getNextColor(singleColor);
+        lastFadeColor = colorSet.getNextColor(lastFadeColor);
 
-        lightUpdate.setFadeColorForAll(this, colorSet.getNextColor(lastFadeColor));
+        for (Light light : lightUpdate.getLights()) {
+            light.getColorController().setFadeColor(this, lastFadeColor);
+        }
     }
 }

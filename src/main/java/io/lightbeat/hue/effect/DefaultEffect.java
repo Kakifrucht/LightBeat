@@ -64,7 +64,9 @@ public class DefaultEffect extends AbstractEffect {
         // update fade color if brightness was increased
         if (brightnessWasIncreased) {
             lastFadeColor = colorSet.getNextColor(lastFadeColor);
-            lightUpdate.setFadeColorForAll(this, lastFadeColor);
+            for (Light light : lightUpdate.getLights()) {
+                light.getColorController().setFadeColor(this, lastFadeColor);
+            }
         }
     }
 }

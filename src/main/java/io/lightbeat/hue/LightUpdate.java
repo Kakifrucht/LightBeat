@@ -1,9 +1,6 @@
 package io.lightbeat.hue;
 
-import io.lightbeat.hue.color.Color;
-import io.lightbeat.hue.effect.LightEffect;
 import io.lightbeat.hue.light.Light;
-import io.lightbeat.hue.light.LightStateBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,22 +67,5 @@ public class LightUpdate {
 
     public long getTimeSinceLastBeat() {
         return timeSinceLastBeat;
-    }
-
-    /**
-     * Copies the state of the provided {@link LightStateBuilder} to all lights, even if they are exempt.
-     *
-     * @param builder to copy from
-     */
-    public void copyBuilderToAll(LightStateBuilder builder) {
-        for (Light light : getLights()) {
-            light.getStateBuilder().copyFromBuilder(builder);
-        }
-    }
-
-    public void setFadeColorForAll(LightEffect effect, Color fadeColor) {
-        for (Light light : getLights()) {
-            light.getColorController().setFadeColor(effect, fadeColor);
-        }
     }
 }

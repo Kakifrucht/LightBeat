@@ -51,7 +51,7 @@ public class BrightnessController extends AbstractController {
 
     public void setAlertMode() {
         brightnessWasIncreased = true;
-
+        doAlert = true;
     }
 
     public void forceBrightnessUpdate() {
