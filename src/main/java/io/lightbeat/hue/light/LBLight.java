@@ -85,7 +85,6 @@ public class LBLight implements Light {
         if (/* turned */ on) {
             currentBuilder.copyFromBuilder(builderToCopyAfterTurningOn);
             brightnessController.forceBrightnessUpdate();
-            colorController.forceColorUpdate();
         } else {
             builderToCopyAfterTurningOn = LightStateBuilder.create();
         }
