@@ -41,6 +41,7 @@ public class LightBeat implements ComponentHolder {
 
 
     private LightBeat() {
+
         logger.info("LightBeat v" + getVersion() + " starting");
 
         executorService = Executors.newScheduledThreadPool(2);
@@ -78,6 +79,7 @@ public class LightBeat implements ComponentHolder {
 
     @Override
     public void shutdownAll() {
+
         logger.info("Shutting down LightBeat");
 
         audioReader.stop();
@@ -106,17 +108,21 @@ public class LightBeat implements ComponentHolder {
 
     @Override
     public String getVersion() {
+
+        final String ERROR_STRING = "Error";
+
         Properties properties = new Properties();
         try {
             properties.load(LightBeat.class.getClassLoader().getResourceAsStream("metadata.properties"));
         } catch (IOException e) {
-            return null;
+            return ERROR_STRING;
         }
 
         String version = properties.getProperty("version");
         if (version == null) {
-            version = "Error";
+            version = ERROR_STRING;
         }
+
         return version;
     }
 }

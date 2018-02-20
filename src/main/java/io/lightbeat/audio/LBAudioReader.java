@@ -183,9 +183,4 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     public void registerBeatObserver(BeatObserver beatObserver) {
         beatEventObservers.add(beatObserver);
     }
-
-    @Override
-    public void unregisterBeatObserver(BeatObserver beatObserver) {
-        beatEventObservers.remove(beatObserver);
-    }
 }

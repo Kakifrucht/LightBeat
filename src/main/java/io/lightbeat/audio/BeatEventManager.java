@@ -12,11 +12,4 @@ public interface BeatEventManager {
      * @param beatObserver to register
      */
     void registerBeatObserver(BeatObserver beatObserver);
-
-    /**
-     * Unregisters a beat observer.
-     *
-     * @param beatObserver to unregister
-     */
-    void unregisterBeatObserver(BeatObserver beatObserver);
 }

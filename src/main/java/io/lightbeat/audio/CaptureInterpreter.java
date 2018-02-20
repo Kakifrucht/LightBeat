@@ -17,6 +17,7 @@ class CaptureInterpreter {
 
     private static final Logger logger = LoggerFactory.getLogger(CaptureInterpreter.class);
 
+    private static final double SENSITIVITY_DIVISOR = 100d;
     private static final long NO_BEAT_RECEIVED_MILLIS = 2000L;
     private static final long SILENCE_MILLIS = 1000L;
 
@@ -34,7 +35,7 @@ class CaptureInterpreter {
 
 
     CaptureInterpreter(Config config) {
-        this.beatThresholdReductionMultiplier = config.getInt(ConfigNode.BEAT_SENSITIVITY) / 120d;
+        this.beatThresholdReductionMultiplier = config.getInt(ConfigNode.BEAT_SENSITIVITY) / SENSITIVITY_DIVISOR;
         this.timeBetweenBeatsMillis = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN);
     }
 
