@@ -6,7 +6,7 @@ import com.philips.lighting.model.PHBridgeResource;
 import com.philips.lighting.model.PHHueError;
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
-import io.lightbeat.hue.light.Light;
+import io.lightbeat.hue.bridge.light.Light;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

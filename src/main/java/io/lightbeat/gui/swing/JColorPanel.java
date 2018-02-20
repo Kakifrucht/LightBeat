@@ -1,7 +1,7 @@
 package io.lightbeat.gui.swing;
 
-import io.lightbeat.hue.color.Color;
-import io.lightbeat.hue.color.ColorSet;
+import io.lightbeat.hue.bridge.color.Color;
+import io.lightbeat.hue.bridge.color.ColorSet;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;

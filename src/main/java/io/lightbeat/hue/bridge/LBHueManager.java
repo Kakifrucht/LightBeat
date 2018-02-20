@@ -6,12 +6,12 @@ import com.philips.lighting.model.*;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
-import io.lightbeat.hue.HueBeatObserver;
-import io.lightbeat.hue.color.ColorSet;
-import io.lightbeat.hue.color.CustomColorSet;
-import io.lightbeat.hue.color.RandomColorSet;
-import io.lightbeat.hue.light.LBLight;
-import io.lightbeat.hue.light.Light;
+import io.lightbeat.hue.visualizer.HueBeatObserver;
+import io.lightbeat.hue.bridge.color.ColorSet;
+import io.lightbeat.hue.bridge.color.CustomColorSet;
+import io.lightbeat.hue.bridge.color.RandomColorSet;
+import io.lightbeat.hue.bridge.light.LBLight;
+import io.lightbeat.hue.bridge.light.Light;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
