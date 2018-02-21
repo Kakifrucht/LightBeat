@@ -30,7 +30,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     private final Set<BeatObserver> beatEventObservers = new HashSet<>();
 
     private volatile TargetDataLine dataLine;
-    private CaptureInterpreter captureInterpreter;
+    private BeatInterpreter beatInterpreter;
     private ScheduledFuture future;
 
 
@@ -70,7 +70,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
             return false;
         }
 
-        captureInterpreter = new CaptureInterpreter(config);
+        beatInterpreter = new BeatInterpreter(config);
 
         future = executorService.scheduleWithFixedDelay(new Runnable() {
 
@@ -137,7 +137,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
                 }
 
                 if (highestAmplitude >= 0d) {
-                    BeatEvent event = captureInterpreter.interpretValue(highestAmplitude);
+                    BeatEvent event = beatInterpreter.interpretValue(highestAmplitude);
                     if (event != null) {
                         if (event.getAverage() == 0.0d) {
                             beatEventObservers.forEach(BeatObserver::silenceDetected);
