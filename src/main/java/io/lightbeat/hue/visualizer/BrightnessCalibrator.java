@@ -17,8 +17,8 @@ import io.lightbeat.util.DoubleAverageBuffer;
  */
 class BrightnessCalibrator {
 
+    public static final double BRIGHTNESS_DIFFERENCE_PERCENTAGE_BASE = 0.04d;
     private static final double BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE = 0.2d;
-    private static final double BRIGHTNESS_DIFFERENCE_PERCENTAGE = 0.04d;
 
     private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
     private static final int BUFFER_SIZE = 150;
@@ -27,6 +27,7 @@ class BrightnessCalibrator {
     private final int brightnessMin;
     private final int brightnessRange;
     private final double brightnessFadeDifference;
+    private final double brightnessFadeAndBeatThreshold;
 
     private double currentBrightness = 0d;
 
@@ -37,7 +38,10 @@ class BrightnessCalibrator {
     BrightnessCalibrator(Config config) {
         this.brightnessMin = config.getInt(ConfigNode.BRIGHTNESS_MIN);
         this.brightnessRange = config.getInt(ConfigNode.BRIGHTNESS_MAX) - brightnessMin;
-        this.brightnessFadeDifference = (double) config.getInt(ConfigNode.BRIGHTNESS_FADE_DIFFERENCE) * BRIGHTNESS_DIFFERENCE_PERCENTAGE;
+
+        double configBrightnessFadeDifference = (double) config.getInt(ConfigNode.BRIGHTNESS_FADE_DIFFERENCE);
+        this.brightnessFadeDifference = configBrightnessFadeDifference * BRIGHTNESS_DIFFERENCE_PERCENTAGE_BASE;
+        this.brightnessFadeAndBeatThreshold = brightnessFadeDifference * 2;
     }
 
     /**
@@ -105,11 +109,11 @@ class BrightnessCalibrator {
             double brightnessPercentageLow = Math.max(brightnessPercentage - brightnessFadeDifference, 0d);
             double brightnessPercentageHigh = Math.min(brightnessPercentage + brightnessFadeDifference, 1d);
 
-            brightnessPercentageLow = Math.min(brightnessPercentageLow, 1d - (brightnessFadeDifference * 2));
-            brightnessPercentageHigh = Math.max(brightnessPercentageHigh, brightnessFadeDifference * 2);
+            brightnessPercentageLow = Math.min(brightnessPercentageLow, 1d - brightnessFadeAndBeatThreshold);
+            brightnessPercentageHigh = Math.max(brightnessPercentageHigh, brightnessFadeAndBeatThreshold);
 
-            this.brightnessFade = (int) (brightnessRange * brightnessPercentageLow) + brightnessMin;
-            this.brightness = (int) (brightnessRange * brightnessPercentageHigh) + brightnessMin;
+            this.brightnessFade = (int) Math.round(brightnessRange * brightnessPercentageLow) + brightnessMin;
+            this.brightness = (int) Math.round(brightnessRange * brightnessPercentageHigh) + brightnessMin;
         }
 
         double getBrightnessPercentage() {
