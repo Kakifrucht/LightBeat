@@ -68,7 +68,7 @@ class BrightnessCalibratorTest {
 
         // brightness corrected upwards, difference significant enough
         data = calibrator.getBrightness(0.5d);
-        assertEquals(Math.round(MAX_BRIGHTNESS * 0.749d), getAverageBrightness(data));
+        assertEquals(Math.round(MAX_BRIGHTNESS * 0.75d), getAverageBrightness(data));
 
         // change brightness to max
         data = calibrator.getBrightness(1d);
@@ -95,6 +95,6 @@ class BrightnessCalibratorTest {
     }
 
     private int getAverageBrightness(BrightnessCalibrator.BrightnessData data) {
-        return Math.round((data.getBrightness() + data.getBrightnessFade()) / 2);
+        return (int) Math.round((data.getBrightness() + data.getBrightnessFade()) / 2d);
     }
 }
