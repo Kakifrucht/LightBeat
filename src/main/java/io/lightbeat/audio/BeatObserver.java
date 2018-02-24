@@ -29,11 +29,11 @@ public interface BeatObserver {
      *
      * @param status reason for stopping, {@link StopStatus#ERROR} if not through user input
      */
-    void readerStopped(StopStatus status);
+    void audioReaderStopped(StopStatus status);
 
 
     /**
-     * Status enumerator for {@link #readerStopped(StopStatus)}.
+     * Status enumerator for {@link #audioReaderStopped(StopStatus)}.
      */
     enum StopStatus {
         USER,

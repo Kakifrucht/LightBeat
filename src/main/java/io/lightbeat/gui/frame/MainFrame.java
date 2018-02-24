@@ -93,7 +93,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                openColorSelectionFrame(getSelectedSetButton().getText());
+                openColorSelectionFrame(getSelectedColorSetButton().getText());
             }
         });
 
@@ -101,7 +101,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         deleteCustomColorsButton.addActionListener(e -> {
 
-            String selected = getSelectedSetButton().getText();
+            String selected = getSelectedColorSetButton().getText();
             if (selected.equals("Random")) {
                 JOptionPane.showMessageDialog(frame,
                         "You cannot delete this set.",
@@ -127,13 +127,12 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         refreshColorSets();
         if (colorSelectPanel.getComponentCount() < 2) {
-            addColorPresets();
+            addColorSetPresets();
         }
 
         // lights panel
-        List<PHLight> allLights = hueManager.getLights();
         List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-        for (PHLight light : allLights) {
+        for (PHLight light : hueManager.getLights()) {
 
             JCheckBox checkBox = new JCheckBox();
             checkBox.setText(light.getName());
@@ -168,7 +167,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         maxBrightnessSlider.setBoundedSlider(minBrightnessSlider, false, MINIMUM_BRIGHTNESS_DIFFERENCE);
 
         // advanced panel
-        readdColorSetPresetsButton.addActionListener(e -> addColorPresets());
+        readdColorSetPresetsButton.addActionListener(e -> addColorSetPresets());
         restoreAdvancedButton.addActionListener(e -> {
             beatSensitivitySlider.restoreDefault();
             colorRandomizationSlider.restoreDefault();
@@ -321,82 +320,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         darculaThemeCheckBox = new JConfigCheckBox(config, ConfigNode.WINDOW_LOOK_AND_FEEL);
     }
 
-    void refreshColorSets() {
-
-        colorSelectPanel.removeAll();
-        colorButtonGroup.clearSelection();
-
-        addRadioButton("Random");
-        for (String setName : config.getStringList(ConfigNode.COLOR_SET_LIST)) {
-            addRadioButton(setName);
-        }
-
-        JRadioButton selectedSetButton = getSelectedSetButton();
-        if (!selectedSetButton.getText().equals(config.get(ConfigNode.COLOR_SET_SELECTED))) {
-            config.put(ConfigNode.COLOR_SET_SELECTED, selectedSetButton.getText());
-        }
-
-        colorsPreviewPanel.setColorSet(hueManager.getColorSet());
-        colorSelectPanel.repaint();
-        frame.pack();
-    }
-
-    private void refreshDeviceSelectComboBox() {
-
-        deviceSelectComboBox.removeAllItems();
-
-        // add mixer names to dropdown
-        List<String> mixerNames = audioReader.getSupportedMixers().stream()
-                .map(mixer -> mixer.getMixerInfo().getName())
-                .collect(Collectors.toList());
-
-        String lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE);
-        if (lastSource != null) {
-            for (String mixerName : mixerNames) {
-                if (mixerName.equals(lastSource)) {
-                    deviceSelectComboBox.addItem(mixerName);
-                    break;
-                }
-            }
-        }
-        for (String mixerName : mixerNames) {
-            if (!mixerName.equals(lastSource)) {
-                deviceSelectComboBox.addItem(mixerName);
-            }
-        }
-    }
-
-    private void addRadioButton(String setName) {
-        JRadioButton radioButton = new JRadioButton(setName);
-        radioButton.addActionListener(e -> {
-            config.put(ConfigNode.COLOR_SET_SELECTED, setName);
-            colorsPreviewPanel.setColorSet(hueManager.getColorSet());
-        });
-
-        colorSelectPanel.add(radioButton);
-        colorButtonGroup.add(radioButton);
-    }
-
-    private JRadioButton getSelectedSetButton() {
-
-        JRadioButton toReturn = null;
-        String selectedButton = config.get(ConfigNode.COLOR_SET_SELECTED);
-        for (Component radioButton : colorSelectPanel.getComponents()) {
-            JRadioButton button = (JRadioButton) radioButton;
-            if (button.getText().equals(selectedButton)) {
-                toReturn = button;
-                break;
-            }
-        }
-
-        if (toReturn == null) {
-            toReturn = (JRadioButton) colorSelectPanel.getComponents()[0];
-        }
-
-        toReturn.setSelected(true);
-        return toReturn;
-    }
-
     @Override
     public void beatReceived(BeatEvent event) {
         runOnSwingThread(() -> bannerLabel.flipIcon());
@@ -410,7 +333,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     public void silenceDetected() {}
 
     @Override
-    public void readerStopped(StopStatus status) {
+    public void audioReaderStopped(StopStatus status) {
         runOnSwingThread(() -> {
 
             startButton.setText("Start");
@@ -470,17 +393,60 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
     }
 
-    private void openLinkInBrowser(String url) {
-        Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
-            try {
-                desktop.browse(new URI(url));
-            } catch (Exception ignored) {}
+    private void refreshDeviceSelectComboBox() {
+
+        deviceSelectComboBox.removeAllItems();
+
+        // add mixer names to dropdown
+        List<String> mixerNames = audioReader.getSupportedMixers().stream()
+                .map(mixer -> mixer.getMixerInfo().getName())
+                .collect(Collectors.toList());
+
+        String lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE);
+        if (lastSource != null) {
+            for (String mixerName : mixerNames) {
+                if (mixerName.equals(lastSource)) {
+                    deviceSelectComboBox.addItem(mixerName);
+                    break;
+                }
+            }
+        }
+        for (String mixerName : mixerNames) {
+            if (!mixerName.equals(lastSource)) {
+                deviceSelectComboBox.addItem(mixerName);
+            }
         }
     }
 
-    private boolean isSelectionFrameActive() {
-        return selectionFrame != null && selectionFrame.getJFrame().isDisplayable();
+    void refreshColorSets() {
+
+        colorSelectPanel.removeAll();
+        colorButtonGroup.clearSelection();
+
+        addColorSetButton("Random");
+        for (String setName : config.getStringList(ConfigNode.COLOR_SET_LIST)) {
+            addColorSetButton(setName);
+        }
+
+        JRadioButton selectedSetButton = getSelectedColorSetButton();
+        if (!selectedSetButton.getText().equals(config.get(ConfigNode.COLOR_SET_SELECTED))) {
+            config.put(ConfigNode.COLOR_SET_SELECTED, selectedSetButton.getText());
+        }
+
+        colorsPreviewPanel.setColorSet(hueManager.getColorSet());
+        colorSelectPanel.repaint();
+        frame.pack();
+    }
+
+    private void addColorSetButton(String setName) {
+        JRadioButton radioButton = new JRadioButton(setName);
+        radioButton.addActionListener(e -> {
+            config.put(ConfigNode.COLOR_SET_SELECTED, setName);
+            colorsPreviewPanel.setColorSet(hueManager.getColorSet());
+        });
+
+        colorSelectPanel.add(radioButton);
+        colorButtonGroup.add(radioButton);
     }
 
     private void openColorSelectionFrame(String setName) {
@@ -504,7 +470,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
     }
 
-    private void addColorPresets() {
+    private void addColorSetPresets() {
 
         boolean hasAdded = false;
         List<String> currentSetNames = config.getStringList(ConfigNode.COLOR_SET_LIST);
@@ -520,6 +486,39 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             config.putList(ConfigNode.COLOR_SET_LIST, currentSetNames);
             refreshColorSets();
         }
+    }
+
+    private JRadioButton getSelectedColorSetButton() {
+
+        JRadioButton toReturn = null;
+        String selectedButton = config.get(ConfigNode.COLOR_SET_SELECTED);
+        for (Component radioButton : colorSelectPanel.getComponents()) {
+            JRadioButton button = (JRadioButton) radioButton;
+            if (button.getText().equals(selectedButton)) {
+                toReturn = button;
+                break;
+            }
+        }
+
+        if (toReturn == null) {
+            toReturn = (JRadioButton) colorSelectPanel.getComponents()[0];
+        }
+
+        toReturn.setSelected(true);
+        return toReturn;
+    }
+
+    private void openLinkInBrowser(String url) {
+        Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+            try {
+                desktop.browse(new URI(url));
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private boolean isSelectionFrameActive() {
+        return selectionFrame != null && selectionFrame.getJFrame().isDisplayable();
     }
 
     private void showErrorMessage(String message) {

@@ -167,7 +167,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
             future.cancel(true);
 
             for (BeatObserver beatEventObserver : beatEventObservers) {
-                beatEventObserver.readerStopped(dataLine.isRunning() ? BeatObserver.StopStatus.USER : BeatObserver.StopStatus.ERROR);
+                beatEventObserver.audioReaderStopped(dataLine.isRunning() ? BeatObserver.StopStatus.USER : BeatObserver.StopStatus.ERROR);
             }
 
             dataLine.stop();

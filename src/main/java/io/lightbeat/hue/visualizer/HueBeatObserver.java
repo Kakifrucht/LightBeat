@@ -88,7 +88,7 @@ public class HueBeatObserver implements BeatObserver {
     }
 
     @Override
-    public void readerStopped(StopStatus status) {
+    public void audioReaderStopped(StopStatus status) {
         // gracefully disable effects that may still be running scheduler threads
         noBeatReceived();
         componentHolder.getHueManager().recoverOriginalState();
