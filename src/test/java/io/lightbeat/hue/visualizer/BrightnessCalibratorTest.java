@@ -49,8 +49,8 @@ class BrightnessCalibratorTest {
         BrightnessCalibrator.BrightnessData data;
 
         // test calibration phase (brightness at 50%)
-        for (int i = 0; i < 9; i++) {
-            data = calibrator.getBrightness(i < 8 ? 0d : 1d);
+        for (int i = 0; i < BrightnessCalibrator.CALIBRATION_SIZE - 1; i++) {
+            data = calibrator.getBrightness(i < BrightnessCalibrator.CALIBRATION_SIZE - 2 ? 0d : 1d);
             assertEquals(MEDIAN_BRIGHTNESS, getAverageBrightness(data));
         }
 
