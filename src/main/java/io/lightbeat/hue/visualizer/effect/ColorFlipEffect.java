@@ -3,6 +3,7 @@ package io.lightbeat.hue.visualizer.effect;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.bridge.color.Color;
 import io.lightbeat.hue.bridge.light.Light;
+import io.lightbeat.hue.visualizer.LightUpdate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
     }
 
     @Override
-    public void execute() {
+    public void execute(LightUpdate lightUpdate) {
 
         if (lightFlipDirection.isEmpty()) {
 
@@ -81,7 +82,7 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
     }
 
     @Override
-    public void executionDone() {
+    public void executionDone(LightUpdate lightUpdate) {
         for (Light light : lightFlipDirection.keySet()) {
             light.getColorController().setFadeColor(this, color1);
             light.getColorController().unsetControllingEffect(this);

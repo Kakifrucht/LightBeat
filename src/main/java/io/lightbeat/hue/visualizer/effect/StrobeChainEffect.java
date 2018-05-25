@@ -2,6 +2,7 @@ package io.lightbeat.hue.visualizer.effect;
 
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.bridge.light.Light;
+import io.lightbeat.hue.visualizer.LightUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
     }
 
     @Override
-    void execute() {
+    void execute(LightUpdate lightUpdate) {
 
         if (lightsInOrder.isEmpty()) {
             for (Light light : lightUpdate.getLights()) {
@@ -57,7 +58,7 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
     }
 
     @Override
-    public void executionDone() {
+    public void executionDone(LightUpdate lightUpdate) {
         lightsInOrder.forEach(l -> l.getStrobeController().unsetControllingEffect(this));
     }
 }

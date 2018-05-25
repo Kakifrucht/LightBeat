@@ -3,6 +3,7 @@ package io.lightbeat.hue.visualizer.effect;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.bridge.color.Color;
 import io.lightbeat.hue.bridge.light.Light;
+import io.lightbeat.hue.visualizer.LightUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public class ColorChainEffect extends AbstractThresholdEffect {
     }
 
     @Override
-    void execute() {
+    void execute(LightUpdate lightUpdate) {
 
         if (lightsInOrder.isEmpty()) {
 
@@ -68,7 +69,7 @@ public class ColorChainEffect extends AbstractThresholdEffect {
     }
 
     @Override
-    public void executionDone() {
+    public void executionDone(LightUpdate lightUpdate) {
         for (Light light : lightsInOrder) {
             light.getColorController().setFadeColor(this, currentFadeColor);
             light.getColorController().unsetControllingEffect(this);

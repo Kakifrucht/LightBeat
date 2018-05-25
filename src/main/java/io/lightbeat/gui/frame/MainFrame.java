@@ -395,14 +395,19 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private void refreshDeviceSelectComboBox() {
 
-        deviceSelectComboBox.removeAllItems();
-
-        // add mixer names to dropdown
         List<String> mixerNames = audioReader.getSupportedMixers().stream()
                 .map(mixer -> mixer.getMixerInfo().getName())
                 .collect(Collectors.toList());
 
-        String lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE);
+        String lastSource;
+        if (deviceSelectComboBox.getItemCount() == 0) {
+            lastSource = config.get(ConfigNode.LAST_AUDIO_SOURCE);
+        } else {
+            lastSource = (String) deviceSelectComboBox.getSelectedItem();
+        }
+
+        // add mixer names to combobox
+        deviceSelectComboBox.removeAllItems();
         if (lastSource != null) {
             for (String mixerName : mixerNames) {
                 if (mixerName.equals(lastSource)) {
@@ -411,6 +416,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 }
             }
         }
+
         for (String mixerName : mixerNames) {
             if (!mixerName.equals(lastSource)) {
                 deviceSelectComboBox.addItem(mixerName);

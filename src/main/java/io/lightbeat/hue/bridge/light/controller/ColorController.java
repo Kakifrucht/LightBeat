@@ -40,7 +40,7 @@ public class ColorController extends AbstractController {
 
     public void setColor(LightEffect effect, Color color) {
         if (canControl(effect)) {
-            this.colorWasUpdated = color != null && !color.equals(this.color);
+            this.colorWasUpdated = true;
             this.color = color;
         }
     }

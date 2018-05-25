@@ -2,6 +2,7 @@ package io.lightbeat.hue.visualizer.effect;
 
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.bridge.light.Light;
+import io.lightbeat.hue.visualizer.LightUpdate;
 import io.lightbeat.util.TimeThreshold;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public class AlertEffect extends AbstractRandomEffect {
     }
 
     @Override
-    public void execute() {
+    public void execute(LightUpdate lightUpdate) {
 
         if (alertThreshold.isMet()) {
             lightUpdate.getLights().forEach(l -> l.getBrightnessController().setAlertMode());
@@ -36,7 +37,7 @@ public class AlertEffect extends AbstractRandomEffect {
     }
 
     @Override
-    void executeEffectOnceRandomly() {
+    void executeEffectOnceRandomly(LightUpdate lightUpdate) {
         List<Light> activeLights = lightUpdate.getLightsTurnedOn();
         if (!activeLights.isEmpty()) {
             activeLights

@@ -204,7 +204,11 @@ public class LBHueManager implements HueManager {
 
     @Override
     public List<PHLight> getLights() {
-        return bridge.getResourceCache().getAllLights();
+
+        List<PHLight> lights = bridge.getResourceCache().getAllLights();
+        lights.removeIf(light -> !light.supportsBrightness());
+
+        return lights;
     }
 
     @Override

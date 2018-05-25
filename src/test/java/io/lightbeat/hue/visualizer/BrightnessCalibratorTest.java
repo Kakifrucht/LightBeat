@@ -6,8 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -68,7 +67,7 @@ class BrightnessCalibratorTest {
 
         // brightness corrected upwards, difference significant enough
         data = calibrator.getBrightness(0.5d);
-        assertEquals(Math.round(MAX_BRIGHTNESS * 0.75d), getAverageBrightness(data));
+        assertEquals(Math.round(MAX_BRIGHTNESS * 0.725d), getAverageBrightness(data));
 
         // change brightness to max
         data = calibrator.getBrightness(1d);
@@ -85,13 +84,13 @@ class BrightnessCalibratorTest {
         BrightnessCalibrator.BrightnessData data = calibrator.getLowestBrightnessData();
 
         assertAll("lowestData",
-                () -> assertEquals(false, data.isBrightnessChange()),
+                () -> assertFalse(data.isBrightnessChange()),
                 () -> assertEquals(MIN_BRIGHTNESS, data.getBrightnessFade()),
                 () -> assertEquals(minBeatBrightness, data.getBrightness())
         );
 
         calibrator.getBrightness(1d);
-        assertEquals(true, calibrator.getLowestBrightnessData().isBrightnessChange());
+        assertTrue(calibrator.getLowestBrightnessData().isBrightnessChange());
     }
 
     private int getAverageBrightness(BrightnessCalibrator.BrightnessData data) {

@@ -11,7 +11,7 @@ import io.lightbeat.hue.bridge.color.Color;
 @SuppressWarnings("UnusedReturnValue")
 public class LightStateBuilder {
 
-    public static LightStateBuilder create() {
+    static LightStateBuilder create() {
         return new LightStateBuilder();
     }
 
@@ -24,7 +24,7 @@ public class LightStateBuilder {
 
     private LightStateBuilder() {}
 
-    public void copyFromBuilder(LightStateBuilder copyFrom) {
+    void copyFromBuilder(LightStateBuilder copyFrom) {
 
         if (copyFrom != null && (!copyFrom.isDefault() || copyFrom.transitionTime > 0)) {
 

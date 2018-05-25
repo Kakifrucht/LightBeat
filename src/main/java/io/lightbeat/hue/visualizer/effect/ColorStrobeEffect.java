@@ -4,6 +4,7 @@ import io.lightbeat.ComponentHolder;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.bridge.color.Color;
 import io.lightbeat.hue.bridge.light.Light;
+import io.lightbeat.hue.visualizer.LightUpdate;
 import io.lightbeat.util.TimeThreshold;
 
 import java.util.concurrent.Future;
@@ -38,7 +39,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
     }
 
     @Override
-    void execute() {
+    void execute(LightUpdate lightUpdate) {
 
         if (currentFuture != null) {
             currentFuture.cancel(true);
@@ -46,7 +47,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
         }
 
         if (newColorThreshold.isMet()) {
-            setNewColors();
+            setNewColors(lightUpdate);
         }
 
         for (Light light : lightUpdate.getLights()) {
@@ -87,7 +88,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
     }
 
     @Override
-    void executionDone() {
+    void executionDone(LightUpdate lightUpdate) {
 
         if (currentFuture != null && !currentFuture.isDone()) {
             currentFuture.cancel(true);
@@ -103,7 +104,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
         }
     }
 
-    private void setNewColors() {
+    private void setNewColors(LightUpdate lightUpdate) {
 
         newColorThreshold.setCurrentThreshold(COLOR_CHANGE_IN_MILLIS);
 

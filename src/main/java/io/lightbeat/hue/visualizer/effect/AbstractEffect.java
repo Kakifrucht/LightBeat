@@ -8,7 +8,7 @@ import java.util.Random;
 
 /**
  * Abstract implementation of {@link LightEffect}.
- * Implementations must override {@link #execute()} and can access the current
+ * Implementations must override {@link #execute(LightUpdate)} and can access the current
  * {@link LightUpdate} via field.
  */
 abstract class AbstractEffect implements LightEffect {
@@ -18,8 +18,6 @@ abstract class AbstractEffect implements LightEffect {
     final ColorSet colorSet;
     final Random rnd = new Random();
 
-    LightUpdate lightUpdate;
-
 
     AbstractEffect(ComponentHolder componentHolder) {
         this.componentHolder = componentHolder;
@@ -28,11 +26,10 @@ abstract class AbstractEffect implements LightEffect {
 
     @Override
     public void beatReceived(LightUpdate lightUpdate) {
-        this.lightUpdate = lightUpdate;
-        execute();
+        execute(lightUpdate);
     }
 
-    abstract void execute();
+    abstract void execute(LightUpdate lightUpdate);
 
     @Override
     public String toString() {

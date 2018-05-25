@@ -2,6 +2,7 @@ package io.lightbeat.hue.visualizer.effect;
 
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.bridge.light.Light;
+import io.lightbeat.hue.visualizer.LightUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ public class StrobeEffect extends AbstractRandomEffect {
     }
 
     @Override
-    public void execute() {
+    public void execute(LightUpdate lightUpdate) {
 
         List<Light> controllableLights = new ArrayList<>();
         for (Light light : lightUpdate.getLights()) {
@@ -87,12 +88,12 @@ public class StrobeEffect extends AbstractRandomEffect {
     }
 
     @Override
-    public void executionDone() {
+    public void executionDone(LightUpdate lightUpdate) {
         lightUpdate.getLights().forEach(l -> l.getStrobeController().unsetControllingEffect(this));
     }
 
     @Override
-    void executeEffectOnceRandomly() {
+    void executeEffectOnceRandomly(LightUpdate lightUpdate) {
 
         if (lightUpdate.isBrightnessChange() || lightUpdate.getBrightnessPercentage() < 0.5d) {
             return;

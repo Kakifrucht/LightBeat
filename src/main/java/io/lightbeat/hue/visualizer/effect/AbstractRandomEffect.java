@@ -28,10 +28,10 @@ public abstract class AbstractRandomEffect extends AbstractThresholdEffect {
         if (!isActive) {
             if (rnd.nextDouble() < randomProbability) {
                 logger.info("{} was executed once", this);
-                executeEffectOnceRandomly();
+                executeEffectOnceRandomly(lightUpdate);
             }
         }
     }
 
-    abstract void executeEffectOnceRandomly();
+    abstract void executeEffectOnceRandomly(LightUpdate lightUpdate);
 }

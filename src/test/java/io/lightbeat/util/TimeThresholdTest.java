@@ -3,9 +3,7 @@ package io.lightbeat.util;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 class TimeThresholdTest {
 
@@ -27,7 +25,7 @@ class TimeThresholdTest {
             timeThreshold.setCurrentThreshold(-1);
             fail("No exception was thrown");
         } catch (Exception e) {
-            assertTrue(e.getClass().equals(IllegalArgumentException.class));
+            assertEquals(e.getClass(), IllegalArgumentException.class);
         }
     }
 
