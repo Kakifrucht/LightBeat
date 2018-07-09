@@ -32,8 +32,7 @@ public class BrightnessController extends AbstractController {
         }
     }
 
-    @Override
-    protected void applyFadeUpdatesExecute() {
+    public void applyFadeUpdates() {
         updateBrightness(fadeBrightness);
     }
 

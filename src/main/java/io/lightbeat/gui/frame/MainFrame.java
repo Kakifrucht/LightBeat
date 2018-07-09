@@ -373,6 +373,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                     boolean audioReaderStarted = audioReader.start(supportedMixer);
                     if (audioReaderStarted) {
                         startButton.setText("Stop");
+                        startButton.requestFocus();
+
                         infoLabel.setText("Running | Stop to reload any changes made to the settings");
                         componentHolder.getAudioEventManager().registerBeatObserver(this);
                         return;

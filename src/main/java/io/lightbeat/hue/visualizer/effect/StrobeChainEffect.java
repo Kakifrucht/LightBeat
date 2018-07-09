@@ -59,6 +59,6 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
 
     @Override
     public void executionDone(LightUpdate lightUpdate) {
-        lightsInOrder.forEach(l -> l.getStrobeController().unsetControllingEffect(this));
+        unsetControllingEffect(lightUpdate);
     }
 }

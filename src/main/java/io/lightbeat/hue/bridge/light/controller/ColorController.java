@@ -30,8 +30,7 @@ public class ColorController extends AbstractController {
         }
     }
 
-    @Override
-    protected void applyFadeUpdatesExecute() {
+    public void applyFadeUpdates() {
         updateColor(fadeColor);
         if (fadeColorWasUpdated) {
             fadeColorWasUpdated = false;

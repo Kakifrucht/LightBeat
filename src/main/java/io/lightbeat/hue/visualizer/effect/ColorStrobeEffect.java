@@ -50,7 +50,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
             setNewColors(lightUpdate);
         }
 
-        for (Light light : lightUpdate.getLights()) {
+        for (Light light : lightUpdate.getMainLights()) {
             if (light.getColorController().canControl(this)) {
                 currentLight = light;
                 break;

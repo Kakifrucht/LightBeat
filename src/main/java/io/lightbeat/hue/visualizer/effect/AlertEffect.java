@@ -13,6 +13,9 @@ import java.util.List;
  */
 public class AlertEffect extends AbstractRandomEffect {
 
+    /**
+     * Approximated time until alert effect is done.
+     */
     private static final long ALERT_THRESHOLD_MILLIS = 500L;
 
     private TimeThreshold alertThreshold;
@@ -32,15 +35,15 @@ public class AlertEffect extends AbstractRandomEffect {
 
         if (alertThreshold.isMet()) {
             lightUpdate.getLights().forEach(l -> l.getBrightnessController().setAlertMode());
-            alertThreshold.setCurrentThreshold(ALERT_THRESHOLD_MILLIS); // ~time until effect is done
+            alertThreshold.setCurrentThreshold(ALERT_THRESHOLD_MILLIS);
         }
     }
 
     @Override
     void executeEffectOnceRandomly(LightUpdate lightUpdate) {
-        List<Light> activeLights = lightUpdate.getLightsTurnedOn();
-        if (!activeLights.isEmpty()) {
-            activeLights
+        List<Light> lightsTurnedOn = lightUpdate.getLightsTurnedOn();
+        if (!lightsTurnedOn.isEmpty()) {
+            lightsTurnedOn
                     .get(0)
                     .getBrightnessController()
                     .setAlertMode();

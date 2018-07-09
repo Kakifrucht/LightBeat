@@ -13,7 +13,8 @@ import java.util.List;
 public class LightUpdate {
 
     private final List<Light> lights;
-    private final List<Light> activeLights;
+    private final List<Light> lightsTurnedOn;
+    private final List<Light> mainLights;
 
     private final int brightness;
     private final int brightnessFade;
@@ -25,7 +26,16 @@ public class LightUpdate {
     LightUpdate(List<Light> lights, BrightnessCalibrator.BrightnessData brightnessData, long timeSinceLastBeat) {
 
         this.lights = lights;
-        this.activeLights = new ArrayList<>(lights);
+        this.lightsTurnedOn = new ArrayList<>(lights);
+        this.lightsTurnedOn.removeIf(light -> !light.isOn());
+
+        this.mainLights = new ArrayList<>();
+        mainLights.add(lights.get(0));
+
+        double randomThreshold = Math.min(.5d, (int) Math.round(lights.size() * 0.1d));
+        for (int i = 1; i < lights.size() && Math.random() < randomThreshold; i++) {
+            mainLights.add(lights.get(i));
+        }
 
         this.brightness = brightnessData.getBrightness();
         this.brightnessFade = brightnessData.getBrightnessFade();
@@ -44,9 +54,15 @@ public class LightUpdate {
         return lights;
     }
 
+    /**
+     * @return list consisting of the main lights for this light update, will contain at least one light, or more
+     */
+    public List<Light> getMainLights() {
+        return mainLights;
+    }
+
     public List<Light> getLightsTurnedOn() {
-        activeLights.removeIf(light -> !light.isOn());
-        return activeLights;
+        return lightsTurnedOn;
     }
 
     public int getBrightness() {

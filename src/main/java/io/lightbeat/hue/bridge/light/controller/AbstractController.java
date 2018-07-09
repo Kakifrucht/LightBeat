@@ -31,6 +31,11 @@ public abstract class AbstractController {
      * @return true if control was given to or {@link #canControl(LightEffect)} returns true
      */
     public boolean setControllingEffect(LightEffect effect) {
+
+        if (effect.equals(controllingEffect)) {
+            return true;
+        }
+
         if (canControl(effect)) {
             this.controllingEffect = effect;
             return true;
@@ -53,12 +58,4 @@ public abstract class AbstractController {
 
         return false;
     }
-
-    public void applyFadeUpdates() {
-        if (controlledLight.isOn() && !controlledLight.getStrobeController().isStrobing()) {
-            applyFadeUpdatesExecute();
-        }
-    }
-
-    protected abstract void applyFadeUpdatesExecute();
 }

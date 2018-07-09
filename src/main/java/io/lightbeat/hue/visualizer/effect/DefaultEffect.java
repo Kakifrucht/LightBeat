@@ -1,15 +1,13 @@
 package io.lightbeat.hue.visualizer.effect;
 
 import io.lightbeat.ComponentHolder;
-import io.lightbeat.hue.visualizer.LightUpdate;
 import io.lightbeat.hue.bridge.color.Color;
 import io.lightbeat.hue.bridge.light.Light;
-
-import java.util.ArrayList;
-import java.util.List;
+import io.lightbeat.hue.visualizer.LightUpdate;
 
 /**
- * Default effect that updates the color of a random amount of lights.
+ * Default effect that updates the color of all main lights for the current light update.
+ * It changes the color and fade color only when {@link LightUpdate#isBrightnessChange()} is true.
  */
 public class DefaultEffect extends AbstractEffect {
 
@@ -32,22 +30,7 @@ public class DefaultEffect extends AbstractEffect {
             updateBrightness(lightUpdate);
         }
 
-        // select random light(s) to update
-        List<Light> lights = lightUpdate.getLightsTurnedOn();
-        if (lights.isEmpty()) {
-            return;
-        }
-
-        List<Light> lightsToUpdate = new ArrayList<>();
-        lightsToUpdate.add(lights.get(0));
-
-        // randomly add more lights, depending on amount of lights in configuration
-        int randomThreshold = Math.min(5, (int) Math.round(lights.size() * 0.7d));
-        for (int i = 1; i < lights.size() && rnd.nextInt(10) < randomThreshold; i++) {
-            lightsToUpdate.add(lights.get(i));
-        }
-
-        for (Light light : lightsToUpdate) {
+        for (Light light : lightUpdate.getMainLights()) {
             light.getColorController().setColor(this, color);
         }
     }

@@ -41,9 +41,6 @@ public class StrobeController extends AbstractController {
         return wasUnset;
     }
 
-    @Override
-    protected void applyFadeUpdatesExecute() {}
-
     public void applyUpdates() {
 
         if (setOn != null) {

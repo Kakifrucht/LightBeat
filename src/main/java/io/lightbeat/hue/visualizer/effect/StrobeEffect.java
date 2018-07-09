@@ -8,9 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Effect to add a strobing, while turning all but one lights off and strobing the other ones (amount
- * dependant on light configuration). The strobe will be synchronized to the beat. May also randomly
- * turn one light off and on.
+ * Effect to add a strobing, while turning all but one lights off and strobing the main lights for the current update.
+ * The strobe will be synchronized to the beat. May also randomly turn one light off and on.
  */
 public class StrobeEffect extends AbstractRandomEffect {
 
@@ -71,17 +70,12 @@ public class StrobeEffect extends AbstractRandomEffect {
 
             activeLight.getBrightnessController().setAlertMode();
 
-            // strobe random lights, depending on how many lights are in the configuration (minimum 1)
-            int amountToStrobe = Math.max((controllableLights.size() - 1) / 2, 1);
-            for (Light light : controllableLights) {
-
-                if (!light.equals(this.activeLight) && !light.getStrobeController().isStrobing()) {
-
+            // strobe main lights
+            for (Light light : lightUpdate.getMainLights()) {
+                if (controllableLights.contains(light)
+                        && !light.equals(this.activeLight)
+                        && !light.getStrobeController().isStrobing()) {
                     light.getStrobeController().doStrobe(this, lightUpdate.getTimeSinceLastBeat());
-
-                    if (--amountToStrobe == 0) {
-                        break;
-                    }
                 }
             }
         }
@@ -89,7 +83,7 @@ public class StrobeEffect extends AbstractRandomEffect {
 
     @Override
     public void executionDone(LightUpdate lightUpdate) {
-        lightUpdate.getLights().forEach(l -> l.getStrobeController().unsetControllingEffect(this));
+        unsetControllingEffect(lightUpdate);
     }
 
     @Override
