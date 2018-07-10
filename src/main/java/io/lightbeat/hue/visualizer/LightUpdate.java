@@ -1,5 +1,7 @@
 package io.lightbeat.hue.visualizer;
 
+import io.lightbeat.config.Config;
+import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.bridge.light.Light;
 
 import java.util.ArrayList;
@@ -23,7 +25,7 @@ public class LightUpdate {
     private final long timeSinceLastBeat;
 
 
-    LightUpdate(List<Light> lights, BrightnessCalibrator.BrightnessData brightnessData, long timeSinceLastBeat) {
+    LightUpdate(Config config, List<Light> lights, BrightnessCalibrator.BrightnessData brightnessData, long timeSinceLastBeat) {
 
         this.lights = lights;
         this.lightsTurnedOn = new ArrayList<>(lights);
@@ -32,7 +34,7 @@ public class LightUpdate {
         this.mainLights = new ArrayList<>();
         mainLights.add(lights.get(0));
 
-        double randomThreshold = Math.min(.5d, (int) Math.round(lights.size() * 0.1d));
+        double randomThreshold = (double) config.getInt(ConfigNode.LIGHT_AMOUNT_PROBABILITY) / 10d;
         for (int i = 1; i < lights.size() && Math.random() < randomThreshold; i++) {
             mainLights.add(lights.get(i));
         }

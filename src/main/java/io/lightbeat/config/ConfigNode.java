@@ -23,9 +23,10 @@ public enum ConfigNode {
     EFFECT_COLOR_STROBE("effect.colorstrobe"),
     EFFECT_STROBE("effect.strobe"),
     LAST_AUDIO_SOURCE("frame.lastaudiosource"),
-    UPDATE_DISABLE_NOTIFICATION("frame.updatedisablenotification"),
+    LIGHT_AMOUNT_PROBABILITY("lights.amountprobability"),
     LIGHTS_DISABLED("lights.disabled"),
     SHOW_ADVANCED_SETTINGS("frame.showadvanced"),
+    UPDATE_DISABLE_NOTIFICATION("frame.updatedisablenotification"),
     WINDOW_LOCATION("window.location"),
     WINDOW_LOOK_AND_FEEL("window.lookandfeel");
 

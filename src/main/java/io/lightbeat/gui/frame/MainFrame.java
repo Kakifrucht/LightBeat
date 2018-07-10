@@ -55,6 +55,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private JPanel lightsPanel;
     private JConfigSlider beatTimeBetweenSlider;
+    private JConfigSlider lightAmountProbabilitySlider;
+    private JButton restoreLightsButton;
 
     private JPanel advancedPanel;
     private JButton readdColorSetPresetsButton;
@@ -131,30 +133,17 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
 
         // lights panel
-        List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-        for (PHLight light : hueManager.getLights()) {
+        updateLightsPanel();
 
-            JCheckBox checkBox = new JCheckBox();
-            checkBox.setText(light.getName());
-            if (!disabledLights.contains(light.getUniqueId())) {
-                checkBox.setSelected(true);
-            }
+        restoreLightsButton.addActionListener(e -> {
 
-            lightsPanel.add(checkBox);
+            // restore lights
+            config.remove(ConfigNode.LIGHTS_DISABLED);
+            updateLightsPanel();
 
-            checkBox.addActionListener(e -> {
-
-                List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-
-                if (((JCheckBox) e.getSource()).isSelected()) {
-                    disabledLightsList.remove(light.getUniqueId());
-                } else {
-                    disabledLightsList.add(light.getUniqueId());
-                }
-
-                config.putList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
-            });
-        }
+            beatTimeBetweenSlider.restoreDefault();
+            lightAmountProbabilitySlider.restoreDefault();
+        });
 
         // brightness panel
         restoreBrightnessButton.addActionListener(e -> {
@@ -308,6 +297,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         transitionTimeSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_FADE_TIME);
 
         beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
+        lightAmountProbabilitySlider = new JConfigSlider(config, ConfigNode.LIGHT_AMOUNT_PROBABILITY);
         beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
         colorRandomizationSlider = new JConfigSlider(config, ConfigNode.COLOR_RANDOMIZATION_RANGE);
         fadeBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_FADE_DIFFERENCE);
@@ -318,6 +308,38 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         showAdvancedCheckbox = new JConfigCheckBox(config, ConfigNode.SHOW_ADVANCED_SETTINGS);
         autoStartCheckBox = new JConfigCheckBox(config, ConfigNode.AUTOSTART);
         darculaThemeCheckBox = new JConfigCheckBox(config, ConfigNode.WINDOW_LOOK_AND_FEEL);
+    }
+
+    private void updateLightsPanel() {
+
+        lightsPanel.removeAll();
+
+        List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+        for (PHLight light : hueManager.getLights()) {
+
+            JCheckBox checkBox = new JCheckBox();
+            checkBox.setText(light.getName());
+            if (!disabledLights.contains(light.getUniqueId())) {
+                checkBox.setSelected(true);
+            }
+
+            lightsPanel.add(checkBox);
+
+            checkBox.addActionListener(e -> {
+
+                List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+
+                if (((JCheckBox) e.getSource()).isSelected()) {
+                    disabledLightsList.remove(light.getUniqueId());
+                } else {
+                    disabledLightsList.add(light.getUniqueId());
+                }
+
+                config.putList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
+            });
+        }
+
+        lightsPanel.updateUI();
     }
 
     @Override

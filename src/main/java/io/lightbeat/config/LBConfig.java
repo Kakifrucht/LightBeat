@@ -33,6 +33,7 @@ public class LBConfig implements Config {
         defaultInts.put(ConfigNode.BRIGHTNESS_FADE_DIFFERENCE.getKey(), 5);
         defaultInts.put(ConfigNode.BRIGHTNESS_MAX.getKey(), 254);
         defaultInts.put(ConfigNode.COLOR_RANDOMIZATION_RANGE.getKey(), 5);
+        defaultInts.put(ConfigNode.LIGHT_AMOUNT_PROBABILITY.getKey(), 3);
 
         defaultBools.put(ConfigNode.EFFECT_ALERT.getKey(), true);
         defaultBools.put(ConfigNode.EFFECT_COLOR_STROBE.getKey(), true);

@@ -55,7 +55,7 @@ public class HueBeatObserver implements BeatObserver {
         }
 
         effectPipe.add(new ColorFlipEffect(componentHolder, 0.7d, 0.15d));
-        effectPipe.add(new ColorFadeEffect(componentHolder, 0.6d, 0.125d));
+        effectPipe.add(new ColorFadeEffect(componentHolder, 0.6d, 0.2d));
         effectPipe.add(new ColorChainEffect(componentHolder, 0.5d, 0.1d));
 
         if (config.getBoolean(ConfigNode.EFFECT_STROBE)) {
@@ -97,7 +97,7 @@ public class HueBeatObserver implements BeatObserver {
     private void passDataToEffectPipe(BrightnessCalibrator.BrightnessData data, boolean receivedBeat) {
 
         Collections.shuffle(selectedLights);
-        LightUpdate lightUpdate = new LightUpdate(selectedLights, data, getTimeSinceLastBeat());
+        LightUpdate lightUpdate = new LightUpdate(componentHolder.getConfig(), selectedLights, data, getTimeSinceLastBeat());
 
         try {
             effectPipe.forEach(effect -> {
