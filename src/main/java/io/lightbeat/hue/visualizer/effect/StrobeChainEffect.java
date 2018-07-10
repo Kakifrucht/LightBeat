@@ -8,11 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Turns all lights off and strobes them one by one in order.
+ * Turns all lights off and strobes them one by one in order. May strobe multiple lights at once,
+ * if {@link LightUpdate#getMainLights()} contains more than one light.
  */
 public class StrobeChainEffect extends AbstractThresholdEffect {
-
-    private static final double ADDITIONAL_LIGHT_PROBABILITY = 0.2d;
 
     private List<Light> lightsInOrder;
     private int currentIndex;
@@ -42,10 +41,7 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
             return;
         }
 
-        boolean isFirstLight = true;
-        while (isFirstLight || Math.random() < ADDITIONAL_LIGHT_PROBABILITY) {
-
-            isFirstLight = false;
+        for (int i = 0; i < lightUpdate.getMainLights().size(); i++) {
 
             lightsInOrder.get(currentIndex++)
                     .getStrobeController()

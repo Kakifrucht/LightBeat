@@ -10,11 +10,10 @@ import java.util.List;
 
 /**
  * Passes one color to all lights one by one and selects a new one after all have the new color.
- * Keeps the order of the lights and may update two lights at once.
+ * Keeps the order of the lights and may strobe multiple lights at once, if {@link LightUpdate#getMainLights()}
+ * contains more than one light.
  */
 public class ColorChainEffect extends AbstractThresholdEffect {
-
-    private static final double ADDITIONAL_LIGHT_PROBABILITY = 0.2d;
 
     private List<Light> lightsInOrder;
 
@@ -51,10 +50,8 @@ public class ColorChainEffect extends AbstractThresholdEffect {
             }
         }
 
-        boolean isFirstLight = true;
-        while (isFirstLight || Math.random() < ADDITIONAL_LIGHT_PROBABILITY) {
+        for (int i = 0; i < lightUpdate.getMainLights().size(); i++) {
 
-            isFirstLight = false;
             if (currentIndex++ >= lightsInOrder.size() - 1) {
                 currentColor = currentColor != null ? currentFadeColor : colorSet.getNextColor();
                 currentFadeColor = colorSet.getNextColor(currentColor);
