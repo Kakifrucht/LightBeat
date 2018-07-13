@@ -17,6 +17,7 @@ class BeatInterpreter {
 
     private static final Logger logger = LoggerFactory.getLogger(BeatInterpreter.class);
 
+    private static final int AMPLITUDE_HISTORY_SIZE = 32;
     private static final double BEAT_SENSITIVITY_BASE = 0.01d;
     private static final long NO_BEAT_RECEIVED_MILLIS = 2000L;
     private static final long SILENCE_MILLIS = 1000L;
@@ -25,7 +26,7 @@ class BeatInterpreter {
     private final long timeBetweenBeatsMillis;
 
     // calculate amplitude averages
-    private final DoubleAverageBuffer amplitudeHistory = new DoubleAverageBuffer(150, false);
+    private final DoubleAverageBuffer amplitudeHistory;
     private double beatThreshold;
     private boolean isSilent = true;
 
@@ -37,6 +38,8 @@ class BeatInterpreter {
     BeatInterpreter(Config config) {
         this.beatThresholdReductionMultiplier = config.getInt(ConfigNode.BEAT_SENSITIVITY) * BEAT_SENSITIVITY_BASE;
         this.timeBetweenBeatsMillis = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN);
+
+        this.amplitudeHistory = new DoubleAverageBuffer(AMPLITUDE_HISTORY_SIZE, false);
     }
 
     BeatEvent interpretValue(double amplitude) {

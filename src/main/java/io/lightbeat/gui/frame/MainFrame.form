@@ -262,7 +262,7 @@
                         <properties>
                           <maximum value="1000"/>
                           <minimum value="100"/>
-                          <toolTipText value="Minimum time in milliseconds until the next beat can be detected.&lt;br&gt;Setting this value too low might cause network congestion and additional latency, setting it too high might skip beats.&lt;br&gt;The best setting is dependant on your individual setup. Lower is better in most cases.&lt;br&gt;If you have more than 4 lights you might have to increase this value."/>
+                          <toolTipText value="Minimum time in milliseconds until the next beat can be detected.&lt;br&gt;Setting this value too low might cause network congestion and additional latency, setting it too high might skip beats.&lt;br&gt;The best setting is dependant on your individual setup. Try setting it as low as possible."/>
                         </properties>
                       </component>
                       <component id="33417" class="javax.swing.JLabel">

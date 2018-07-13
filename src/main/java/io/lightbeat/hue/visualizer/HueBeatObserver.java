@@ -43,7 +43,7 @@ public class HueBeatObserver implements BeatObserver {
 
         Config config = componentHolder.getConfig();
         this.brightnessCalibrator = new BrightnessCalibrator(config);
-        this.transitionTimeCalibrator = new TransitionTimeCalibrator(config.getInt(ConfigNode.BRIGHTNESS_FADE_MAX_TRANSITION_TIME));
+        this.transitionTimeCalibrator = new TransitionTimeCalibrator(config.getInt(ConfigNode.BRIGHTNESS_FADE_MAX_TIME));
 
         // effects at the end of pipe have highest priority
         effectPipe = new ArrayList<>();

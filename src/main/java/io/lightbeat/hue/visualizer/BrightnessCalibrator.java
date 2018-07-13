@@ -2,7 +2,6 @@ package io.lightbeat.hue.visualizer;
 
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
-import io.lightbeat.util.TimeThreshold;
 import io.lightbeat.util.DoubleAverageBuffer;
 
 /**
@@ -11,9 +10,7 @@ import io.lightbeat.util.DoubleAverageBuffer;
  * object, which contains the relevant information for the next light update, and if a brightness
  * change is needed in the first place. The first call to the method will always return {@link BrightnessData}
  * that sets the brightness to 50%, and keeps sending the same amount. Brightness only changes if difference
- * in percentage since last brightness is higher than {@link #BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE}. The last
- * brightness change must also have ocurred at least {@link #BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS} milliseconds
- * apart.
+ * in percentage since last brightness is higher than {@link #BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE}.
  */
 class BrightnessCalibrator {
 
@@ -21,7 +18,6 @@ class BrightnessCalibrator {
     private static final double BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE = 0.2d;
 
     static final int CALIBRATION_SIZE = 30;
-    private static final long BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS = 5000L;
     private static final int BUFFER_SIZE = 150;
 
     private final int brightnessMin;
@@ -31,7 +27,6 @@ class BrightnessCalibrator {
 
     private double currentBrightness = 0d;
 
-    private final TimeThreshold brightnessReductionThreshold = new TimeThreshold(0L);
     private final DoubleAverageBuffer amplitudeDifferenceHistory = new DoubleAverageBuffer(BUFFER_SIZE);
 
 
@@ -68,7 +63,6 @@ class BrightnessCalibrator {
     }
 
     BrightnessData getLowestBrightnessData() {
-        brightnessReductionThreshold.setCurrentThreshold(0L);
         return getBrightnessData(0d);
     }
 
@@ -80,11 +74,9 @@ class BrightnessCalibrator {
         // if reducing brightness ensure that reduction threshold is met
         boolean doBrightnessChange = (Math.abs(brightnessDifference) > BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE
                 || (brightnessPercentage == 1d && currentBrightness < 1d)
-                || (brightnessPercentage == 0d && currentBrightness > 0d))
-                && (brightnessPercentage > currentBrightness || brightnessReductionThreshold.isMet());
+                || (brightnessPercentage == 0d && currentBrightness > 0d));
 
         if (doBrightnessChange) {
-            brightnessReductionThreshold.setCurrentThreshold(BRIGHTNESS_REDUCTION_MIN_DELAY_MILLIS);
             currentBrightness = brightnessPercentage;
         }
 

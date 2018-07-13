@@ -11,7 +11,7 @@ public enum ConfigNode {
     BRIDGE_USERNAME("bridge.username"),
     BRIDGE_IPADDRESS("bridge.ipaddress"),
     BRIGHTNESS_FADE_DIFFERENCE("brightness.fade.difference"),
-    BRIGHTNESS_FADE_MAX_TRANSITION_TIME("brightness.fade.maxtransitiontime"),
+    BRIGHTNESS_FADE_MAX_TIME("brightness.fade.maxtime"),
     BRIGHTNESS_MIN("brightness.min"),
     BRIGHTNESS_MAX("brightness.max"),
     CUSTOM(null),
