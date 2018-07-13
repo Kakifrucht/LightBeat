@@ -23,9 +23,11 @@ public class LightUpdate {
     private final double brightnessPercentage;
     private final boolean doBrightnessChange;
     private final long timeSinceLastBeat;
+    private final int transitionTime;
 
 
-    LightUpdate(Config config, List<Light> lights, BrightnessCalibrator.BrightnessData brightnessData, long timeSinceLastBeat) {
+    LightUpdate(Config config, List<Light> lights,
+                BrightnessCalibrator.BrightnessData brightnessData, long timeSinceLastBeat, int transitionTime) {
 
         this.lights = lights;
         this.lightsTurnedOn = new ArrayList<>(lights);
@@ -44,11 +46,12 @@ public class LightUpdate {
         this.brightnessPercentage = brightnessData.getBrightnessPercentage();
         this.doBrightnessChange = brightnessData.isBrightnessChange();
         this.timeSinceLastBeat = timeSinceLastBeat;
+        this.transitionTime = transitionTime;
     }
 
     void doLightUpdates() {
         for (Light light : lights) {
-            light.doLightUpdate(true);
+            light.doLightUpdate(transitionTime);
         }
     }
 

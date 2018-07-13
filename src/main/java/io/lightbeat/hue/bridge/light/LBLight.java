@@ -15,7 +15,6 @@ public class LBLight implements Light {
 
     private final PHLight light;
     private final LightQueue lightQueue;
-    private final int fadeTime;
 
     private final ColorController colorController;
     private final BrightnessController brightnessController;
@@ -26,10 +25,9 @@ public class LBLight implements Light {
     private volatile boolean isOn;
 
 
-    public LBLight(PHLight light, LightQueue lightQueue, ScheduledExecutorService executorService, int fadeTime) {
+    public LBLight(PHLight light, LightQueue lightQueue, ScheduledExecutorService executorService) {
         this.light = light;
         this.lightQueue = lightQueue;
-        this.fadeTime = fadeTime;
 
         this.colorController = new ColorController(this);
         this.brightnessController = new BrightnessController(this);
@@ -94,7 +92,7 @@ public class LBLight implements Light {
     }
 
     @Override
-    public synchronized void doLightUpdate(boolean doFade) {
+    public synchronized void doLightUpdate(int transitionTime) {
 
         strobeController.applyUpdates();
         colorController.applyUpdates();
@@ -104,8 +102,8 @@ public class LBLight implements Light {
             lightQueue.addUpdate(this, currentBuilder.getLightState());
         }
 
-        if (doFade) {
-            currentBuilder = LightStateBuilder.create().setTransitionTime(fadeTime);
+        if (transitionTime > 0) {
+            currentBuilder = LightStateBuilder.create().setTransitionTime(transitionTime);
 
             colorController.applyFadeUpdates();
             brightnessController.applyFadeUpdates();

@@ -27,8 +27,10 @@ public class HueBeatObserver implements BeatObserver {
 
     private final ComponentHolder componentHolder;
     private final List<Light> selectedLights;
-    private final BrightnessCalibrator brightnessCalibrator;
     private final List<LightEffect> effectPipe;
+
+    private final BrightnessCalibrator brightnessCalibrator;
+    private final TransitionTimeCalibrator transitionTimeCalibrator;
 
     private final DoubleAverageBuffer amplitudeHistory = new DoubleAverageBuffer(AMPLITUDE_HISTORY_SIZE, false);
     private long lastBeatTimeStamp = System.currentTimeMillis();
@@ -41,6 +43,7 @@ public class HueBeatObserver implements BeatObserver {
 
         Config config = componentHolder.getConfig();
         this.brightnessCalibrator = new BrightnessCalibrator(config);
+        this.transitionTimeCalibrator = new TransitionTimeCalibrator(config.getInt(ConfigNode.BRIGHTNESS_FADE_MAX_TRANSITION_TIME));
 
         // effects at the end of pipe have highest priority
         effectPipe = new ArrayList<>();
@@ -91,13 +94,19 @@ public class HueBeatObserver implements BeatObserver {
     public void audioReaderStopped(StopStatus status) {
         // gracefully disable effects that may still be running scheduler threads
         noBeatReceived();
+
         componentHolder.getHueManager().recoverOriginalState();
     }
 
     private void passDataToEffectPipe(BrightnessCalibrator.BrightnessData data, boolean receivedBeat) {
 
+        long timeSinceLastBeat = getTimeSinceLastBeat();
+        int transitionTime = transitionTimeCalibrator.getTransitionTime(timeSinceLastBeat);
+
         Collections.shuffle(selectedLights);
-        LightUpdate lightUpdate = new LightUpdate(componentHolder.getConfig(), selectedLights, data, getTimeSinceLastBeat());
+        LightUpdate lightUpdate = new LightUpdate(
+                componentHolder.getConfig(), selectedLights, data, timeSinceLastBeat, transitionTime
+        );
 
         try {
             effectPipe.forEach(effect -> {

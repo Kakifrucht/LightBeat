@@ -227,7 +227,6 @@ public class LBHueManager implements HueManager {
         List<Light> lights = new ArrayList<>();
         originalLightStates = new HashMap<>();
 
-        int transitionTime = config.getInt(ConfigNode.BRIGHTNESS_FADE_TIME);
         List<String> disabledLights = componentHolder.getConfig().getStringList(ConfigNode.LIGHTS_DISABLED);
         for (PHLight phLight : getLights()) {
 
@@ -238,7 +237,7 @@ public class LBHueManager implements HueManager {
             PHLightState currentState = new PHLightState(phLight.getLastKnownLightState());
             currentState.setReachable(null);
 
-            Light light = new LBLight(phLight, lightQueue, componentHolder.getExecutorService(), transitionTime);
+            Light light = new LBLight(phLight, lightQueue, componentHolder.getExecutorService());
             originalLightStates.put(light, currentState);
             lights.add(light);
         }

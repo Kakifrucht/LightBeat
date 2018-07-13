@@ -7,7 +7,7 @@ import io.lightbeat.hue.bridge.light.controller.StrobeController;
 
 /**
  * Implementing class represents a controllable light. Update it's state via it's controllers
- * or by getting the current builder with {@link #getStateBuilder()} and send it via {@link #doLightUpdate(boolean)}.
+ * or by getting the current builder with {@link #getStateBuilder()} and send it via {@link #doLightUpdate(int)}.
  */
 public interface Light {
 
@@ -43,9 +43,10 @@ public interface Light {
      * and updates the light accordingly. Will only send the update if resulting light state would cause an update.
      * Resets the builder for the next call of this method.
      *
-     * @param doFade true if light should fade
+     * @param transitionTime if transitionTime > 0, will cause a light fade aswell in 100 ms steps
+     *                       (fadeTime of 2 would be 200ms fade)
      */
-    void doLightUpdate(boolean doFade);
+    void doLightUpdate(int transitionTime);
 
     /**
      * When an error has ocurred during the update.

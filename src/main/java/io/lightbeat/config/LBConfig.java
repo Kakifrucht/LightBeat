@@ -29,8 +29,8 @@ public class LBConfig implements Config {
 
         defaultInts.put(ConfigNode.BEAT_SENSITIVITY.getKey(), 5);
         defaultInts.put(ConfigNode.BEAT_MIN_TIME_BETWEEN.getKey(), 200);
-        defaultInts.put(ConfigNode.BRIGHTNESS_FADE_TIME.getKey(), 4);
         defaultInts.put(ConfigNode.BRIGHTNESS_FADE_DIFFERENCE.getKey(), 5);
+        defaultInts.put(ConfigNode.BRIGHTNESS_FADE_MAX_TRANSITION_TIME.getKey(), 5);
         defaultInts.put(ConfigNode.BRIGHTNESS_MAX.getKey(), 254);
         defaultInts.put(ConfigNode.COLOR_RANDOMIZATION_RANGE.getKey(), 5);
         defaultInts.put(ConfigNode.LIGHT_AMOUNT_PROBABILITY.getKey(), 3);

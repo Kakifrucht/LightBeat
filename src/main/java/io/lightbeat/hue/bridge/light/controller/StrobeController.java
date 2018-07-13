@@ -56,7 +56,7 @@ public class StrobeController extends AbstractController {
             currentStrobe = executorService.schedule(() -> {
 
                 controlledLight.setOn(onAfterStrobe);
-                controlledLight.doLightUpdate(true);
+                controlledLight.doLightUpdate(1);
 
             }, strobeDelay, TimeUnit.MILLISECONDS);
 

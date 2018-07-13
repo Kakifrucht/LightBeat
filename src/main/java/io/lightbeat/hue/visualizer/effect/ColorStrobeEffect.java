@@ -82,7 +82,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
                 }
 
                 currentLight.getColorController().setColor(ColorStrobeEffect.this, colors[currentColor]);
-                currentLight.doLightUpdate(false);
+                currentLight.doLightUpdate(0);
             }
         }, 0L, delay, TimeUnit.MILLISECONDS);
     }
