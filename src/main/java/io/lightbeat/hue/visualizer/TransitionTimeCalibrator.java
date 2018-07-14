@@ -12,9 +12,9 @@ import io.lightbeat.util.DoubleAverageBuffer;
  */
 class TransitionTimeCalibrator {
 
-    private static final int HISTORY_SIZE = 25;
-    private static final int CALIBRATION_SIZE = 10;
-    private static final int MIN_TRANSITION_TIME = 1;
+    static final int HISTORY_SIZE = 25;
+    static final int CALIBRATION_SIZE = 10;
+    static final int MIN_TRANSITION_TIME = 1;
 
     private final int maxTransitionTime;
 
@@ -39,7 +39,7 @@ class TransitionTimeCalibrator {
 
         buffer.add(timeSinceLastBeat);
 
-        if (buffer.size() < CALIBRATION_SIZE) {
+        if (buffer.size() <= CALIBRATION_SIZE) {
             return maxTransitionTime / 2;
         }
 

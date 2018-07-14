@@ -57,10 +57,6 @@ class BrightnessCalibratorTest {
         data = calibrator.getBrightness(0d);
         assertEquals(MEDIAN_BRIGHTNESS, getAverageBrightness(data));
 
-        // test brightness reduction threshold (should not change brightness, not met yet)
-        data = calibrator.getBrightness(-1d);
-        assertEquals(MEDIAN_BRIGHTNESS, getAverageBrightness(data));
-
         // verify that brightness doesn't change with insignificant amplitude differences
         data = calibrator.getBrightness(0.1d);
         assertEquals(MEDIAN_BRIGHTNESS, getAverageBrightness(data));
@@ -73,10 +69,6 @@ class BrightnessCalibratorTest {
         data = calibrator.getBrightness(1d);
         assertEquals(MAX_BRIGHTNESS, data.getBrightness());
         assertEquals(maxFadeBrightness, data.getBrightnessFade());
-
-        // can't directly change back to low, due to time threshold
-        data = calibrator.getBrightness(-1d);
-        assertEquals(MAX_BRIGHTNESS, data.getBrightness());
     }
 
     @Test
