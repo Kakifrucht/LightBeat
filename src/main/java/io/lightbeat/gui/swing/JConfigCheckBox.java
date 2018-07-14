@@ -9,7 +9,7 @@ import javax.swing.*;
  * Checkbox that is dependant on a given {@link ConfigNode} boolean that may execute a runnable
  * on change with {@link #toRunOnChange}.
  */
-public class JConfigCheckBox extends JCheckBox {
+public class JConfigCheckBox extends JCheckBox implements ConfigComponent {
 
     private Runnable toRunOnChange;
 
@@ -43,6 +43,7 @@ public class JConfigCheckBox extends JCheckBox {
         SwingUtilities.invokeLater(toRunOnChange);
     }
 
+    @Override
     public void restoreDefault() {
         setSelected(def);
     }

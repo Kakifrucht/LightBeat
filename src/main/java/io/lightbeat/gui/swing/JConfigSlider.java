@@ -11,7 +11,7 @@ import java.awt.event.MouseEvent;
  * Slider that sets a given {@link ConfigNode} to it's value whenever it changes.
  * Allows to restore default value via {@link #restoreDefault()}.
  */
-public class JConfigSlider extends JSlider {
+public class JConfigSlider extends JSlider implements ConfigComponent {
 
     private final int def;
 
@@ -80,6 +80,7 @@ public class JConfigSlider extends JSlider {
         this.minDifference = minDifference;
     }
 
+    @Override
     public void restoreDefault() {
         setValue(def);
     }

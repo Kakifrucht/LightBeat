@@ -7,10 +7,7 @@ import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.ConfigNode;
-import io.lightbeat.gui.swing.JColorPanel;
-import io.lightbeat.gui.swing.JConfigCheckBox;
-import io.lightbeat.gui.swing.JConfigSlider;
-import io.lightbeat.gui.swing.JIconLabel;
+import io.lightbeat.gui.swing.*;
 import io.lightbeat.util.UpdateChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,14 +45,16 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JPanel colorSelectPanel;
     private ButtonGroup colorButtonGroup;
 
+    private JPanel lightsPanel;
+    private JPanel lightSelectPanel;
+    private JButton restoreLightsButton;
+    private JConfigSlider beatTimeBetweenSlider;
+    private JConfigSlider lightAmountProbabilitySlider;
+
+    private JPanel brightnessPanel;
     private JButton restoreBrightnessButton;
     private JConfigSlider minBrightnessSlider;
     private JConfigSlider maxBrightnessSlider;
-
-    private JPanel lightsPanel;
-    private JConfigSlider beatTimeBetweenSlider;
-    private JConfigSlider lightAmountProbabilitySlider;
-    private JButton restoreLightsButton;
 
     private JPanel advancedPanel;
     private JButton readdColorSetPresetsButton;
@@ -63,6 +62,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JConfigCheckBox strobeCheckBox;
     private JConfigCheckBox colorStrobeCheckbox;
     private JConfigCheckBox glowCheckBox;
+    private JConfigCheckBox bassOnlyModeCheckBox;
     private JConfigSlider beatSensitivitySlider;
     private JConfigSlider colorRandomizationSlider;
     private JConfigSlider fadeBrightnessSlider;
@@ -77,7 +77,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JLabel infoLabel;
     private JColorPanel colorsPreviewPanel;
     private JButton deviceHelpButton;
-
 
     private HueFrame selectionFrame = null;
 
@@ -135,39 +134,23 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         // lights panel
         updateLightsPanel();
-
         restoreLightsButton.addActionListener(e -> {
 
             // restore lights
             config.remove(ConfigNode.LIGHTS_DISABLED);
             updateLightsPanel();
 
-            beatTimeBetweenSlider.restoreDefault();
-            lightAmountProbabilitySlider.restoreDefault();
+            restoreConfigFromPanel(lightsPanel);
         });
 
         // brightness panel
-        restoreBrightnessButton.addActionListener(e -> {
-            minBrightnessSlider.restoreDefault();
-            maxBrightnessSlider.restoreDefault();
-        });
-
+        restoreBrightnessButton.addActionListener(e -> restoreConfigFromPanel(brightnessPanel));
         minBrightnessSlider.setBoundedSlider(maxBrightnessSlider, true, MINIMUM_BRIGHTNESS_DIFFERENCE);
         maxBrightnessSlider.setBoundedSlider(minBrightnessSlider, false, MINIMUM_BRIGHTNESS_DIFFERENCE);
 
         // advanced panel
         readdColorSetPresetsButton.addActionListener(e -> addColorSetPresets());
-        restoreAdvancedButton.addActionListener(e -> {
-
-            strobeCheckBox.restoreDefault();
-            colorStrobeCheckbox.restoreDefault();
-            glowCheckBox.restoreDefault();
-
-            beatSensitivitySlider.restoreDefault();
-            colorRandomizationSlider.restoreDefault();
-            fadeBrightnessSlider.restoreDefault();
-            maxTransitionTimeSlider.restoreDefault();
-        });
+        restoreAdvancedButton.addActionListener(e -> restoreConfigFromPanel(advancedPanel));
 
         startButton.addActionListener(e -> {
             if (audioReader.isOpen()) {
@@ -304,6 +287,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         strobeCheckBox = new JConfigCheckBox(config, ConfigNode.EFFECT_STROBE);
         colorStrobeCheckbox = new JConfigCheckBox(config, ConfigNode.EFFECT_COLOR_STROBE);
         glowCheckBox = new JConfigCheckBox(config, ConfigNode.EFFECT_ALERT);
+        bassOnlyModeCheckBox = new JConfigCheckBox(config, ConfigNode.BEAT_BASS_ONLY_MODE);
         beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
         colorRandomizationSlider = new JConfigSlider(config, ConfigNode.COLOR_RANDOMIZATION_RANGE);
         fadeBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_FADE_DIFFERENCE);
@@ -314,9 +298,22 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         darculaThemeCheckBox = new JConfigCheckBox(config, ConfigNode.WINDOW_LOOK_AND_FEEL);
     }
 
+    private void restoreConfigFromPanel(JPanel panel) {
+        for (Component component : panel.getComponents()) {
+            // recurse into child panels
+            if (component instanceof JPanel) {
+                restoreConfigFromPanel((JPanel) component);
+            }
+
+            if (component instanceof ConfigComponent) {
+                ((ConfigComponent) component).restoreDefault();
+            }
+        }
+    }
+
     private void updateLightsPanel() {
 
-        lightsPanel.removeAll();
+        lightSelectPanel.removeAll();
 
         List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
         for (PHLight light : hueManager.getLights()) {
@@ -327,7 +324,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 checkBox.setSelected(true);
             }
 
-            lightsPanel.add(checkBox);
+            lightSelectPanel.add(checkBox);
 
             checkBox.addActionListener(e -> {
 
@@ -343,7 +340,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             });
         }
 
-        runOnSwingThread(() -> lightsPanel.updateUI());
+        runOnSwingThread(() -> lightSelectPanel.updateUI());
     }
 
     @Override

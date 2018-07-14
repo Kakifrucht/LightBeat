@@ -1,6 +1,7 @@
 package io.lightbeat.audio;
 
 import io.lightbeat.config.Config;
+import io.lightbeat.config.ConfigNode;
 import org.jtransforms.fft.DoubleFFT_1D;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Default {@link AudioReader} implementation, that also serves as an {@link BeatEventManager}.
+ * Get a list of supported mixers with {@link #getSupportedMixers()}, which can be used to start
+ * the scheduled beat detection thread via {@link #start(Mixer)}. Can filter out all frequencies
+ * but bass frequency via FFT, if config option {@link ConfigNode#BEAT_BASS_ONLY_MODE} is set to
+ * true. Classes can register to receive {@link BeatEvent BeatEvents} by calling
+ * {@link #registerBeatObserver(BeatObserver)}, that are called whenever a beat was detected.
  */
 public class LBAudioReader implements BeatEventManager, AudioReader {
 
@@ -101,29 +107,35 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
                         normalizedAudioBuffer[i] = sample / (double) Short.MAX_VALUE;
                     }
 
-                    DoubleFFT_1D fft = new DoubleFFT_1D(frameSize / 2);
-                    fft.realForward(normalizedAudioBuffer);
-
-                    // filter frequencies
-                    for (int i = 4; i < normalizedAudioBuffer.length; i++) {
-                        normalizedAudioBuffer[i] = 0.0d;
-                    }
-
-                    // there is most likely a more efficient way than converting via fft -> removing values -> inverse fft -> rms
-                    fft.realInverse(normalizedAudioBuffer, true);
-
                     // calculate root mean square and use value as amplitude
-                    double average = 0d;
-                    for (int i = 0; i < normalizedAudioBuffer.length; i += 2) {
-                        average += normalizedAudioBuffer[i];
-                    }
-                    average /= normalizedAudioBuffer.length;
-
                     double averageMeanSquare = 0;
-                    for (int i = 0; i < normalizedAudioBuffer.length; i += 2) {
-                        averageMeanSquare += Math.pow(normalizedAudioBuffer[i] - average, 2d);
+
+                    if (config.getBoolean(ConfigNode.BEAT_BASS_ONLY_MODE)) {
+
+                        // filter out all but low frequencies
+
+                        DoubleFFT_1D fft = new DoubleFFT_1D(frameSize / 2);
+                        fft.realForward(normalizedAudioBuffer);
+
+                        // filter frequencies
+                        for (int i = 4; i < normalizedAudioBuffer.length; i++) {
+                            normalizedAudioBuffer[i] = 0.0d;
+                        }
+
+                        // there is most likely a more efficient way than converting via fft -> removing values -> inverse fft -> rms
+                        fft.realInverse(normalizedAudioBuffer, true);
+
+                        for (int i = 0; i < normalizedAudioBuffer.length; i += 2) {
+                            averageMeanSquare += Math.pow(normalizedAudioBuffer[i], 2d);
+                        }
+
+                    } else {
+                        for (int i = 0; i < normalizedAudioBuffer.length / 2; i++) {
+                            averageMeanSquare += Math.pow(normalizedAudioBuffer[i], 2d);
+                        }
                     }
-                    averageMeanSquare /= normalizedAudioBuffer.length;
+
+                    averageMeanSquare /= (normalizedAudioBuffer.length / 2);
                     averageMeanSquare = Math.sqrt(averageMeanSquare);
 
                     double amplitude = averageMeanSquare;

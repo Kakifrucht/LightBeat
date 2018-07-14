@@ -229,7 +229,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <grid id="bdb23" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="bdb23" binding="lightsPanel" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="5" bottom="2" right="5"/>
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -239,7 +239,7 @@
                   <font size="16"/>
                 </border>
                 <children>
-                  <grid id="1a4ca" binding="lightsPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+                  <grid id="1a4ca" binding="lightSelectPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                     <constraints>
                       <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                     </constraints>
@@ -310,7 +310,7 @@
                   </component>
                 </children>
               </grid>
-              <grid id="65d60" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="65d60" binding="brightnessPanel" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="5" bottom="2" right="5"/>
                 <constraints>
                   <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -433,16 +433,6 @@
               <text value="Beat Detection Sensitivity"/>
             </properties>
           </component>
-          <component id="449f0" class="io.lightbeat.gui.swing.JConfigSlider" binding="beatSensitivitySlider" custom-create="true">
-            <constraints>
-              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <maximum value="10"/>
-              <minimum value="1"/>
-              <toolTipText value="Setting this value higher may cause more beats to get detected.&lt;br&gt;It is usually not necessary to change this value as beat detection calibrates automatically."/>
-            </properties>
-          </component>
           <component id="d6514" class="io.lightbeat.gui.swing.JConfigSlider" binding="fadeBrightnessSlider" custom-create="true">
             <constraints>
               <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
@@ -524,6 +514,35 @@
               <text value="Maximum Fade Transition Time"/>
             </properties>
           </component>
+          <grid id="b4a40" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints>
+              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="449f0" class="io.lightbeat.gui.swing.JConfigSlider" binding="beatSensitivitySlider" custom-create="true">
+                <constraints>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <maximum value="10"/>
+                  <minimum value="1"/>
+                  <toolTipText value="Setting this value higher may cause more beats to get detected.&lt;br&gt;It is usually not necessary to change this value as beat detection calibrates automatically."/>
+                </properties>
+              </component>
+              <component id="a54fc" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="bassOnlyModeCheckBox" custom-create="true">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Bass Only Mode"/>
+                  <toolTipText value="Enable detection low frequencies only.&lt;br&gt;Use this if there is too much sound interference (e.g. via microphone)."/>
+                </properties>
+              </component>
+            </children>
+          </grid>
         </children>
       </grid>
     </children>

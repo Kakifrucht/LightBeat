@@ -8,6 +8,7 @@ public enum ConfigNode {
     AUTOSTART("autostart"),
     BEAT_MIN_TIME_BETWEEN("beat.mintimebetween"),
     BEAT_SENSITIVITY("beat.sensitivity"),
+    BEAT_BASS_ONLY_MODE("beat.bassonlymode"),
     BRIDGE_USERNAME("bridge.username"),
     BRIDGE_IPADDRESS("bridge.ipaddress"),
     BRIGHTNESS_FADE_DIFFERENCE("brightness.fade.difference"),
