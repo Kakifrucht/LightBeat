@@ -24,7 +24,7 @@ public class StrobeEffect extends AbstractRandomEffect {
     }
 
     @Override
-    void initialize() {
+    void initialize(LightUpdate lightUpdate) {
         activeLight = null;
         nextLightInBeats = 0;
     }

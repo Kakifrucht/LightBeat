@@ -128,7 +128,7 @@ public class LBConfig implements Config {
 
         StringBuilder listToString = new StringBuilder();
         for (Object listEntry : list) {
-            listToString.append(String.valueOf(listEntry)).append(LIST_SPACER);
+            listToString.append(listEntry).append(LIST_SPACER);
         }
         if (listToString.length() > 0) {
             listToString.setLength(listToString.length() - 1);

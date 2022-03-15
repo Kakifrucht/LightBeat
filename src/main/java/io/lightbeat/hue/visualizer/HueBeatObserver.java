@@ -5,8 +5,9 @@ import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
-import io.lightbeat.hue.visualizer.effect.*;
+import io.lightbeat.hue.bridge.color.ColorSet;
 import io.lightbeat.hue.bridge.light.Light;
+import io.lightbeat.hue.visualizer.effect.*;
 import io.lightbeat.util.DoubleAverageBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,7 @@ public class HueBeatObserver implements BeatObserver {
 
         Config config = componentHolder.getConfig();
         this.brightnessCalibrator = new BrightnessCalibrator(config);
-        this.transitionTimeCalibrator = new TransitionTimeCalibrator(config.getInt(ConfigNode.BRIGHTNESS_FADE_MAX_TIME));
+        this.transitionTimeCalibrator = new TransitionTimeCalibrator(config);
 
         // effects at the end of pipe have highest priority
         effectPipe = new ArrayList<>();
@@ -100,12 +101,14 @@ public class HueBeatObserver implements BeatObserver {
 
     private void passDataToEffectPipe(BrightnessCalibrator.BrightnessData data, boolean receivedBeat) {
 
+        Collections.shuffle(selectedLights);
+
+        ColorSet colorSet = componentHolder.getHueManager().getColorSet();
         long timeSinceLastBeat = getTimeSinceLastBeat();
         int transitionTime = transitionTimeCalibrator.getTransitionTime(timeSinceLastBeat);
 
-        Collections.shuffle(selectedLights);
         LightUpdate lightUpdate = new LightUpdate(
-                componentHolder.getConfig(), selectedLights, data, timeSinceLastBeat, transitionTime
+                componentHolder.getConfig(), selectedLights, colorSet, data, timeSinceLastBeat, transitionTime
         );
 
         try {

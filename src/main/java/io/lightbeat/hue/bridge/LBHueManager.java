@@ -32,6 +32,7 @@ public class LBHueManager implements HueManager {
 
     private State currentState = State.NOT_CONNECTED;
     private PHBridge bridge;
+    private ColorSet colorSet;
 
     private HueStateObserver stateObserver;
     private Map<Light, PHLightState> originalLightStates;
@@ -213,12 +214,21 @@ public class LBHueManager implements HueManager {
 
     @Override
     public ColorSet getColorSet() {
+
         String selectedColorSet = config.get(ConfigNode.COLOR_SET_SELECTED);
+
+        ColorSet colorSet;
         if (selectedColorSet == null || selectedColorSet.equals("Random")) {
-            return new RandomColorSet();
+            colorSet = new RandomColorSet();
         } else {
-            return new CustomColorSet(config, selectedColorSet);
+            colorSet = new CustomColorSet(config, selectedColorSet);
         }
+
+        if (!colorSet.equals(this.colorSet)) {
+            this.colorSet = colorSet;
+        }
+
+        return colorSet;
     }
 
     @Override

@@ -23,7 +23,7 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
     }
 
     @Override
-    void initialize() {
+    void initialize(LightUpdate lightUpdate) {
         lightsInOrder = new ArrayList<>();
         currentIndex = 0;
     }

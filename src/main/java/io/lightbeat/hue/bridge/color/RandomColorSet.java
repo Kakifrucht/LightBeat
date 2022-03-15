@@ -43,4 +43,14 @@ public class RandomColorSet implements ColorSet {
     public List<Color> getColors() {
         return null;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o != null && getClass() == o.getClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash("Random");
+    }
 }

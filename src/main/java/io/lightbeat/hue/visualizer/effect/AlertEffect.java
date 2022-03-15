@@ -26,7 +26,7 @@ public class AlertEffect extends AbstractRandomEffect {
     }
 
     @Override
-    void initialize() {
+    void initialize(LightUpdate lightUpdate) {
         alertThreshold = new TimeThreshold(0);
     }
 

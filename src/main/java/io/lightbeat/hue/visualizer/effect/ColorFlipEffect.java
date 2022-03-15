@@ -2,6 +2,7 @@ package io.lightbeat.hue.visualizer.effect;
 
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.bridge.color.Color;
+import io.lightbeat.hue.bridge.color.ColorSet;
 import io.lightbeat.hue.bridge.light.Light;
 import io.lightbeat.hue.visualizer.LightUpdate;
 
@@ -29,8 +30,9 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
     }
 
     @Override
-    void initialize() {
+    void initialize(LightUpdate lightUpdate) {
 
+        ColorSet colorSet = lightUpdate.getColorSet();
         color1 = colorSet.getNextColor();
         color2 = colorSet.getNextColor(color1);
 
@@ -60,7 +62,7 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
             nextColorsInBeats = 4 + rnd.nextInt(4);
 
             color1 = color2;
-            color2 = colorSet.getNextColor(color1);
+            color2 = lightUpdate.getColorSet().getNextColor(color1);
 
             for (Light light : lightFlipDirection.keySet()) {
                 flipLightColor(light, rnd.nextBoolean());

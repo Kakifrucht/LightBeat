@@ -2,6 +2,7 @@ package io.lightbeat.hue.visualizer;
 
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
+import io.lightbeat.hue.bridge.color.ColorSet;
 import io.lightbeat.hue.bridge.light.Light;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ public class LightUpdate {
     private final List<Light> lightsTurnedOn;
     private final List<Light> mainLights;
 
+    private final ColorSet colorSet;
     private final int brightness;
     private final int brightnessFade;
     private final double brightnessPercentage;
@@ -26,7 +28,7 @@ public class LightUpdate {
     private final int transitionTime;
 
 
-    LightUpdate(Config config, List<Light> lights,
+    LightUpdate(Config config, List<Light> lights, ColorSet colorSet,
                 BrightnessCalibrator.BrightnessData brightnessData, long timeSinceLastBeat, int transitionTime) {
 
         this.lights = lights;
@@ -41,6 +43,7 @@ public class LightUpdate {
             mainLights.add(lights.get(i));
         }
 
+        this.colorSet = colorSet;
         this.brightness = brightnessData.getBrightness();
         this.brightnessFade = brightnessData.getBrightnessFade();
         this.brightnessPercentage = brightnessData.getBrightnessPercentage();
@@ -68,6 +71,10 @@ public class LightUpdate {
 
     public List<Light> getLightsTurnedOn() {
         return lightsTurnedOn;
+    }
+
+    public ColorSet getColorSet() {
+        return colorSet;
     }
 
     public int getBrightness() {

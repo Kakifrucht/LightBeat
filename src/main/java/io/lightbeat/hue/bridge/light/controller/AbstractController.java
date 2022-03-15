@@ -24,7 +24,7 @@ public abstract class AbstractController {
     }
 
     /**
-     * Manually reserve the ability to take edit this controllers stored values.
+     * Manually reserve the ability to edit this controllers stored values.
      * Usually control must be manually given back by calling {@link #unsetControllingEffect(LightEffect)}.
      *
      * @param effect effect that reserves the right to change this controllers values

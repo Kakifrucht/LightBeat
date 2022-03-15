@@ -1,5 +1,7 @@
 package io.lightbeat.hue.visualizer;
 
+import io.lightbeat.config.Config;
+import io.lightbeat.config.ConfigNode;
 import io.lightbeat.util.DoubleAverageBuffer;
 
 /**
@@ -8,7 +10,6 @@ import io.lightbeat.util.DoubleAverageBuffer;
  * {@link #getTransitionTime(long)}. It will reach this transition time when the given time is
  * at least twice as long than the average of previously received values
  * (history size defined by {@link #HISTORY_SIZE}.
- *
  */
 class TransitionTimeCalibrator {
 
@@ -16,13 +17,13 @@ class TransitionTimeCalibrator {
     static final int CALIBRATION_SIZE = 10;
     static final int MIN_TRANSITION_TIME = 1;
 
-    private final int maxTransitionTime;
+    private final Config config;
 
     private final DoubleAverageBuffer buffer;
 
 
-    TransitionTimeCalibrator(int maxTransitionTime) {
-        this.maxTransitionTime = Math.max(Math.min(8, maxTransitionTime), 1);
+    TransitionTimeCalibrator(Config config) {
+        this.config = config;
         buffer = new DoubleAverageBuffer(HISTORY_SIZE);
     }
 
@@ -36,6 +37,8 @@ class TransitionTimeCalibrator {
      *          the constructor
      */
     int getTransitionTime(long timeSinceLastBeat) {
+
+        int maxTransitionTime = Math.max(Math.min(8, config.getInt(ConfigNode.BRIGHTNESS_FADE_MAX_TIME)), 1);
 
         buffer.add(timeSinceLastBeat);
 

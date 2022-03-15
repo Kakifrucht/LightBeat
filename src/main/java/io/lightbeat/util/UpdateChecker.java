@@ -15,7 +15,7 @@ import java.net.URL;
 public class UpdateChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdateChecker.class);
-    private static final String URL_STRING = "https://lightbeat.io/latest.php";
+    private static final String URL_STRING = "https://lightbeat.io/latest";
 
     private final String currentVersionString;
     private String latestVersionString;

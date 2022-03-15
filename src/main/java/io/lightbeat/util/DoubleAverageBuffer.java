@@ -62,6 +62,10 @@ public class DoubleAverageBuffer {
         }
     }
 
+    public double[] getBuffer() {
+        return ringBuffer;
+    }
+
     public double getCurrentAverage() {
         return currentTotal / size;
     }
@@ -75,6 +79,10 @@ public class DoubleAverageBuffer {
 
     public int size() {
         return size;
+    }
+
+    public boolean isFull() {
+        return size == ringBuffer.length;
     }
 
     public void clear() {

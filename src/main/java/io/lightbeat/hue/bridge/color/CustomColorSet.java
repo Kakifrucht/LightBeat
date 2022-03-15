@@ -11,14 +11,18 @@ import java.util.*;
  */
 public class CustomColorSet implements ColorSet {
 
+    private final Config config;
+    private final String name;
     private final List<Color> colors = new ArrayList<>();
-    private final double colorRandomizationRange;
 
     private final Queue<Color> colorQueue = new LinkedList<>();
 
 
-    public CustomColorSet(Config config, String setName) {
-        for (String colorString : config.getStringList(ConfigNode.getCustomNode("color.sets." + setName))) {
+    public CustomColorSet(Config config, String name) {
+        this.config = config;
+        this.name = name;
+
+        for (String colorString : config.getStringList(ConfigNode.getCustomNode("color.sets." + name))) {
             int color = Integer.parseInt(colorString);
             colors.add(new LBColor(color));
         }
@@ -27,8 +31,6 @@ public class CustomColorSet implements ColorSet {
         while (colors.size() < 12) {
             colors.addAll(colorsCopy);
         }
-
-        this.colorRandomizationRange = (double) config.getInt(ConfigNode.COLOR_RANDOMIZATION_RANGE) / 100d;
     }
 
     @Override
@@ -39,7 +41,7 @@ public class CustomColorSet implements ColorSet {
             Collections.shuffle(colors);
 
             for (Color color : colors) {
-                colorQueue.add(color.getDerivedColor(colorRandomizationRange));
+                colorQueue.add(color.getDerivedColor(getColorRandomizationRange()));
             }
         }
 
@@ -54,6 +56,7 @@ public class CustomColorSet implements ColorSet {
             return nextColor;
         }
 
+        double colorRandomizationRange = getColorRandomizationRange();
         int maxIterations = 5;
         while (nextColor.isSimilar(differentFrom, colorRandomizationRange) && maxIterations-- > 0) {
             nextColor = getNextColor();
@@ -64,5 +67,45 @@ public class CustomColorSet implements ColorSet {
     @Override
     public List<Color> getColors() {
         return colors;
+    }
+
+    private double getColorRandomizationRange() {
+        return (double) config.getInt(ConfigNode.COLOR_RANDOMIZATION_RANGE) / 100d;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        CustomColorSet that = (CustomColorSet) o;
+        if (!name.equals(that.name)) {
+            return false;
+        }
+
+        // compare colors
+        List<Color> thatColors = that.colors;
+        if (thatColors.size() != colors.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < colors.size(); i++) {
+            if (!colors.get(i).equals(thatColors.get(i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, colors);
     }
 }

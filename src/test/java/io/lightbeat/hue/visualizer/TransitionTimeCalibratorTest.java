@@ -1,6 +1,9 @@
 package io.lightbeat.hue.visualizer;
 
+import io.lightbeat.config.Config;
+import io.lightbeat.config.ConfigNode;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -9,8 +12,11 @@ class TransitionTimeCalibratorTest {
     @Test
     void getTransitionTime() {
 
+        Config config = Mockito.mock(Config.class);
+        Mockito.when(config.getInt(ConfigNode.BRIGHTNESS_FADE_MAX_TIME)).thenReturn(5);
+
         int maxTransitionTime = 5;
-        TransitionTimeCalibrator transitionTimeCalibrator = new TransitionTimeCalibrator(maxTransitionTime);
+        TransitionTimeCalibrator transitionTimeCalibrator = new TransitionTimeCalibrator(config);
 
         long timeSinceLastBeat = 10L;
 

@@ -88,7 +88,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         // audio source panel
         refreshDeviceSelectComboBox();
-        deviceHelpButton.addActionListener(e -> openLinkInBrowser("https://lightbeat.io/audioguide.php"));
+        deviceHelpButton.addActionListener(e -> openLinkInBrowser("https://lightbeat.io/audioguide"));
 
         // colors panel
         colorsPreviewPanel.addMouseListener(new MouseAdapter() {
@@ -140,17 +140,17 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             config.remove(ConfigNode.LIGHTS_DISABLED);
             updateLightsPanel();
 
-            restoreConfigFromPanel(lightsPanel);
+            restoreDefaults(lightsPanel);
         });
 
         // brightness panel
-        restoreBrightnessButton.addActionListener(e -> restoreConfigFromPanel(brightnessPanel));
+        restoreBrightnessButton.addActionListener(e -> restoreDefaults(brightnessPanel));
         minBrightnessSlider.setBoundedSlider(maxBrightnessSlider, true, MINIMUM_BRIGHTNESS_DIFFERENCE);
         maxBrightnessSlider.setBoundedSlider(minBrightnessSlider, false, MINIMUM_BRIGHTNESS_DIFFERENCE);
 
         // advanced panel
         readdColorSetPresetsButton.addActionListener(e -> addColorSetPresets());
-        restoreAdvancedButton.addActionListener(e -> restoreConfigFromPanel(advancedPanel));
+        restoreAdvancedButton.addActionListener(e -> restoreDefaults(advancedPanel));
 
         startButton.addActionListener(e -> {
             if (audioReader.isOpen()) {
@@ -256,24 +256,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
     }
 
-    @Override
-    protected void onWindowClose() {
-
-        if (isSelectionFrameActive()) {
-            selectionFrame.dispose();
-        }
-
-        stopBeatDetection();
-
-        // store last location of window
-        long locationStore = ByteBuffer.allocate(8)
-                .putInt(frame.getX())
-                .putInt(frame.getY())
-                .getLong(0);
-
-        config.putLong(ConfigNode.WINDOW_LOCATION, locationStore);
-    }
-
     public void createUIComponents() {
 
         bannerLabel = new JIconLabel("/png/banner.png", "/png/bannerflash.png", 482, 100);
@@ -298,49 +280,22 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         darculaThemeCheckBox = new JConfigCheckBox(config, ConfigNode.WINDOW_LOOK_AND_FEEL);
     }
 
-    private void restoreConfigFromPanel(JPanel panel) {
-        for (Component component : panel.getComponents()) {
-            // recurse into child panels
-            if (component instanceof JPanel) {
-                restoreConfigFromPanel((JPanel) component);
-            }
+    @Override
+    protected void onWindowClose() {
 
-            if (component instanceof ConfigComponent) {
-                ((ConfigComponent) component).restoreDefault();
-            }
-        }
-    }
-
-    private void updateLightsPanel() {
-
-        lightSelectPanel.removeAll();
-
-        List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-        for (PHLight light : hueManager.getLights()) {
-
-            JCheckBox checkBox = new JCheckBox();
-            checkBox.setText(light.getName());
-            if (!disabledLights.contains(light.getUniqueId())) {
-                checkBox.setSelected(true);
-            }
-
-            lightSelectPanel.add(checkBox);
-
-            checkBox.addActionListener(e -> {
-
-                List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-
-                if (((JCheckBox) e.getSource()).isSelected()) {
-                    disabledLightsList.remove(light.getUniqueId());
-                } else {
-                    disabledLightsList.add(light.getUniqueId());
-                }
-
-                config.putList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
-            });
+        if (isSelectionFrameActive()) {
+            selectionFrame.dispose();
         }
 
-        runOnSwingThread(() -> lightSelectPanel.updateUI());
+        stopBeatDetection();
+
+        // store last location of window
+        long locationStore = ByteBuffer.allocate(8)
+                .putInt(frame.getX())
+                .putInt(frame.getY())
+                .getLong(0);
+
+        config.putLong(ConfigNode.WINDOW_LOCATION, locationStore);
     }
 
     @Override
@@ -378,6 +333,26 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
     }
 
+    void refreshColorSets() {
+
+        colorSelectPanel.removeAll();
+        colorButtonGroup.clearSelection();
+
+        addColorSetButton("Random");
+        for (String setName : config.getStringList(ConfigNode.COLOR_SET_LIST)) {
+            addColorSetButton(setName);
+        }
+
+        JRadioButton selectedSetButton = getSelectedColorSetButton();
+        if (!selectedSetButton.getText().equals(config.get(ConfigNode.COLOR_SET_SELECTED))) {
+            config.put(ConfigNode.COLOR_SET_SELECTED, selectedSetButton.getText());
+        }
+
+        colorsPreviewPanel.setColorSet(hueManager.getColorSet());
+        colorSelectPanel.repaint();
+        frame.pack();
+    }
+
     private void startBeatDetection() {
 
         if (audioReader.isOpen()) {
@@ -398,8 +373,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                         startButton.setText("Stop");
                         startButton.requestFocus();
 
-                        infoLabel.setText("Running | Stop to reload any changes made to the settings");
+                        infoLabel.setText("Running | Some settings cannot be changed during visualisation");
                         componentHolder.getAudioEventManager().registerBeatObserver(this);
+                        setElementsEnabled(false);
                         return;
                     }
                 } else {
@@ -415,7 +391,39 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private void stopBeatDetection() {
         if (audioReader.isOpen()) {
             audioReader.stop();
+            setElementsEnabled(true);
         }
+    }
+
+    private void restoreDefaults(JPanel panel) {
+        for (Component component : panel.getComponents()) {
+            // recurse into child panels
+            if (component instanceof JPanel) {
+                restoreDefaults((JPanel) component);
+            }
+
+            if (component instanceof ConfigComponent) {
+                ((ConfigComponent) component).restoreDefault();
+            }
+        }
+    }
+
+    /**
+     * Toggles interface elements that cannot be changed during visualisation.
+     *
+     * @param enabled true to set enabled, false to disable
+     */
+    private void setElementsEnabled(boolean enabled) {
+
+        deviceSelectComboBox.setEnabled(enabled);
+
+        for (Component component : lightSelectPanel.getComponents()) {
+            component.setEnabled(enabled);
+        }
+
+        strobeCheckBox.setEnabled(enabled);
+        colorStrobeCheckbox.setEnabled(enabled);
+        glowCheckBox.setEnabled(enabled);
     }
 
     private void refreshDeviceSelectComboBox() {
@@ -449,24 +457,39 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
     }
 
-    void refreshColorSets() {
+    private void updateLightsPanel() {
 
-        colorSelectPanel.removeAll();
-        colorButtonGroup.clearSelection();
+        lightSelectPanel.removeAll();
 
-        addColorSetButton("Random");
-        for (String setName : config.getStringList(ConfigNode.COLOR_SET_LIST)) {
-            addColorSetButton(setName);
+        List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+        for (PHLight light : hueManager.getLights()) {
+
+            JCheckBox checkBox = new JCheckBox();
+            checkBox.setText(light.getName());
+            if (!disabledLights.contains(light.getUniqueId())) {
+                checkBox.setSelected(true);
+            }
+
+            lightSelectPanel.add(checkBox);
+
+            checkBox.addActionListener(e -> {
+
+                List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+
+                if (((JCheckBox) e.getSource()).isSelected()) {
+                    disabledLightsList.remove(light.getUniqueId());
+                } else {
+                    disabledLightsList.add(light.getUniqueId());
+                }
+
+                config.putList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
+            });
         }
 
-        JRadioButton selectedSetButton = getSelectedColorSetButton();
-        if (!selectedSetButton.getText().equals(config.get(ConfigNode.COLOR_SET_SELECTED))) {
-            config.put(ConfigNode.COLOR_SET_SELECTED, selectedSetButton.getText());
-        }
-
-        colorsPreviewPanel.setColorSet(hueManager.getColorSet());
-        colorSelectPanel.repaint();
-        frame.pack();
+        runOnSwingThread(() -> {
+            lightSelectPanel.updateUI();
+            setElementsEnabled(!audioReader.isOpen());
+        });
     }
 
     private void addColorSetButton(String setName) {

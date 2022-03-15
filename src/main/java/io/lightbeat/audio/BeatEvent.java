@@ -9,16 +9,30 @@ public class BeatEvent {
     private final double average;
 
 
-    // silence constructor
+    /**
+     * Construct a BeatEvent consisting of silence.
+     * Calling {@link #isSilence()} or {@link #isNoBeat()} will always return true.
+     */
     BeatEvent() {
         this(0d, 0d);
     }
 
-    // no beat constructor
+    /**
+     * Construct a BeatEvent when no beat was detected.
+     * Calling {@link #isNoBeat()} will always return true.
+     *
+     * @param average current amplitude average as normalized double value
+     */
     BeatEvent(double average) {
         this(0d, average);
     }
 
+    /**
+     * Construct a BeatEvent when a beat was detected.
+     *
+     * @param triggeringAmplitude beat amplitude as normalized double value
+     * @param average amplitude average when the beat was detected as normalized double value
+     */
     BeatEvent(double triggeringAmplitude, double average) {
         this.triggeringAmplitude = triggeringAmplitude;
         this.average = average;
@@ -28,7 +42,15 @@ public class BeatEvent {
         return triggeringAmplitude;
     }
 
-    double getAverage() {
+    public double getAverage() {
         return average;
+    }
+
+    boolean isSilence() {
+        return triggeringAmplitude == 0d && average == 0d;
+    }
+
+    boolean isNoBeat() {
+        return triggeringAmplitude == 0d;
     }
 }

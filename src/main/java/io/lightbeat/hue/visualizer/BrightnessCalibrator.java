@@ -18,25 +18,26 @@ class BrightnessCalibrator {
     private static final double BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE = 0.2d;
 
     static final int CALIBRATION_SIZE = 30;
+    /**
+     * The buffer size should keep data that is around one and two minutes old, at avg 125 bpm.
+     */
     private static final int BUFFER_SIZE = 150;
 
-    private final int brightnessMin;
-    private final int brightnessRange;
-    private final double brightnessFadeDifference;
-    private final double brightnessFadeAndBeatThreshold;
+    private final Config config;
 
-    private double currentBrightness = 0d;
+    private int brightnessMin = -1;
+    private int brightnessRange = -1;
+
+    private double brightnessFadeDifference;
+    private double brightnessFadeAndBeatThreshold;
+
+    private double lastBrightness = 0d;
 
     private final DoubleAverageBuffer amplitudeDifferenceHistory = new DoubleAverageBuffer(BUFFER_SIZE);
 
 
     BrightnessCalibrator(Config config) {
-        this.brightnessMin = config.getInt(ConfigNode.BRIGHTNESS_MIN);
-        this.brightnessRange = config.getInt(ConfigNode.BRIGHTNESS_MAX) - brightnessMin;
-
-        double configBrightnessFadeDifference = (double) config.getInt(ConfigNode.BRIGHTNESS_FADE_DIFFERENCE);
-        this.brightnessFadeDifference = configBrightnessFadeDifference * BRIGHTNESS_DIFFERENCE_PERCENTAGE_BASE;
-        this.brightnessFadeAndBeatThreshold = brightnessFadeDifference * 2;
+        this.config = config;
     }
 
     /**
@@ -47,6 +48,23 @@ class BrightnessCalibrator {
      */
     BrightnessData getBrightness(double amplitudeDifference) {
 
+        int brightnessMin = config.getInt(ConfigNode.BRIGHTNESS_MIN);
+        int brightnessRange = config.getInt(ConfigNode.BRIGHTNESS_MAX) - brightnessMin;
+
+        // if config was changed, determine new values and force a brightness change
+        boolean forceBrightnessChange = false;
+        if (this.brightnessMin != brightnessMin || this.brightnessRange != brightnessRange) {
+
+            this.brightnessMin = brightnessMin;
+            this.brightnessRange = brightnessRange;
+
+            double configBrightnessFadeDifference = config.getInt(ConfigNode.BRIGHTNESS_FADE_DIFFERENCE);
+            this.brightnessFadeDifference = configBrightnessFadeDifference * BRIGHTNESS_DIFFERENCE_PERCENTAGE_BASE;
+            this.brightnessFadeAndBeatThreshold = brightnessFadeDifference * 2;
+
+            forceBrightnessChange = true;
+        }
+
         amplitudeDifferenceHistory.add(amplitudeDifference);
 
         // calibration phase
@@ -54,12 +72,12 @@ class BrightnessCalibrator {
             return getBrightnessData(0.5d);
         }
 
-        // multiplier is calibrated in regards to the currently highest amplitude, which will set brightness to max if received
+        // multiplier is calibrated regarding the currently highest amplitude, which will set brightness to max if received
         double brightnessMultiplier = 1 / amplitudeDifferenceHistory.getMaxValue();
         double brightnessPercentage = Math.max(Math.min(amplitudeDifference * brightnessMultiplier, 1d), -1d);
         brightnessPercentage = (brightnessPercentage + 1d) / 2d;
 
-        return getBrightnessData(brightnessPercentage);
+        return getBrightnessData(brightnessPercentage, forceBrightnessChange);
     }
 
     BrightnessData getLowestBrightnessData() {
@@ -67,20 +85,25 @@ class BrightnessCalibrator {
     }
 
     private BrightnessData getBrightnessData(double brightnessPercentage) {
+        return getBrightnessData(brightnessPercentage, false);
+    }
 
-        double brightnessDifference = brightnessPercentage - currentBrightness;
+    private BrightnessData getBrightnessData(double brightnessPercentage, boolean forceBrightnessChange) {
+
+        double brightnessDifference = brightnessPercentage - lastBrightness;
 
         // if ceilings are reached always do brightness update if necessary
         // if reducing brightness ensure that reduction threshold is met
-        boolean doBrightnessChange = (Math.abs(brightnessDifference) > BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE
-                || (brightnessPercentage == 1d && currentBrightness < 1d)
-                || (brightnessPercentage == 0d && currentBrightness > 0d));
+        boolean doBrightnessChange = forceBrightnessChange
+                || (Math.abs(brightnessDifference) > BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE
+                || (brightnessPercentage == 1d && lastBrightness < 1d)
+                || (brightnessPercentage == 0d && lastBrightness > 0d));
 
         if (doBrightnessChange) {
-            currentBrightness = brightnessPercentage;
+            lastBrightness = brightnessPercentage;
         }
 
-        return new BrightnessData(currentBrightness, doBrightnessChange);
+        return new BrightnessData(brightnessPercentage, doBrightnessChange);
     }
 
 

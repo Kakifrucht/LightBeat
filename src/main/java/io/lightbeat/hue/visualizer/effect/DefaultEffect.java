@@ -2,6 +2,7 @@ package io.lightbeat.hue.visualizer.effect;
 
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.hue.bridge.color.Color;
+import io.lightbeat.hue.bridge.color.ColorSet;
 import io.lightbeat.hue.bridge.light.Light;
 import io.lightbeat.hue.visualizer.LightUpdate;
 
@@ -41,6 +42,7 @@ public class DefaultEffect extends AbstractEffect {
     }
 
     private void updateColor(LightUpdate lightUpdate) {
+        ColorSet colorSet = lightUpdate.getColorSet();
         fadeColor = colorSet.getNextColor(fadeColor);
         color = colorSet.getNextColor(fadeColor);
 

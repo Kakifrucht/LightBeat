@@ -26,6 +26,18 @@ class DoubleAverageBufferTest {
     }
 
     @Test
+    void getBuffer() {
+        double[] buffer = {1, 2, 3, 4, 5};
+        for (double v : buffer) {
+            this.buffer.add(v);
+        }
+
+        for (int i = 0; i < this.buffer.getBuffer().length; i++) {
+            assertEquals(this.buffer.getBuffer()[i], buffer[i]);
+        }
+    }
+
+    @Test
     void getCurrentAverage() {
         buffer.add(FIVE);
         buffer.add(TWO);
@@ -60,5 +72,13 @@ class DoubleAverageBufferTest {
         }
         buffer.clear();
         assertEquals(0, buffer.size());
+    }
+
+    @Test
+    void isFull() {
+        for (int i = 0; i < DEFAULT_BUFFER_SIZE * 2; i++) {
+            assertEquals(DEFAULT_BUFFER_SIZE <= i, buffer.isFull());
+            buffer.add(0d);
+        }
     }
 }

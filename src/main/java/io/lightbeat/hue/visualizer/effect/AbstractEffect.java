@@ -1,7 +1,6 @@
 package io.lightbeat.hue.visualizer.effect;
 
 import io.lightbeat.ComponentHolder;
-import io.lightbeat.hue.bridge.color.ColorSet;
 import io.lightbeat.hue.bridge.light.Light;
 import io.lightbeat.hue.visualizer.LightUpdate;
 
@@ -16,13 +15,11 @@ abstract class AbstractEffect implements LightEffect {
 
     final ComponentHolder componentHolder;
 
-    final ColorSet colorSet;
     final Random rnd = new Random();
 
 
     AbstractEffect(ComponentHolder componentHolder) {
         this.componentHolder = componentHolder;
-        this.colorSet = componentHolder.getHueManager().getColorSet();
     }
 
     @Override

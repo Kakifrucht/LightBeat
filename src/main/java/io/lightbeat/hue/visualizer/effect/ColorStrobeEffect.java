@@ -3,6 +3,7 @@ package io.lightbeat.hue.visualizer.effect;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.bridge.color.Color;
+import io.lightbeat.hue.bridge.color.ColorSet;
 import io.lightbeat.hue.bridge.light.Light;
 import io.lightbeat.hue.visualizer.LightUpdate;
 import io.lightbeat.util.TimeThreshold;
@@ -22,7 +23,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
     private final long maximumStrobeDelayMillis;
     private Color[] colors;
 
-    private Future currentFuture;
+    private Future<?> currentFuture;
     private Light currentLight;
 
 
@@ -30,11 +31,11 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
         super(componentHolder, brightnessThreshold, activationProbability);
 
         // maximum strobe delay, if last beat delay is higher than this value it will halve it as the strobe delay
-        maximumStrobeDelayMillis = componentHolder.getConfig().getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN) * 2;
+        maximumStrobeDelayMillis = componentHolder.getConfig().getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN) * 2L;
     }
 
     @Override
-    void initialize() {
+    void initialize(LightUpdate lightUpdate) {
         newColorThreshold.setCurrentThreshold(0);
     }
 
@@ -108,6 +109,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
 
         newColorThreshold.setCurrentThreshold(COLOR_CHANGE_IN_MILLIS);
 
+        ColorSet colorSet = lightUpdate.getColorSet();
         colors = new Color[3];
         colors[0] = colorSet.getNextColor(colors[2]);
         colors[1] = colorSet.getNextColor(colors[0]);

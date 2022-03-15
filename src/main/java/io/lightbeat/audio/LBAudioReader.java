@@ -8,9 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.sound.sampled.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 public class LBAudioReader implements BeatEventManager, AudioReader {
 
     private static final double MINIMUM_AMPLITUDE = 0.005d;
+    private static final int SAMPLE_SIZE = 1024;
+    private static final int FRAME_SIZE = SAMPLE_SIZE * 2;
 
     private static final Logger logger = LoggerFactory.getLogger(LBAudioReader.class);
 
@@ -33,11 +33,13 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     private final ScheduledExecutorService executorService;
     private final AudioFormat format = new AudioFormat(44100f, 16, 1, true, true);
     private final Line.Info lineInfo = new Line.Info(TargetDataLine.class);
-    private final Set<BeatObserver> beatEventObservers = new HashSet<>();
+    private final List<BeatObserver> beatEventObservers = new ArrayList<>();
 
     private volatile TargetDataLine dataLine;
     private BeatInterpreter beatInterpreter;
-    private ScheduledFuture future;
+    private ScheduledFuture<?> future;
+
+    private long lastBeat;
 
 
     public LBAudioReader(Config config, ScheduledExecutorService executorService) {
@@ -78,87 +80,77 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
 
         beatInterpreter = new BeatInterpreter(config);
 
-        future = executorService.scheduleWithFixedDelay(new Runnable() {
+        byte[] audioInputBuffer = new byte[FRAME_SIZE];
+        future = executorService.scheduleWithFixedDelay(() -> {
 
-            private final int frameSize = 512;
-            private final byte[] audioInputBuffer = new byte[frameSize];
+            if (!isOpen()) {
+                logger.error("Selected audio stream is no longer available");
+                stop();
+                return;
+            }
 
+            BeatEvent event = null;
+            while (dataLine.available() >= FRAME_SIZE && dataLine.read(audioInputBuffer, 0, FRAME_SIZE) > 0) {
 
-            @Override
-            public void run() {
+                // convert to normalized values (2 bytes per sample)
+                double[] normalizedAudioBuffer = new double[SAMPLE_SIZE];
+                for (int i = 0, s = 0; s < FRAME_SIZE; i++) {
+                    short sample = 0;
 
-                if (!isOpen()) {
-                    logger.error("Selected audio stream is no longer available");
-                    stop();
+                    sample |= audioInputBuffer[s++] << 8;
+                    sample |= audioInputBuffer[s++] & 0xFF;
+
+                    normalizedAudioBuffer[i] = sample / (double) Short.MAX_VALUE;
+                }
+
+                // filter out all but low frequencies
+                if (config.getBoolean(ConfigNode.BEAT_BASS_ONLY_MODE)) {
+
+                    DoubleFFT_1D fft = new DoubleFFT_1D(SAMPLE_SIZE);
+                    fft.realForward(normalizedAudioBuffer);
+
+                    // filter frequencies
+                    for (int i = 4; i < normalizedAudioBuffer.length; i++) {
+                        normalizedAudioBuffer[i] = 0d;
+                    }
+
+                    fft.realInverse(normalizedAudioBuffer, true);
+                }
+
+                // calculate root mean square and use value as amplitude
+                double averageMeanSquare = 0;
+                for (double sample : normalizedAudioBuffer) {
+                    averageMeanSquare += Math.pow(sample, 2d);
+                }
+
+                averageMeanSquare /= SAMPLE_SIZE;
+                averageMeanSquare = Math.sqrt(averageMeanSquare);
+
+                double amplitude = averageMeanSquare;
+                if (amplitude < MINIMUM_AMPLITUDE) {
+                    amplitude = 0d;
+                }
+
+                event = beatInterpreter.interpretValue(amplitude);
+            }
+
+            if (event != null) {
+
+                long time = System.currentTimeMillis();
+                int minTimeBetweenBeats = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN);
+                if (minTimeBetweenBeats + lastBeat > time) {
                     return;
                 }
 
-                double highestAmplitude = -1d;
-                while (dataLine.available() >= frameSize && dataLine.read(audioInputBuffer, 0, frameSize) > 0) {
+                lastBeat = time;
 
-                    // convert to normalized values (2 bytes per sample)
-                    double[] normalizedAudioBuffer = new double[frameSize / 2];
-                    for (int i = 0, s = 0; s < frameSize; i++) {
-                        short sample = 0;
-
-                        sample |= audioInputBuffer[s++] << 8;
-                        sample |= audioInputBuffer[s++] & 0xFF;
-
-                        normalizedAudioBuffer[i] = sample / (double) Short.MAX_VALUE;
-                    }
-
-                    // calculate root mean square and use value as amplitude
-                    double averageMeanSquare = 0;
-
-                    if (config.getBoolean(ConfigNode.BEAT_BASS_ONLY_MODE)) {
-
-                        // filter out all but low frequencies
-
-                        DoubleFFT_1D fft = new DoubleFFT_1D(frameSize / 2);
-                        fft.realForward(normalizedAudioBuffer);
-
-                        // filter frequencies
-                        for (int i = 4; i < normalizedAudioBuffer.length; i++) {
-                            normalizedAudioBuffer[i] = 0.0d;
-                        }
-
-                        // there is most likely a more efficient way than converting via fft -> removing values -> inverse fft -> rms
-                        fft.realInverse(normalizedAudioBuffer, true);
-
-                        for (int i = 0; i < normalizedAudioBuffer.length; i += 2) {
-                            averageMeanSquare += Math.pow(normalizedAudioBuffer[i], 2d);
-                        }
-
-                    } else {
-                        for (int i = 0; i < normalizedAudioBuffer.length / 2; i++) {
-                            averageMeanSquare += Math.pow(normalizedAudioBuffer[i], 2d);
-                        }
-                    }
-
-                    averageMeanSquare /= (normalizedAudioBuffer.length / 2);
-                    averageMeanSquare = Math.sqrt(averageMeanSquare);
-
-                    double amplitude = averageMeanSquare;
-                    if (amplitude < MINIMUM_AMPLITUDE) {
-                        amplitude = 0d;
-                    }
-
-                    if (amplitude > highestAmplitude) {
-                        highestAmplitude = amplitude;
-                    }
-                }
-
-                if (highestAmplitude >= 0d) {
-                    BeatEvent event = beatInterpreter.interpretValue(highestAmplitude);
-                    if (event != null) {
-                        if (event.getAverage() == 0.0d) {
-                            beatEventObservers.forEach(BeatObserver::silenceDetected);
-                        } else if (event.getTriggeringAmplitude() == 0.0d) {
-                            beatEventObservers.forEach(BeatObserver::noBeatReceived);
-                        } else {
-                            beatEventObservers.forEach(toNotify -> toNotify.beatReceived(event));
-                        }
-                    }
+                if (event.isSilence()) {
+                    beatEventObservers.forEach(BeatObserver::silenceDetected);
+                } else if (event.isNoBeat()) {
+                    beatEventObservers.forEach(BeatObserver::noBeatReceived);
+                } else {
+                    BeatEvent finalEvent = event;
+                    beatEventObservers.forEach(toNotify -> toNotify.beatReceived(finalEvent));
                 }
             }
         }, 8L, 8L, TimeUnit.MILLISECONDS);
