@@ -6,6 +6,8 @@ import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.bridge.HueStateObserver;
 
 import javax.swing.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +26,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
     private JLabel pushlinkImageLabel;
     private JProgressBar pushlinkProgressBar;
-    private ScheduledFuture pushlinkProgressTask;
+    private ScheduledFuture<?> pushlinkProgressTask;
 
     private JButton connectButton;
 
@@ -36,14 +38,20 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
         selectBridgeBox.addActionListener(e -> {
 
-            boolean setVisible = false;
-            if (selectBridgeBox.getSelectedIndex() + 1 == selectBridgeBox.getItemCount()) {
-                setVisible = true;
-            }
+            boolean setVisible = selectBridgeBox.getSelectedIndex() + 1 == selectBridgeBox.getItemCount();
 
             if (setVisible != manualField.isVisible()) {
                 manualField.setVisible(setVisible);
                 getJFrame().pack();
+            }
+        });
+
+        manualField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    connectButton.doClick();
+                }
             }
         });
 
