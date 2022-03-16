@@ -109,12 +109,9 @@ public class LBHueManager implements HueManager {
             @Override
             public void onConnectionLost(PHAccessPoint phAccessPoint) {
                 logger.warn("Connection to bridge at {} was lost", phAccessPoint.getIpAddress());
-                PHBridge selectedBridge = hueSDK.getSelectedBridge();
-                hueSDK.getHeartbeatManager().disableAllHeartbeats(selectedBridge);
-                hueSDK.disconnect(selectedBridge);
-                hueSDK.setSelectedBridge(null);
-                stateObserver.connectionWasLost();
+                setBridgeDisconnected();
                 currentState = State.CONNECTION_LOST;
+                stateObserver.connectionWasLost();
             }
 
             @Override
@@ -184,6 +181,14 @@ public class LBHueManager implements HueManager {
     @Override
     public boolean isConnected() {
         return currentState.equals(State.CONNECTED);
+    }
+
+    @Override
+    public void disconnect() {
+        setBridgeDisconnected();
+        logger.info("Disconnected from bridge");
+        currentState = State.NOT_CONNECTED;
+        doBridgesScan();
     }
 
     @Override
@@ -278,6 +283,15 @@ public class LBHueManager implements HueManager {
             }
 
             originalLightStates = null;
+        }
+    }
+
+    private void setBridgeDisconnected() {
+        if (currentState.equals(State.CONNECTED)) {
+            PHBridge selectedBridge = hueSDK.getSelectedBridge();
+            hueSDK.getHeartbeatManager().disableAllHeartbeats(selectedBridge);
+            hueSDK.disconnect(selectedBridge);
+            hueSDK.setSelectedBridge(null);
         }
     }
 

@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Implementing class manages the current connection state to the hue bridge
- * and passes it's information to be rendered/interfaced through a {@link HueStateObserver}.
+ * and passes its information to be rendered/interfaced through a {@link HueStateObserver}.
  */
 public interface HueManager {
 
@@ -48,6 +48,11 @@ public interface HueManager {
      * @return true if a bridge is connected
      */
     boolean isConnected();
+
+    /**
+     * Disconnect from currently connected bridge and trigger a rescan.
+     */
+    void disconnect();
 
     /**
      * Shutdown all hue SDK related processes.

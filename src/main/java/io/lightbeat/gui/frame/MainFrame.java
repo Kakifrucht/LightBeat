@@ -59,6 +59,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JPanel advancedPanel;
     private JButton readdColorSetPresetsButton;
     private JButton restoreAdvancedButton;
+    private JButton disconnectBridgeButton;
     private JConfigCheckBox strobeCheckBox;
     private JConfigCheckBox colorStrobeCheckbox;
     private JConfigCheckBox glowCheckBox;
@@ -134,6 +135,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         // lights panel
         updateLightsPanel();
+        lightSelectPanel.setLayout(new WrapLayout(0));
         restoreLightsButton.addActionListener(e -> {
 
             // restore lights
@@ -151,6 +153,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         // advanced panel
         readdColorSetPresetsButton.addActionListener(e -> addColorSetPresets());
         restoreAdvancedButton.addActionListener(e -> restoreDefaults(advancedPanel));
+        disconnectBridgeButton.addActionListener(e -> hueManager.disconnect());
 
         startButton.addActionListener(e -> {
             if (audioReader.isOpen()) {

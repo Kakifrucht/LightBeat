@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Extended FlowLayout that supports wrapping of it's contents.
+ * Extended FlowLayout that supports wrapping of its contents.
  */
 public class WrapLayout extends FlowLayout {
 
