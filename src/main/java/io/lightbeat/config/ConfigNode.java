@@ -29,7 +29,7 @@ public enum ConfigNode {
     SHOW_ADVANCED_SETTINGS("frame.showadvanced"),
     UPDATE_DISABLE_NOTIFICATION("frame.updatedisablenotification"),
     WINDOW_LOCATION("window.location"),
-    WINDOW_LOOK_AND_FEEL("window.lookandfeel");
+    WINDOW_DARK_THEME("window.darktheme");
 
 
     private String key;

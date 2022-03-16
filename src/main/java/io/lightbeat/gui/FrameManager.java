@@ -1,6 +1,7 @@
 package io.lightbeat.gui;
 
-import com.bulenkov.darcula.DarculaLaf;
+import com.github.weisj.darklaf.LafManager;
+import com.github.weisj.darklaf.theme.DarculaTheme;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.gui.frame.ConnectFrame;
@@ -37,12 +38,7 @@ public class FrameManager implements HueStateObserver {
         HueManager hueManager = componentHolder.getHueManager();
         hueManager.setStateObserver(this);
 
-        try { // set darcula theme by default
-            UIManager.getFont("Label.font"); // workaround due to bug in initializer (bulenkov/Darcula issue #29)
-            UIManager.setLookAndFeel(new DarculaLaf());
-        } catch (Exception e) {
-            logger.warn("Exception caught during initialization of Darcula look and feel", e);
-        }
+        LafManager.install(new DarculaTheme());
 
         boolean doesAttemptConnection = hueManager.attemptStoredConnection();
         if (!doesAttemptConnection) {

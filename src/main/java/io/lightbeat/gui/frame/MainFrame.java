@@ -1,6 +1,8 @@
 package io.lightbeat.gui.frame;
 
-import com.bulenkov.darcula.DarculaLaf;
+import com.github.weisj.darklaf.LafManager;
+import com.github.weisj.darklaf.theme.DarculaTheme;
+import com.github.weisj.darklaf.theme.IntelliJTheme;
 import com.philips.lighting.model.PHLight;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.audio.AudioReader;
@@ -72,7 +74,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JButton startButton;
     private JConfigCheckBox showAdvancedCheckbox;
     private JConfigCheckBox autoStartCheckBox;
-    private JConfigCheckBox darculaThemeCheckBox;
+    private JConfigCheckBox darkThemeCheckBox;
 
     private JLabel urlLabel;
     private JLabel infoLabel;
@@ -180,19 +182,15 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             frame.pack();
         });
 
-        darculaThemeCheckBox.setToRunOnChange(() -> {
-            try {
-                if (darculaThemeCheckBox.isSelected()) {
-                    UIManager.setLookAndFeel(new DarculaLaf());
-                } else {
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                }
-
-                SwingUtilities.updateComponentTreeUI(frame);
-                frame.pack();
-            } catch (Exception e) {
-                logger.warn("Couldn't set look and feel", e);
+        darkThemeCheckBox.setToRunOnChange(() -> {
+            if (darkThemeCheckBox.isSelected()) {
+                LafManager.install(new DarculaTheme());
+            } else {
+                LafManager.install(new IntelliJTheme());
             }
+
+            SwingUtilities.updateComponentTreeUI(frame);
+            frame.pack();
         });
 
         // restore last windows location
@@ -280,7 +278,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         showAdvancedCheckbox = new JConfigCheckBox(config, ConfigNode.SHOW_ADVANCED_SETTINGS);
         autoStartCheckBox = new JConfigCheckBox(config, ConfigNode.AUTOSTART);
-        darculaThemeCheckBox = new JConfigCheckBox(config, ConfigNode.WINDOW_LOOK_AND_FEEL);
+        darkThemeCheckBox = new JConfigCheckBox(config, ConfigNode.WINDOW_DARK_THEME);
     }
 
     @Override

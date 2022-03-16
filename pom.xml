@@ -59,6 +59,11 @@
             <version>3.1</version>
             <classifier>with-dependencies</classifier>
         </dependency>
+        <dependency>
+            <groupId>com.github.weisj</groupId>
+            <artifactId>darklaf-core</artifactId>
+            <version>2.7.3</version>
+        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

@@ -38,7 +38,7 @@ public class LBConfig implements Config {
         defaultBools.put(ConfigNode.EFFECT_ALERT.getKey(), true);
         defaultBools.put(ConfigNode.EFFECT_COLOR_STROBE.getKey(), true);
         defaultBools.put(ConfigNode.EFFECT_STROBE.getKey(), true);
-        defaultBools.put(ConfigNode.WINDOW_LOOK_AND_FEEL.getKey(), true);
+        defaultBools.put(ConfigNode.WINDOW_DARK_THEME.getKey(), true);
 
         // hardcoded color presets
         defaults.put(ConfigNode.COLOR_SET_PRESET_LIST.getKey(), "Rainbow■Club■Saturation Gradient■Flashing■Light Colors■Very Light");
