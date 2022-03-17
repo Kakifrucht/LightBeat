@@ -165,7 +165,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 startBeatDetection();
             }
         });
-        startButton.requestFocus();
 
         String version = componentHolder.getVersion();
         urlLabel.setText("v" + version + " | " + urlLabel.getText());
@@ -175,8 +174,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 openLinkInBrowser("https://lightbeat.io");
             }
         });
-
-        drawFrame(mainPanel, true);
 
         showAdvancedCheckbox.setToRunOnChange(() -> {
             advancedPanel.setVisible(showAdvancedCheckbox.isSelected());
@@ -194,68 +191,15 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             frame.pack();
         });
 
-        // restore last windows location
-        long locationStore = config.getLong(ConfigNode.WINDOW_LOCATION);
-        if (locationStore > 0) {
-            ByteBuffer locationBuffer = ByteBuffer.allocate(8).putLong(locationStore);
-            int storedX = locationBuffer.getInt(0);
-            int storedY = locationBuffer.getInt(4);
-
-            // check if in bounds
-            Rectangle newBounds = new Rectangle(storedX, storedY, 100, 100);
-            Rectangle screenBounds = new Rectangle(0, 0, 0, 0);
-
-            GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            GraphicsDevice[] screenDevices = graphicsEnvironment.getScreenDevices();
-            for (GraphicsDevice device : screenDevices) {
-                screenBounds.add(device.getDefaultConfiguration().getBounds());
-            }
-
-            if (screenBounds.contains(newBounds)) {
-                runOnSwingThread(() -> {
-                    newBounds.setSize(frame.getSize());
-                    frame.setBounds(newBounds);
-                });
-            }
-        }
-
-        // schedule updater task
-        componentHolder.getExecutorService().schedule(() -> {
-
-            long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
-
-            // only show notification every 4 days, disable if on snapshot version
-            long TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS = 345600;
-            if (updateDisableNotificationTime + TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS > (System.currentTimeMillis() / 1000)
-                    || version.endsWith("SNAPSHOT")) {
-                return;
-            }
-
-            UpdateChecker updateChecker = new UpdateChecker(version);
-            try {
-
-                if (updateChecker.isUpdateAvailable()) {
-                    int answerCode = JOptionPane.showConfirmDialog(
-                            frame,
-                            "A new update is available (version " + updateChecker.getVersionString() + ").\n\nDownload now?",
-                            "Update Found",
-                            JOptionPane.YES_NO_OPTION);
-                    if (answerCode == 0) {
-                        openLinkInBrowser("https://lightbeat.io/?downloads");
-                    } else if (answerCode == 1) {
-                        config.putLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, (int) (System.currentTimeMillis() / 1000));
-                    }
-                }
-
-            } catch (Exception ignored) {
-                // fail silently
-            }
-
-        }, 5, TimeUnit.SECONDS);
-
         if (config.getBoolean(ConfigNode.AUTOSTART)) {
             runOnSwingThread(this::startBeatDetection);
         }
+
+        drawFrame(mainPanel, true);
+        runOnSwingThread(startButton::requestFocus);
+
+        restoreLastWindowLocation();
+        scheduleUpdateCheck(version);
     }
 
     public void createUIComponents() {
@@ -353,6 +297,68 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         colorsPreviewPanel.setColorSet(hueManager.getColorSet());
         colorSelectPanel.repaint();
         frame.pack();
+    }
+
+    private void scheduleUpdateCheck(String version) {
+        componentHolder.getExecutorService().schedule(() -> {
+
+            long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
+
+            // only show notification every 4 days, disable if on snapshot version
+            long TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS = 345600;
+            if (updateDisableNotificationTime + TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS > (System.currentTimeMillis() / 1000)
+                    || version.endsWith("SNAPSHOT")) {
+                return;
+            }
+
+            UpdateChecker updateChecker = new UpdateChecker(version);
+            try {
+
+                if (updateChecker.isUpdateAvailable()) {
+                    int answerCode = JOptionPane.showConfirmDialog(
+                            frame,
+                            "A new update is available (version " + updateChecker.getVersionString() + ").\n\nDownload now?",
+                            "Update Found",
+                            JOptionPane.YES_NO_OPTION);
+                    if (answerCode == 0) {
+                        openLinkInBrowser("https://lightbeat.io/?downloads");
+                    } else if (answerCode == 1) {
+                        config.putLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, (int) (System.currentTimeMillis() / 1000));
+                    }
+                }
+
+            } catch (Exception ignored) {
+                // fail silently
+            }
+
+        }, 5, TimeUnit.SECONDS);
+    }
+
+    private void restoreLastWindowLocation() {
+
+        long locationStore = config.getLong(ConfigNode.WINDOW_LOCATION);
+        if (locationStore > 0) {
+            ByteBuffer locationBuffer = ByteBuffer.allocate(8).putLong(locationStore);
+            int storedX = locationBuffer.getInt(0);
+            int storedY = locationBuffer.getInt(4);
+
+            // check if in bounds
+            Rectangle newBounds = new Rectangle(storedX, storedY, 100, 100);
+            Rectangle screenBounds = new Rectangle(0, 0, 0, 0);
+
+            GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice[] screenDevices = graphicsEnvironment.getScreenDevices();
+            for (GraphicsDevice device : screenDevices) {
+                screenBounds.add(device.getDefaultConfiguration().getBounds());
+            }
+
+            if (screenBounds.contains(newBounds)) {
+                runOnSwingThread(() -> {
+                    newBounds.setSize(frame.getSize());
+                    frame.setBounds(newBounds);
+                });
+            }
+        }
     }
 
     private void startBeatDetection() {

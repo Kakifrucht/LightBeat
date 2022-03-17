@@ -212,6 +212,7 @@ public class ColorSelectionFrame extends AbstractFrame {
 
         frame.getRootPane().setDefaultButton(saveButton);
         drawFrame(mainPanel, false);
+        runOnSwingThread(saveButton::requestFocus);
     }
 
     private void addColorTile(Color color) {
