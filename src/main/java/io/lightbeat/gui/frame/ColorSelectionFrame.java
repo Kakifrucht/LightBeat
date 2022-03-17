@@ -1,6 +1,6 @@
 package io.lightbeat.gui.frame;
 
-import com.github.weisj.darklaf.components.color.QuickColorChooser;
+import com.github.weisj.darklaf.components.color.PopupColorChooser;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.gui.swing.JColorPanel;
 import io.lightbeat.gui.swing.JColorTile;
@@ -27,7 +27,6 @@ public class ColorSelectionFrame extends AbstractFrame {
     private JPanel mainPanel;
 
     private JColorPanel colorSelectorPanel;
-    private JButton openColorPickerButton;
     private JPanel currentColorPanel;
     private JButton colorRandomizerButton;
 
@@ -75,16 +74,22 @@ public class ColorSelectionFrame extends AbstractFrame {
     private ColorSelectionFrame(String title, MainFrame mainFrame) {
         super(mainFrame.componentHolder, title, mainFrame.getJFrame().getX() + 10, mainFrame.getJFrame().getY() + 10);
 
-        MouseAdapter selectorEvent = new MouseAdapter() {
+        MouseAdapter colorSelectEventAdapter = new MouseAdapter() {
 
             @Override
-            public void mousePressed(MouseEvent e) {
-                updateCurrentColorPanel(e.getX(), e.getY());
-            }
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    PopupColorChooser.showColorChooser(colorSelectorPanel, currentColorPanel.getBackground(), color -> {
 
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                updateCurrentColorPanel(e.getX(), e.getY());
+                        float[] hsb = new float[3];
+                        Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
+
+                        selectedSaturation = hsb[1];
+                        currentColorPanel.setBackground(Color.getHSBColor(hsb[0], hsb[1], 1f));
+                    }, () -> {});
+                } else {
+                    updateCurrentColorPanel(e.getX(), e.getY());
+                }
             }
 
             @Override
@@ -108,37 +113,22 @@ public class ColorSelectionFrame extends AbstractFrame {
             }
         };
 
-        colorSelectorPanel.addMouseListener(selectorEvent);
-        colorSelectorPanel.addMouseMotionListener(selectorEvent);
-
-        QuickColorChooser.attachToComponent(openColorPickerButton,
-                color -> {
-
-                    float[] hsb = new float[3];
-                    Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
-
-                    selectedSaturation = hsb[1];
-                    currentColorPanel.setBackground(Color.getHSBColor(hsb[0], hsb[1], 1f));
-                },
-                currentColorPanel::getBackground
-        );
+        colorSelectorPanel.addMouseListener(colorSelectEventAdapter);
+        colorSelectorPanel.addMouseMotionListener(colorSelectEventAdapter);
 
         currentColorPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
                 addColorTile(currentColorPanel.getBackground());
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
                 currentColorPanel.setBorder(new LineBorder(Color.LIGHT_GRAY));
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
                 currentColorPanel.setBorder(new LineBorder(Color.BLACK));
             }
         });

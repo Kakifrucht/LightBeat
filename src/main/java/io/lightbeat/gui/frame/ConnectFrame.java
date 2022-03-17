@@ -1,5 +1,6 @@
 package io.lightbeat.gui.frame;
 
+import com.github.weisj.darklaf.components.loading.LoadingIndicator;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.config.ConfigNode;
@@ -19,7 +20,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
     private JPanel mainPanel;
 
-    private JLabel statusLabel;
+    private LoadingIndicator statusLabelIndicator;
     private JComboBox<String> selectBridgeBox;
     private JTextField manualField;
     private JButton refreshButton;
@@ -95,7 +96,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
     @Override
     public void isScanningForBridges(boolean connectFailed) {
-        toggleButtonAndDropdown(false, connectFailed ? "Connection failed, scanning for bridges..." : "Scanning for bridges...");
+        toggleButtonAndDropdown(false, connectFailed ? "Connection failed, scanning for bridges" : "Scanning for bridges");
     }
 
     @Override
@@ -113,7 +114,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
             selectBridgeBox.addItem("Enter IP manually");
             selectBridgeBox.setSelectedIndex(0);
-            toggleButtonAndDropdown(true, list.isEmpty() ? "No bridges found." : "Bridges found, please select your bridge.");
+            toggleButtonAndDropdown(true, list.isEmpty() ? "No bridges found" : "Bridges found, please select your bridge");
         });
     }
 
@@ -167,7 +168,8 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             refreshButton.setEnabled(setEnabled);
             connectButton.setEnabled(setEnabled && selectBridgeBox.getItemCount() > 0);
             manualField.setEnabled(setEnabled);
-            statusLabel.setText(labelText);
+            statusLabelIndicator.setText(labelText);
+            statusLabelIndicator.setRunning(!setEnabled);
             frame.pack();
         });
     }
