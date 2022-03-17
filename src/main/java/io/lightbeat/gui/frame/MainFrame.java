@@ -98,7 +98,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         colorsPreviewPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
                 openColorSelectionFrame(getSelectedColorSetButton().getText());
             }
         });
@@ -181,13 +180,16 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
 
         darkThemeCheckBox.setToRunOnChange(() -> {
-            if (darkThemeCheckBox.isSelected()) {
-                LafManager.install(new DarculaTheme());
-            } else {
-                LafManager.install(new IntelliJTheme());
+
+            boolean isDarkCurrently = LafManager.getInstalledTheme().getThemeClass().equals(DarculaTheme.class);
+            boolean setToDark = darkThemeCheckBox.isSelected();
+            if (isDarkCurrently == setToDark) {
+                return;
             }
 
-            SwingUtilities.updateComponentTreeUI(frame);
+            Font startButtonFont = startButton.getFont();
+            LafManager.install(setToDark ? new DarculaTheme() : new IntelliJTheme());
+            startButton.setFont(startButtonFont);
             frame.pack();
         });
 
@@ -530,6 +532,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         } else {
             boolean showEditPanel = setName != null;
             selectionFrame = showEditPanel ? new ColorSelectionFrame(this, setName) : new ColorSelectionFrame(this);
+            selectionFrame.getJFrame().requestFocus();
         }
     }
 

@@ -2,15 +2,15 @@ package io.lightbeat.gui;
 
 import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.theme.DarculaTheme;
+import com.github.weisj.darklaf.theme.IntelliJTheme;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
 import io.lightbeat.ComponentHolder;
+import io.lightbeat.config.ConfigNode;
 import io.lightbeat.gui.frame.ConnectFrame;
 import io.lightbeat.gui.frame.HueFrame;
 import io.lightbeat.gui.frame.MainFrame;
 import io.lightbeat.hue.bridge.HueManager;
 import io.lightbeat.hue.bridge.HueStateObserver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.util.List;
@@ -22,8 +22,6 @@ import java.util.List;
  * the currently shown window accordingly.
  */
 public class FrameManager implements HueStateObserver {
-
-    private static final Logger logger = LoggerFactory.getLogger(FrameManager.class);
 
     private final ComponentHolder componentHolder;
 
@@ -38,7 +36,8 @@ public class FrameManager implements HueStateObserver {
         HueManager hueManager = componentHolder.getHueManager();
         hueManager.setStateObserver(this);
 
-        LafManager.install(new DarculaTheme());
+        boolean darkTheme = componentHolder.getConfig().getBoolean(ConfigNode.WINDOW_DARK_THEME);
+        LafManager.install(darkTheme ? new DarculaTheme() : new IntelliJTheme());
 
         boolean doesAttemptConnection = hueManager.attemptStoredConnection();
         if (!doesAttemptConnection) {
