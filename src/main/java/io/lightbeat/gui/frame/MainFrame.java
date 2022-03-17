@@ -1,6 +1,7 @@
 package io.lightbeat.gui.frame;
 
 import com.github.weisj.darklaf.LafManager;
+import com.github.weisj.darklaf.components.help.HelpButton;
 import com.github.weisj.darklaf.theme.DarculaTheme;
 import com.github.weisj.darklaf.theme.IntelliJTheme;
 import com.philips.lighting.model.PHLight;
@@ -41,6 +42,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JIconLabel bannerLabel;
 
     private JComboBox<String> deviceSelectComboBox;
+    private HelpButton deviceHelpButton;
 
     private JButton addCustomColorsButton;
     private JButton deleteCustomColorsButton;
@@ -79,7 +81,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private JLabel urlLabel;
     private JLabel infoLabel;
     private JColorPanel colorsPreviewPanel;
-    private JButton deviceHelpButton;
 
     private HueFrame selectionFrame = null;
 
@@ -422,6 +423,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             component.setEnabled(enabled);
         }
 
+        disconnectBridgeButton.setEnabled(enabled);
         strobeCheckBox.setEnabled(enabled);
         colorStrobeCheckbox.setEnabled(enabled);
         glowCheckBox.setEnabled(enabled);

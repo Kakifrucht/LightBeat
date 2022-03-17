@@ -152,12 +152,11 @@
                           <toolTipText value="&lt;html&gt;&#10;Select the audio device that will be read from.&lt;br&gt;You can always use your systems microphone, however for&lt;br&gt;best results it is recommended to select &quot;Stereo Mix&quot; (if available, sometimes called &quot;Wave&quot;),&lt;br&gt;or alternatively install a virtual audio cable, to directly read your systems audio.&lt;br&gt;This is necessary if you don't have a microphone or want to use headphones.&lt;br&gt;Click on the &quot;Help&quot; button for more setup information.&#10;&lt;/html&gt;"/>
                         </properties>
                       </component>
-                      <component id="43ab3" class="javax.swing.JButton" binding="deviceHelpButton" default-binding="true">
+                      <component id="6976a" class="com.github.weisj.darklaf.components.help.HelpButton" binding="deviceHelpButton">
                         <constraints>
                           <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
                         <properties>
-                          <text value="Help"/>
                           <toolTipText value="Opens audio setup help in your browser."/>
                         </properties>
                       </component>
@@ -394,27 +393,18 @@
           <grid id="2b0b9" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
             <border type="none"/>
             <children>
               <component id="a8cf6" class="javax.swing.JButton" binding="readdColorSetPresetsButton" default-binding="true">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <text value="Restore Color Presets"/>
                   <toolTipText value="Restores the default color sets to the color selector. Only deleted sets will be added again."/>
-                </properties>
-              </component>
-              <component id="f22ac" class="javax.swing.JButton" binding="restoreAdvancedButton" default-binding="true">
-                <constraints>
-                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <text value="Restore Defaults"/>
-                  <toolTipText value="Restores advanced settings defaults."/>
                 </properties>
               </component>
               <component id="f2924" class="javax.swing.JButton" binding="disconnectBridgeButton" default-binding="true">
@@ -424,6 +414,15 @@
                 <properties>
                   <text value="Disconnect Bridge"/>
                   <toolTipText value="Opens the bridge selection prompt."/>
+                </properties>
+              </component>
+              <component id="f22ac" class="javax.swing.JButton" binding="restoreAdvancedButton" default-binding="true">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Restore Defaults"/>
+                  <toolTipText value="Restores advanced settings defaults."/>
                 </properties>
               </component>
             </children>

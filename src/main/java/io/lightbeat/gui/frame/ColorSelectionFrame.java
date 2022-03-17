@@ -1,5 +1,6 @@
 package io.lightbeat.gui.frame;
 
+import com.github.weisj.darklaf.components.color.QuickColorChooser;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.gui.swing.JColorPanel;
 import io.lightbeat.gui.swing.JColorTile;
@@ -26,6 +27,7 @@ public class ColorSelectionFrame extends AbstractFrame {
     private JPanel mainPanel;
 
     private JColorPanel colorSelectorPanel;
+    private JButton openColorPickerButton;
     private JPanel currentColorPanel;
     private JButton colorRandomizerButton;
 
@@ -108,6 +110,18 @@ public class ColorSelectionFrame extends AbstractFrame {
 
         colorSelectorPanel.addMouseListener(selectorEvent);
         colorSelectorPanel.addMouseMotionListener(selectorEvent);
+
+        QuickColorChooser.attachToComponent(openColorPickerButton,
+                color -> {
+
+                    float[] hsb = new float[3];
+                    Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
+
+                    selectedSaturation = hsb[1];
+                    currentColorPanel.setBackground(Color.getHSBColor(hsb[0], hsb[1], 1f));
+                },
+                currentColorPanel::getBackground
+        );
 
         currentColorPanel.addMouseListener(new MouseAdapter() {
             @Override

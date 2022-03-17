@@ -16,18 +16,25 @@ public class TimeThreshold {
         isEnabled = false;
     }
 
-    public TimeThreshold(long init) {
-        currentThreshold = System.currentTimeMillis() + init;
+    /**
+     * Initialize with threshold.
+     * @param initMillis time in millis until {@link #isMet()} will return true
+     */
+    public TimeThreshold(long initMillis) {
+        currentThreshold = System.currentTimeMillis() + initMillis;
         isEnabled = true;
     }
 
-    public void setCurrentThreshold(long currentThreshold) {
+    /**
+     * @param thresholdMillis time in millis until {@link #isMet()} will return true
+     */
+    public void setCurrentThreshold(long thresholdMillis) {
 
-        if (currentThreshold < 0) {
-            throw new IllegalArgumentException("Parameter must be greater than 0");
+        if (thresholdMillis < 0) {
+            throw new IllegalArgumentException("Threshold must be greater than 0");
         }
 
-        long newThreshold = System.currentTimeMillis() + currentThreshold;
+        long newThreshold = System.currentTimeMillis() + thresholdMillis;
         this.currentThreshold = newThreshold < System.currentTimeMillis() ? Long.MAX_VALUE : newThreshold;
         isEnabled = true;
     }
