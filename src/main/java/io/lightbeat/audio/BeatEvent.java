@@ -38,10 +38,16 @@ public class BeatEvent {
         this.average = average;
     }
 
+    /**
+     * @return amplitude as normalized double that triggered the event dispatch
+     */
     public double getTriggeringAmplitude() {
         return triggeringAmplitude;
     }
 
+    /**
+     * @return average amplitude as normalized double when event was dispatched
+     */
     public double getAverage() {
         return average;
     }

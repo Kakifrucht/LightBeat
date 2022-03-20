@@ -8,8 +8,8 @@ import io.lightbeat.util.DoubleAverageBuffer;
  * Dynamically calibrates the transition time used for the light fade effect for a light.
  * Define the maxTransitionTime in the constructor, which will be the highest value returned by
  * {@link #getTransitionTime(long)}. It will reach this transition time when the given time is
- * at least twice as long than the average of previously received values
- * (history size defined by {@link #HISTORY_SIZE}.
+ * at least twice as long as the average of previously received values
+ * (history size defined by {@link #HISTORY_SIZE}).
  */
 class TransitionTimeCalibrator {
 
@@ -38,7 +38,7 @@ class TransitionTimeCalibrator {
      */
     int getTransitionTime(long timeSinceLastBeat) {
 
-        int maxTransitionTime = Math.max(Math.min(8, config.getInt(ConfigNode.BRIGHTNESS_FADE_MAX_TIME)), 1);
+        int maxTransitionTime = config.getInt(ConfigNode.BRIGHTNESS_FADE_MAX_TIME);
 
         buffer.add(timeSinceLastBeat);
 

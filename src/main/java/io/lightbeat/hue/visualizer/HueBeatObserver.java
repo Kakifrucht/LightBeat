@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * Receives {@link BeatEvent}'s dispatched by the audio module.
- * Determines brightness changes and passes the data through it's
+ * Determines brightness changes and passes the data through its
  * effect pipe, which will then update selected lights accordingly.
  */
 public class HueBeatObserver implements BeatObserver {

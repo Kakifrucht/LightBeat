@@ -11,7 +11,7 @@ import io.lightbeat.util.TimeThreshold;
  * Interprets amplitudes of audio data (RMS) and returns {@link BeatEvent}'s if the current amplitude is
  * a beat, no beat was read for {@link #NO_BEAT_RECEIVED_MILLIS} or no audible audio
  * data was detected for {@link #SILENCE_MILLIS}. There is a minimum time between beats
- * defined by {@link #timeBetweenBeatsMillis}, read from {@link Config}.
+ * defined by read from {@link Config}.
  */
 class BeatInterpreter {
 
@@ -22,8 +22,7 @@ class BeatInterpreter {
     private static final long NO_BEAT_RECEIVED_MILLIS = 2000L;
     private static final long SILENCE_MILLIS = 1000L;
 
-    private final double beatThresholdReductionMultiplier;
-    private final long timeBetweenBeatsMillis;
+    private final Config config;
 
     // calculate amplitude averages
     private final DoubleAverageBuffer amplitudeHistory;
@@ -36,9 +35,7 @@ class BeatInterpreter {
 
 
     BeatInterpreter(Config config) {
-        this.beatThresholdReductionMultiplier = config.getInt(ConfigNode.BEAT_SENSITIVITY) * BEAT_SENSITIVITY_BASE;
-        this.timeBetweenBeatsMillis = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN);
-
+        this.config = config;
         this.amplitudeHistory = new DoubleAverageBuffer(AMPLITUDE_HISTORY_SIZE, false);
     }
 
@@ -56,7 +53,7 @@ class BeatInterpreter {
             beatThreshold = amplitude;
 
             if (nextBeatThreshold.isMet()) {
-                nextBeatThreshold.setCurrentThreshold(timeBetweenBeatsMillis);
+                nextBeatThreshold.setCurrentThreshold(config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN));
                 logger.info("Beat detected at {} (avg: {})", amplitude, average);
                 return new BeatEvent(amplitude, average);
             }
@@ -66,6 +63,7 @@ class BeatInterpreter {
             // reduce beat threshold
             if (average < beatThreshold) {
                 double difference = beatThreshold - average;
+                double beatThresholdReductionMultiplier = config.getInt(ConfigNode.BEAT_SENSITIVITY) * BEAT_SENSITIVITY_BASE;
                 beatThreshold -= difference * beatThresholdReductionMultiplier;
             }
 

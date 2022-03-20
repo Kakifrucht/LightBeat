@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class LBAudioReader implements BeatEventManager, AudioReader {
 
     private static final double MINIMUM_AMPLITUDE = 0.005d;
-    private static final int SAMPLE_SIZE = 1024;
+    private static final int SAMPLE_SIZE = 256;
     private static final int FRAME_SIZE = SAMPLE_SIZE * 2;
 
     private static final Logger logger = LoggerFactory.getLogger(LBAudioReader.class);
@@ -38,8 +38,6 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     private volatile TargetDataLine dataLine;
     private BeatInterpreter beatInterpreter;
     private ScheduledFuture<?> future;
-
-    private long lastBeat;
 
 
     public LBAudioReader(Config config, ScheduledExecutorService executorService) {
@@ -89,7 +87,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
                 return;
             }
 
-            BeatEvent event = null;
+            double highestAmplitude = -1d;
             while (dataLine.available() >= FRAME_SIZE && dataLine.read(audioInputBuffer, 0, FRAME_SIZE) > 0) {
 
                 // convert to normalized values (2 bytes per sample)
@@ -131,26 +129,24 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
                     amplitude = 0d;
                 }
 
-                event = beatInterpreter.interpretValue(amplitude);
+                if (amplitude > highestAmplitude) {
+                    highestAmplitude = amplitude;
+                }
             }
 
-            if (event != null) {
+            if (highestAmplitude >= 0d) {
 
-                long time = System.currentTimeMillis();
-                int minTimeBetweenBeats = config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN);
-                if (minTimeBetweenBeats + lastBeat > time) {
+                BeatEvent event = beatInterpreter.interpretValue(highestAmplitude);
+                if (event == null) {
                     return;
                 }
-
-                lastBeat = time;
 
                 if (event.isSilence()) {
                     beatEventObservers.forEach(BeatObserver::silenceDetected);
                 } else if (event.isNoBeat()) {
                     beatEventObservers.forEach(BeatObserver::noBeatReceived);
                 } else {
-                    BeatEvent finalEvent = event;
-                    beatEventObservers.forEach(toNotify -> toNotify.beatReceived(finalEvent));
+                    beatEventObservers.forEach(toNotify -> toNotify.beatReceived(event));
                 }
             }
         }, 8L, 8L, TimeUnit.MILLISECONDS);

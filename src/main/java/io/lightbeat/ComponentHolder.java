@@ -8,7 +8,7 @@ import io.lightbeat.hue.bridge.HueManager;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Implementing class offers references to all modular compontonents of LightBeat.
+ * Implementing class offers references to all components of LightBeat.
  * Also allows to shut all of them down at once via {@link #shutdownAll()} and
  * getting the version number via {@link #getVersion()}.
  */
