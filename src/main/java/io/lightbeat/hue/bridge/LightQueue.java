@@ -36,8 +36,12 @@ public class LightQueue {
 
     public void addUpdate(Light light, State state) {
 
-        if (light == null || state == null) {
-            throw new IllegalArgumentException("Light and state cannot be null");
+        if (state == null) {
+            return;
+        }
+
+        if (light == null) {
+            throw new IllegalArgumentException("Light cannot be null");
         }
 
         synchronized (queue) {
@@ -100,9 +104,9 @@ public class LightQueue {
                 executorService.schedule(() -> {
                     light.getBase().setState(state);
                     logger.info("Updated light {}", getLightInfo());
+                    next(light);
                 }, 0, TimeUnit.SECONDS);
 
-                next(light);
             } else {
                 logger.warn("Purged {} light updates", queue.size() + 1);
                 queue.clear();
@@ -115,7 +119,7 @@ public class LightQueue {
 
             String mode = "null";
             if (newState.getAlert() != null && !newState.getAlert().equals(AlertType.NONE)) {
-                mode = newState.getAlert().toString(); //TODO is this necessary
+                mode = newState.getAlert().toString();
             }
 
             return light.getBase().getName()
