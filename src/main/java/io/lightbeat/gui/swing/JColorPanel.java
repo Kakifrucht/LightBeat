@@ -14,7 +14,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
- * A panel that draws a color palette for hue and sat selection in it's background.
+ * A panel that draws a color palette for hue and sat selection in its background.
  * x-axis represents hue value, y-axis saturation (0 is highest sat value)
  */
 public class JColorPanel extends JPanel {

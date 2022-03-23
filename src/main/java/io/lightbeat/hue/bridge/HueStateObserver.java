@@ -1,7 +1,5 @@
 package io.lightbeat.hue.bridge;
 
-import com.philips.lighting.hue.sdk.PHAccessPoint;
-
 import java.util.List;
 
 /**
@@ -12,7 +10,7 @@ public interface HueStateObserver {
 
     void isScanningForBridges(boolean connectFailed);
 
-    void displayFoundBridges(List<PHAccessPoint> list);
+    void displayFoundBridges(List<AccessPoint> list);
 
     void isAttemptingConnection();
 

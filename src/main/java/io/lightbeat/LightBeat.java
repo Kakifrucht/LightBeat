@@ -88,7 +88,6 @@ public class LightBeat implements ComponentHolder {
         executorService.shutdown();
 
         // dispatch thread that force exits if still running after 10 seconds
-        // fixes bug with hueSDK, for example after failed pushlink the huesdk shutdown call doesn't seem to work properly
         TimeThreshold forceShutdownThreshold = new TimeThreshold(10000L);
         Thread forceShutdownThread = new Thread(() -> {
             while (true) {

@@ -1,11 +1,6 @@
 package io.lightbeat.hue.bridge;
 
-import com.philips.lighting.hue.sdk.PHAccessPoint;
-import com.philips.lighting.model.PHBridge;
-import com.philips.lighting.model.PHLight;
 import io.lightbeat.hue.bridge.color.ColorSet;
-
-import java.util.List;
 
 /**
  * Implementing class manages the current connection state to the hue bridge
@@ -14,9 +9,9 @@ import java.util.List;
 public interface HueManager {
 
     /**
-     * @return the currently connected bridge
+     * @return connection to current bridge
      */
-    PHBridge getBridge();
+    BridgeConnection getBridge();
 
     /**
      * Sets the given parameter as the state observer to receive api callbacks.
@@ -40,9 +35,9 @@ public interface HueManager {
     /**
      * Tries to establish a connection with the provided access point.
      *
-     * @param accessPoint to establish a connection with
+     * @param accessPoint wrapper containg ip of bridge and key
      */
-    void setAttemptConnection(PHAccessPoint accessPoint);
+    void setAttemptConnection(AccessPoint accessPoint);
 
     /**
      * @return true if a bridge is connected
@@ -58,13 +53,6 @@ public interface HueManager {
      * Shutdown all hue SDK related processes.
      */
     void shutdown();
-
-    /**
-     * Get all connected lights.
-     *
-     * @return list of lights
-     */
-    List<PHLight> getLights();
 
     /**
      * @return the currently selected color set

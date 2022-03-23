@@ -46,7 +46,7 @@ public class HueBeatObserver implements BeatObserver {
         this.brightnessCalibrator = new BrightnessCalibrator(config);
         this.transitionTimeCalibrator = new TransitionTimeCalibrator(config);
 
-        // effects at the end of pipe have highest priority
+        // effects at the end of pipe have the highest priority
         effectPipe = new ArrayList<>();
         effectPipe.add(new DefaultEffect(componentHolder));
 

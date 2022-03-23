@@ -14,7 +14,7 @@ public class StrobeController extends AbstractController {
 
     private final ScheduledExecutorService executorService;
 
-    private volatile ScheduledFuture currentStrobe;
+    private volatile ScheduledFuture<?> currentStrobe;
 
     private volatile Long strobeDelay;
     private volatile Boolean setOn;
@@ -109,7 +109,7 @@ public class StrobeController extends AbstractController {
     }
 
     /**
-     * Interrupts the current strobe while resetting it's state if the strobe wasn't done yet after cancelling.
+     * Interrupts the current strobe while resetting its state if the strobe wasn't done yet after cancelling.
      */
     private void interruptStrobe() {
         if (isStrobing()) {

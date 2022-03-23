@@ -1,6 +1,5 @@
 package io.lightbeat.hue.bridge.light;
 
-import com.philips.lighting.model.PHLight;
 import io.lightbeat.hue.bridge.LightQueue;
 import io.lightbeat.hue.bridge.light.controller.BrightnessController;
 import io.lightbeat.hue.bridge.light.controller.ColorController;
@@ -13,7 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class LBLight implements Light {
 
-    private final PHLight light;
+    private final io.github.zeroone3010.yahueapi.Light light;
     private final LightQueue lightQueue;
 
     private final ColorController colorController;
@@ -25,7 +24,7 @@ public class LBLight implements Light {
     private volatile boolean isOn;
 
 
-    public LBLight(PHLight light, LightQueue lightQueue, ScheduledExecutorService executorService) {
+    public LBLight(io.github.zeroone3010.yahueapi.Light light, LightQueue lightQueue, ScheduledExecutorService executorService) {
         this.light = light;
         this.lightQueue = lightQueue;
 
@@ -36,11 +35,11 @@ public class LBLight implements Light {
         this.currentBuilder = LightStateBuilder.create();
         this.builderToCopyAfterTurningOn = LightStateBuilder.create();
 
-        this.isOn = light.getLastKnownLightState().isOn();
+        this.isOn = light.getState().getOn();
     }
 
     @Override
-    public PHLight getBase() {
+    public io.github.zeroone3010.yahueapi.Light getBase() {
         return light;
     }
 
@@ -117,22 +116,12 @@ public class LBLight implements Light {
     }
 
     @Override
-    public void recoverFromError(int errorCode) {
-        if (errorCode == 201) { // error description: parameter, hue, is not modifiable. Device is set to off.
-            if (isOn) {
-                isOn = false;
-            }
-            setOn(true);
-        }
-    }
-
-    @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof LBLight && this.light.getUniqueId().equals(((LBLight) o).light.getUniqueId());
+        return this == o || o instanceof LBLight && this.light.getId().equals(((LBLight) o).light.getId());
     }
 
     @Override
     public int hashCode() {
-        return light.getUniqueId().hashCode();
+        return light.getId().hashCode();
     }
 }

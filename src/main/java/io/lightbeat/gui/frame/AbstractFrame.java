@@ -10,6 +10,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -53,7 +54,7 @@ public abstract class AbstractFrame implements HueFrame {
             // load icons
             List<Image> icons = new ArrayList<>();
             for (int i = 16; i <= 64; i += 16) {
-                icons.add(new ImageIcon(getClass().getResource("/png/icon_" + i + ".png")).getImage());
+                icons.add(new ImageIcon(Objects.requireNonNull(getClass().getResource("/png/icon_" + i + ".png"))).getImage());
             }
             frame.setIconImages(icons);
 

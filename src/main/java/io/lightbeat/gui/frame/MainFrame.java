@@ -4,7 +4,7 @@ import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.components.help.HelpButton;
 import com.github.weisj.darklaf.theme.DarculaTheme;
 import com.github.weisj.darklaf.theme.IntelliJTheme;
-import com.philips.lighting.model.PHLight;
+import io.github.zeroone3010.yahueapi.Light;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
@@ -12,8 +12,6 @@ import io.lightbeat.audio.BeatObserver;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.gui.swing.*;
 import io.lightbeat.util.UpdateChecker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sound.sampled.Mixer;
 import javax.swing.*;
@@ -32,7 +30,6 @@ import java.util.stream.Collectors;
  */
 public class MainFrame extends AbstractFrame implements BeatObserver {
 
-    private static final Logger logger = LoggerFactory.getLogger(MainFrame.class);
     private static final int MINIMUM_BRIGHTNESS_DIFFERENCE = 36;
 
     private final AudioReader audioReader;
@@ -473,11 +470,11 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         lightSelectPanel.removeAll();
 
         List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-        for (PHLight light : hueManager.getLights()) {
+        for (Light light : hueManager.getBridge().getLights()) {
 
             JCheckBox checkBox = new JCheckBox();
             checkBox.setText(light.getName());
-            if (!disabledLights.contains(light.getUniqueId())) {
+            if (!disabledLights.contains(light.getId())) {
                 checkBox.setSelected(true);
             }
 
@@ -488,9 +485,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
 
                 if (((JCheckBox) e.getSource()).isSelected()) {
-                    disabledLightsList.remove(light.getUniqueId());
+                    disabledLightsList.remove(light.getId());
                 } else {
-                    disabledLightsList.add(light.getUniqueId());
+                    disabledLightsList.add(light.getId());
                 }
 
                 config.putList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);

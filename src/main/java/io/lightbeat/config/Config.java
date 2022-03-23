@@ -3,7 +3,7 @@ package io.lightbeat.config;
 import java.util.List;
 
 /**
- * Implementing class allows access to the applications configuration.
+ * Implementing class allows access to the application's configuration.
  */
 public interface Config {
 

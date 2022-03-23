@@ -8,8 +8,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * Slider that sets a given {@link ConfigNode} to it's value whenever it changes.
- * Allows to restore default value via {@link #restoreDefault()}.
+ * Slider that sets a given {@link ConfigNode} to its value whenever it changes.
+ * Allows restoring default value via {@link #restoreDefault()}.
  */
 public class JConfigSlider extends JSlider implements ConfigComponent {
 

@@ -8,7 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * Colored panel that changes it's borders color upon hovering.
+ * Colored panel that changes its borders color upon hovering.
  */
 public class JColorTile extends JPanel {
 

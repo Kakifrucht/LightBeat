@@ -43,7 +43,7 @@ public class ColorSelectionFrame extends AbstractFrame {
     /**
      * Constructor to create a new set.
      *
-     * @param mainFrame will receive a callback upon saving to refresh it's contents
+     * @param mainFrame will receive a callback upon saving to refresh its contents
      */
     ColorSelectionFrame(MainFrame mainFrame) {
         this("New Color Set", mainFrame);
@@ -52,7 +52,7 @@ public class ColorSelectionFrame extends AbstractFrame {
     /**
      * Constructor to edit a set. Loads color data and makes name unchangeable.
      *
-     * @param mainFrame will receive a callback upon saving to refresh it's contents
+     * @param mainFrame will receive a callback upon saving to refresh its contents
      * @param setNameToEdit name of set to edit
      */
     ColorSelectionFrame(MainFrame mainFrame, String setNameToEdit) {

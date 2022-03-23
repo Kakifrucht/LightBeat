@@ -8,7 +8,7 @@ import io.lightbeat.util.TimeThreshold;
 import java.util.List;
 
 /**
- * Adds the {@link com.philips.lighting.model.PHLight.PHLightAlertMode#ALERT_SELECT} effect
+ * Adds the {@link io.github.zeroone3010.yahueapi.AlertType#SHORT_ALERT} effect
  * to all bulbs if {@link #ALERT_THRESHOLD_MILLIS} is met. May add the effect one time randomly.
  */
 public class AlertEffect extends AbstractRandomEffect {

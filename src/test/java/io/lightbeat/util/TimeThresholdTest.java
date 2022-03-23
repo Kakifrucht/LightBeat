@@ -33,6 +33,6 @@ class TimeThresholdTest {
     void disableIsEnabled() {
         assertTrue(timeThreshold.isEnabled());
         timeThreshold.disable();
-        assertTrue(!timeThreshold.isEnabled());
+        assertFalse(timeThreshold.isEnabled());
     }
 }

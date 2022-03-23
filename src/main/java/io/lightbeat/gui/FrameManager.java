@@ -3,12 +3,12 @@ package io.lightbeat.gui;
 import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.theme.DarculaTheme;
 import com.github.weisj.darklaf.theme.IntelliJTheme;
-import com.philips.lighting.hue.sdk.PHAccessPoint;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.gui.frame.ConnectFrame;
 import io.lightbeat.gui.frame.HueFrame;
 import io.lightbeat.gui.frame.MainFrame;
+import io.lightbeat.hue.bridge.AccessPoint;
 import io.lightbeat.hue.bridge.HueManager;
 import io.lightbeat.hue.bridge.HueStateObserver;
 
@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * Manages the applications main frame, only showing one main frame at a time, which are either
- * the connect frame or the main application frame. Stores the current window position.
+ * the connect-frame or the main application frame. Stores the current window position.
  * Implements {@link HueStateObserver} interface to receive state callbacks and update
  * the currently shown window accordingly.
  */
@@ -58,7 +58,7 @@ public class FrameManager implements HueStateObserver {
     }
 
     @Override
-    public void displayFoundBridges(List<PHAccessPoint> list) {
+    public void displayFoundBridges(List<AccessPoint> list) {
         showConnectFrame().displayFoundBridges(list);
     }
 

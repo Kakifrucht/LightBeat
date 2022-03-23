@@ -1,11 +1,11 @@
 package io.lightbeat.hue.bridge.light;
 
-import com.philips.lighting.model.PHLight;
-import com.philips.lighting.model.PHLightState;
+import io.github.zeroone3010.yahueapi.AlertType;
+import io.github.zeroone3010.yahueapi.State;
 import io.lightbeat.hue.bridge.color.Color;
 
 /**
- * Builder class to create {@link PHLightState}'s.
+ * Builder class to create {@link State}'s.
  * Can also copy from other builders via {@link #copyFromBuilder(LightStateBuilder)}.
  */
 @SuppressWarnings("UnusedReturnValue")
@@ -82,32 +82,32 @@ public class LightStateBuilder {
                 && alert == null;
     }
 
-    PHLightState getLightState() {
+    State getLightState() {
 
         if (isDefault()) {
             return null;
         }
 
-        PHLightState newLightState = new PHLightState();
-        newLightState.setTransitionTime(transitionTime);
+        State.Builder newLightState = new State.Builder();
+        newLightState.transitionTime(transitionTime);
 
         if (brightness >= 0) {
-            newLightState.setBrightness(brightness);
+            newLightState.brightness(brightness);
         }
 
         if (color != null) {
-            newLightState.setHue((int) (color.getHue() * 65535));
-            newLightState.setSaturation((int) (color.getSaturation() * 254));
+            newLightState.hue((int) (color.getHue() * 65535));
+            newLightState.saturation((int) (color.getSaturation() * 254));
         }
 
         if (setOn != null) {
-            newLightState.setOn(setOn);
+            newLightState.on(setOn);
         }
 
         if (alert != null && alert) {
-            newLightState.setAlertMode(PHLight.PHLightAlertMode.ALERT_SELECT);
+            return newLightState.alert(AlertType.SHORT_ALERT);
+        } else {
+            return newLightState.keepCurrentState();
         }
-
-        return newLightState;
     }
 }

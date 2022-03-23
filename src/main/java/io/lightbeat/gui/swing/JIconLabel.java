@@ -2,6 +2,7 @@ package io.lightbeat.gui.swing;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * Label that holds multiple cached {@link Icon}'s that can be swapped with {@link #flipIcon()}.
@@ -41,7 +42,7 @@ public class JIconLabel extends JLabel {
     }
 
     private ImageIcon getImageIcon(String resourceName) {
-        ImageIcon icon = new ImageIcon(getClass().getResource(resourceName));
+        ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getResource(resourceName)));
         Image image = icon.getImage();
         Image scaledImage = image.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
         return new ImageIcon(scaledImage);

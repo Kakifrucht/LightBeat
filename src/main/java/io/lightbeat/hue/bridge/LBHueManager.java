@@ -1,21 +1,24 @@
 package io.lightbeat.hue.bridge;
 
-import com.philips.lighting.hue.sdk.*;
-import com.philips.lighting.hue.sdk.exception.PHHeartbeatException;
-import com.philips.lighting.model.*;
+import io.github.zeroone3010.yahueapi.HueBridge;
+import io.github.zeroone3010.yahueapi.State;
+import io.github.zeroone3010.yahueapi.discovery.HueBridgeDiscoveryService;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.config.Config;
 import io.lightbeat.config.ConfigNode;
-import io.lightbeat.hue.visualizer.HueBeatObserver;
 import io.lightbeat.hue.bridge.color.ColorSet;
 import io.lightbeat.hue.bridge.color.CustomColorSet;
 import io.lightbeat.hue.bridge.color.RandomColorSet;
 import io.lightbeat.hue.bridge.light.LBLight;
 import io.lightbeat.hue.bridge.light.Light;
+import io.lightbeat.hue.visualizer.HueBeatObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Default {@link HueManager} implementation.
@@ -26,16 +29,17 @@ public class LBHueManager implements HueManager {
 
     private final ComponentHolder componentHolder;
     private final Config config;
-    private final PHHueSDK hueSDK;
 
     private final LightQueue lightQueue;
 
-    private State currentState = State.NOT_CONNECTED;
-    private PHBridge bridge;
+    private BridgeConnection bridgeConnection;
+    private ManagerState currentState = ManagerState.NOT_CONNECTED;
     private ColorSet colorSet;
 
     private HueStateObserver stateObserver;
-    private Map<Light, PHLightState> originalLightStates;
+
+    private Future<?> bridgeScanTask;
+    private Map<Light, State> originalLightStates;
 
 
     public LBHueManager(ComponentHolder componentHolder) {
@@ -43,100 +47,12 @@ public class LBHueManager implements HueManager {
         this.componentHolder = componentHolder;
         this.config = componentHolder.getConfig();
 
-        hueSDK = PHHueSDK.create();
-        hueSDK.setAppName("LightBeat");
-        hueSDK.setDeviceName(System.getProperty("os.name"));
-
-        PHSDKListener listener = new PHSDKListener() {
-            @Override
-            public void onBridgeConnected(PHBridge phBridge, String username) {
-
-                PHBridgeConfiguration bridgeConfiguration = phBridge.getResourceCache().getBridgeConfiguration();
-                logger.info("Connected to bridge at {} with username {}", bridgeConfiguration.getIpAddress(), username);
-
-                config.put(ConfigNode.BRIDGE_USERNAME, username);
-                config.put(ConfigNode.BRIDGE_IPADDRESS, bridgeConfiguration.getIpAddress());
-
-                hueSDK.setSelectedBridge(phBridge);
-                try {
-                    hueSDK.getHeartbeatManager().enableLightsHeartbeat(phBridge, PHHueSDK.HB_INTERVAL);
-                } catch (PHHeartbeatException e) {
-                    logger.warn("Exception while enabling lights heartbeat", e);
-                }
-
-                bridge = phBridge;
-                currentState = State.CONNECTED;
-                stateObserver.hasConnected();
-            }
-
-            @Override
-            public void onAuthenticationRequired(PHAccessPoint phAccessPoint) {
-                logger.info("Authentication to connect to bridge at {} is required", phAccessPoint.getIpAddress());
-                hueSDK.startPushlinkAuthentication(phAccessPoint);
-
-                currentState = State.AWAITING_PUSHLINK;
-                stateObserver.requestPushlink();
-            }
-
-            @Override
-            public void onAccessPointsFound(List<PHAccessPoint> list) {
-                logger.info("Access point scan finished, found {} bridges", list.size());
-                currentState = State.NOT_CONNECTED;
-                stateObserver.displayFoundBridges(list);
-            }
-
-            @Override
-            public void onError(int errorCode, String message) {
-
-                if (errorCode == PHMessageType.PUSHLINK_BUTTON_NOT_PRESSED || errorCode == 42) {
-                    return;
-                }
-
-                logger.error("Error ocurred, code {} - {}", errorCode, message);
-                if (errorCode == PHMessageType.BRIDGE_NOT_FOUND) {
-                    onAccessPointsFound(Collections.emptyList());
-                } else if (errorCode == PHHueError.BRIDGE_NOT_RESPONDING || errorCode == PHMessageType.PUSHLINK_AUTHENTICATION_FAILED) {
-
-                    if (currentState.equals(State.AWAITING_PUSHLINK)) {
-                        stateObserver.pushlinkHasFailed();
-                    } else {
-                        currentState = State.CONNECTION_LOST;
-                        stateObserver.connectionWasLost();
-                    }
-                }
-            }
-
-            @Override
-            public void onConnectionLost(PHAccessPoint phAccessPoint) {
-                logger.warn("Connection to bridge at {} was lost", phAccessPoint.getIpAddress());
-                setBridgeDisconnected();
-                currentState = State.CONNECTION_LOST;
-                stateObserver.connectionWasLost();
-            }
-
-            @Override
-            public void onParsingErrors(List<PHHueParsingError> list) {
-                logger.warn("{} parsing error(s) has/have occurred:", list.size());
-                for (int i = 0; i < list.size(); i++) {
-                    PHHueParsingError error = list.get(i);
-                    logger.warn(" Error #{}: {}", i + 1, error.getMessage());
-                }
-            }
-
-            @Override
-            public void onCacheUpdated(List<Integer> list, PHBridge phBridge) {}
-
-            @Override
-            public void onConnectionResumed(PHBridge phBridge) {}
-        };
-
-        hueSDK.getNotificationManager().registerSDKListener(listener);
-        this.lightQueue = new LightQueue(this);
+        this.lightQueue = new LightQueue(this, componentHolder.getExecutorService());
     }
 
     @Override
-    public PHBridge getBridge() {
-        return bridge;
+    public BridgeConnection getBridge() {
+        return bridgeConnection;
     }
 
     @Override
@@ -147,14 +63,11 @@ public class LBHueManager implements HueManager {
     @Override
     public boolean attemptStoredConnection() {
 
-        String bridgeUsername = config.get(ConfigNode.BRIDGE_USERNAME);
         String bridgeIP = config.get(ConfigNode.BRIDGE_IPADDRESS);
+        String bridgeKey = config.get(ConfigNode.BRIDGE_USERNAME);
 
-        if (bridgeUsername != null && bridgeIP != null) {
-            PHAccessPoint accessPoint = new PHAccessPoint();
-            accessPoint.setUsername(bridgeUsername);
-            accessPoint.setIpAddress(bridgeIP);
-            setAttemptConnection(accessPoint);
+        if (bridgeIP != null && bridgeKey != null) {
+            setAttemptConnection(new AccessPoint(bridgeIP, bridgeKey));
             return true;
         }
 
@@ -163,31 +76,93 @@ public class LBHueManager implements HueManager {
 
     @Override
     public void doBridgesScan() {
-        if (!currentState.equals(State.SCANNING_FOR_BRIDGES)) {
-            PHBridgeSearchManager searchManager = (PHBridgeSearchManager) hueSDK.getSDKService(PHHueSDK.SEARCH_BRIDGE);
-            searchManager.search(true, true);
-            stateObserver.isScanningForBridges(currentState.equals(State.CONNECTION_LOST));
-            currentState = State.SCANNING_FOR_BRIDGES;
+        if (!currentState.equals(ManagerState.SCANNING_FOR_BRIDGES)) {
+            Future<List<HueBridge>> bridgesFuture = new HueBridgeDiscoveryService()
+                    .discoverBridges(bridge -> logger.info("Discovered bridge at {}", bridge.getIp()));
+
+            bridgeScanTask = componentHolder.getExecutorService().schedule(() -> {
+                List<HueBridge> bridgesFound;
+                try {
+                    bridgesFound = bridgesFuture.get();
+                } catch (InterruptedException e) {
+                    return;
+                } catch (Exception e) {
+                    logger.warn("Exception during scan for bridges", e);
+                    bridgesFound = Collections.emptyList();
+                }
+
+                logger.info("Access point scan finished, found {} bridges", bridgesFound.size());
+                currentState = ManagerState.NOT_CONNECTED;
+
+                List<AccessPoint> accessPoints = bridgesFound.stream()
+                        .map(bridge -> new AccessPoint(bridge.getIp())).collect(Collectors.toList());
+                stateObserver.displayFoundBridges(accessPoints);
+            }, 0, TimeUnit.SECONDS);
+
+            stateObserver.isScanningForBridges(currentState.equals(ManagerState.CONNECTION_LOST));
+            currentState = ManagerState.SCANNING_FOR_BRIDGES;
         }
     }
 
     @Override
-    public void setAttemptConnection(PHAccessPoint accessPoint) {
-        currentState = State.ATTEMPTING_CONNECTION;
+    public void setAttemptConnection(AccessPoint accessPoint) {
+        String bridgeIp = accessPoint.getIp();
+        currentState = ManagerState.ATTEMPTING_CONNECTION;
         stateObserver.isAttemptingConnection();
-        hueSDK.connect(accessPoint);
+        BridgeConnection.ConnectionListener listener = new BridgeConnection.ConnectionListener() {
+            @Override
+            public void connectionSuccess(String key) {
+                logger.info("Connected to bridge at {} with key {}", bridgeIp, key);
+
+                config.put(ConfigNode.BRIDGE_IPADDRESS, bridgeIp);
+                config.put(ConfigNode.BRIDGE_USERNAME, key);
+
+                currentState = ManagerState.CONNECTED;
+                stateObserver.hasConnected();
+            }
+
+            @Override
+            public void connectionError() {
+                logger.warn("Connection to bridge at {} could not be established", bridgeIp);
+                currentState = ManagerState.CONNECTION_LOST;
+                stateObserver.connectionWasLost();
+            }
+
+            @Override
+            public void connectionLost() {
+                logger.warn("Connection to bridge at {} was lost", bridgeIp);
+                setBridgeDisconnected();
+                currentState = ManagerState.CONNECTION_LOST;
+                stateObserver.connectionWasLost();
+            }
+
+            @Override
+            public void pushlinkRequired() {
+                logger.info("Authentication to connect to bridge at {} is required", bridgeIp);
+
+                currentState = ManagerState.AWAITING_PUSHLINK;
+                stateObserver.requestPushlink();
+            }
+
+            @Override
+            public void pushlinkFailed() {
+                currentState = ManagerState.NOT_CONNECTED;
+                stateObserver.pushlinkHasFailed();
+            }
+        };
+        bridgeConnection = new BridgeConnection(accessPoint, componentHolder.getExecutorService(), listener);
     }
 
     @Override
     public boolean isConnected() {
-        return currentState.equals(State.CONNECTED);
+        return currentState.equals(ManagerState.CONNECTED);
     }
 
     @Override
     public void disconnect() {
         setBridgeDisconnected();
         logger.info("Disconnected from bridge");
-        currentState = State.NOT_CONNECTED;
+        currentState = ManagerState.NOT_CONNECTED;
         doBridgesScan();
     }
 
@@ -195,26 +170,15 @@ public class LBHueManager implements HueManager {
     public void shutdown() {
 
         if (isConnected()) {
-
-            hueSDK.getHeartbeatManager().disableAllHeartbeats(bridge);
             recoverOriginalState();
             lightQueue.markShutdown();
-
-            return;
-        } else if (currentState.equals(State.AWAITING_PUSHLINK)) {
-            hueSDK.stopPushlinkAuthentication();
+        } else if (bridgeConnection != null) {
+            bridgeConnection.disconnect();
         }
 
-        hueSDK.destroySDK();
-    }
-
-    @Override
-    public List<PHLight> getLights() {
-
-        List<PHLight> lights = bridge.getResourceCache().getAllLights();
-        lights.removeIf(light -> !light.supportsBrightness());
-
-        return lights;
+        if (bridgeScanTask != null && !bridgeScanTask.isDone()) {
+            bridgeScanTask.cancel(true);
+        }
     }
 
     @Override
@@ -243,16 +207,15 @@ public class LBHueManager implements HueManager {
         originalLightStates = new HashMap<>();
 
         List<String> disabledLights = componentHolder.getConfig().getStringList(ConfigNode.LIGHTS_DISABLED);
-        for (PHLight phLight : getLights()) {
+        for (io.github.zeroone3010.yahueapi.Light apiLight : bridgeConnection.getLights()) {
 
-            if (disabledLights.contains(phLight.getUniqueId())) {
+            if (disabledLights.contains(apiLight.getId())) {
                 continue;
             }
 
-            PHLightState currentState = new PHLightState(phLight.getLastKnownLightState());
-            currentState.setReachable(null);
+            State currentState = apiLight.getState();
 
-            Light light = new LBLight(phLight, lightQueue, componentHolder.getExecutorService());
+            Light light = new LBLight(apiLight, lightQueue, componentHolder.getExecutorService());
             originalLightStates.put(light, currentState);
             lights.add(light);
         }
@@ -287,15 +250,13 @@ public class LBHueManager implements HueManager {
     }
 
     private void setBridgeDisconnected() {
-        if (currentState.equals(State.CONNECTED)) {
-            PHBridge selectedBridge = hueSDK.getSelectedBridge();
-            hueSDK.getHeartbeatManager().disableAllHeartbeats(selectedBridge);
-            hueSDK.disconnect(selectedBridge);
-            hueSDK.setSelectedBridge(null);
+        if (currentState.equals(ManagerState.CONNECTED)) {
+            bridgeConnection.disconnect();
+            bridgeConnection = null;
         }
     }
 
-    enum State {
+    private enum ManagerState {
         NOT_CONNECTED,
         SCANNING_FOR_BRIDGES,
         ATTEMPTING_CONNECTION,

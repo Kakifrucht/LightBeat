@@ -24,10 +24,10 @@ public abstract class AbstractController {
     }
 
     /**
-     * Manually reserve the ability to edit this controllers stored values.
+     * Manually reserve the ability to edit this controller's stored values.
      * Usually control must be manually given back by calling {@link #unsetControllingEffect(LightEffect)}.
      *
-     * @param effect effect that reserves the right to change this controllers values
+     * @param effect effect that reserves the right to change this controller's values
      * @return true if control was given to or {@link #canControl(LightEffect)} returns true
      */
     public boolean setControllingEffect(LightEffect effect) {

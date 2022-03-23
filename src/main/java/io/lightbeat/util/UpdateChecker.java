@@ -9,7 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * Does a HTTP GET to the given {@link #URL_STRING} that returns the latest version via {@link #getVersionString()}.
+ * Does an HTTP GET to the given {@link #URL_STRING} that returns the latest version via {@link #getVersionString()}.
  * Can check if an update is available via {@link #isUpdateAvailable()}.
  */
 public class UpdateChecker {

@@ -1,17 +1,16 @@
 package io.lightbeat.hue.bridge.light;
 
-import com.philips.lighting.model.PHLight;
 import io.lightbeat.hue.bridge.light.controller.BrightnessController;
 import io.lightbeat.hue.bridge.light.controller.ColorController;
 import io.lightbeat.hue.bridge.light.controller.StrobeController;
 
 /**
- * Implementing class represents a controllable light. Update it's state via it's controllers
+ * Implementing class represents a controllable light. Update its state via exposed controllers
  * or by getting the current builder with {@link #getStateBuilder()} and send it via {@link #doLightUpdate(int)}.
  */
 public interface Light {
 
-    PHLight getBase();
+    io.github.zeroone3010.yahueapi.Light getBase();
 
     ColorController getColorController();
 
@@ -39,7 +38,7 @@ public interface Light {
     void setOn(boolean on);
 
     /**
-     * Adds controller update information to this lights builder (retrieved with {@link #getStateBuilder()})
+     * Adds controller update information to this light's builder (retrieved with {@link #getStateBuilder()})
      * and updates the light accordingly. Will only send the update if resulting light state would cause an update.
      * Resets the builder for the next call of this method.
      *
@@ -47,13 +46,4 @@ public interface Light {
      *                       (fadeTime of 2 would be 200ms fade)
      */
     void doLightUpdate(int transitionTime);
-
-    /**
-     * When an error has ocurred during the update.
-     *
-     * @param errorCode specific error to recover from
-     */
-    void recoverFromError(int errorCode);
-
-
 }

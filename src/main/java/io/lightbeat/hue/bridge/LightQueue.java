@@ -1,47 +1,42 @@
 package io.lightbeat.hue.bridge;
 
-import com.philips.lighting.hue.listener.PHLightListener;
-import com.philips.lighting.hue.sdk.PHHueSDK;
-import com.philips.lighting.model.PHBridgeResource;
-import com.philips.lighting.model.PHHueError;
-import com.philips.lighting.model.PHLight;
-import com.philips.lighting.model.PHLightState;
+import io.github.zeroone3010.yahueapi.AlertType;
+import io.github.zeroone3010.yahueapi.State;
 import io.lightbeat.hue.bridge.light.Light;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Sends light updates in a synchronized queue, while waiting for callbacks from the bridge
- * and logging received errors. Every light has it's own internal queue.
+ * and logging received errors. Every light has its own internal queue.
  */
 public class LightQueue {
 
     private static final Logger logger = LoggerFactory.getLogger(LightQueue.class);
 
     private final HueManager hueManager;
+    private final ScheduledExecutorService executorService;
     private final Map<Light, Queue<QueueEntry>> queue;
 
     private volatile boolean shutdownWasMarked = false;
 
 
-    LightQueue(HueManager hueManager) {
+    LightQueue(HueManager hueManager, ScheduledExecutorService executorService) {
         this.hueManager = hueManager;
+        this.executorService = executorService;
         queue = new ConcurrentHashMap<>();
     }
 
-    public void addUpdate(Light light, PHLightState state) {
+    public void addUpdate(Light light, State state) {
 
-        if (state == null) {
-            return;
-        }
-
-        if (light == null) {
+        if (light == null || state == null) {
             throw new IllegalArgumentException("Light and state cannot be null");
         }
 
@@ -65,13 +60,13 @@ public class LightQueue {
     }
 
     /**
-     * Will shutdown SDK threads if or once the queue is empty.
+     * Will shut down SDK threads if or once the queue is empty.
      */
     void markShutdown() {
         synchronized (queue) {
             shutdownWasMarked = true;
             if (queue.isEmpty()) {
-                PHHueSDK.getStoredSDKObject().destroySDK();
+                hueManager.getBridge().disconnect();
             }
         }
     }
@@ -86,78 +81,49 @@ public class LightQueue {
             }
 
             if (shutdownWasMarked && queue.isEmpty()) {
-                PHHueSDK.getStoredSDKObject().destroySDK();
+                hueManager.getBridge().disconnect();
             }
         }
     }
 
     private class QueueEntry {
         private final Light light;
-        private final PHLightState state;
-        private final LBLightListener lightListener;
+        private final State state;
 
-        QueueEntry(Light light, PHLightState state) {
+        QueueEntry(Light light, State state) {
             this.light = light;
             this.state = state;
-            this.lightListener = new LBLightListener(this);
         }
 
         void doUpdate() {
             if (hueManager.isConnected()) {
-                hueManager.getBridge().updateLightState(light.getBase(), state, lightListener);
+                executorService.schedule(() -> {
+                    light.getBase().setState(state);
+                    logger.info("Updated light {}", getLightInfo());
+                }, 0, TimeUnit.SECONDS);
+
+                next(light);
             } else {
                 logger.warn("Purged {} light updates", queue.size() + 1);
                 queue.clear();
             }
         }
-    }
-
-    private class LBLightListener implements PHLightListener {
-
-        private final QueueEntry work;
-
-
-        LBLightListener(QueueEntry work) {
-            this.work = work;
-        }
-
-        @Override
-        public void onSuccess() {
-            logger.info("Updated light {}", getLightInfo());
-            next(work.light);
-        }
-
-        @Override
-        public void onError(int code, String message) {
-            logger.warn("Error ocurred during update of light {}, code {} - {}", getLightInfo(), code, message);
-            work.light.recoverFromError(code);
-            next(work.light);
-        }
-
-        @Override
-        public void onReceivingLightDetails(PHLight phLight) {}
-        @Override
-        public void onReceivingLights(List<PHBridgeResource> list) {}
-        @Override
-        public void onSearchComplete() {}
-        @Override
-        public void onStateUpdate(Map<String, String> map, List<PHHueError> list) {}
 
         private String getLightInfo() {
 
-            PHLightState newState = work.state;
+            State newState = state;
 
             String mode = "null";
-            if (newState.getAlertMode() != null && !newState.getAlertMode().equals(PHLight.PHLightAlertMode.ALERT_UNKNOWN)) {
-                mode = newState.getAlertMode().toString();
+            if (newState.getAlert() != null && !newState.getAlert().equals(AlertType.NONE)) {
+                mode = newState.getAlert().toString(); //TODO is this necessary
             }
 
-            return work.light.getBase().getName()
-                    + " (time " + newState.getTransitionTime()
-                    + " | bri " + newState.getBrightness()
-                    + " | color " + newState.getHue() + "/" + newState.getSaturation()
+            return light.getBase().getName()
+                    + " (time " + newState.getTransitiontime()
+                    + " | bri " + newState.getBri()
+                    + " | color " + newState.getHue() + "/" + newState.getSat()
                     + " | mode " + mode
-                    + " | on " + newState.isOn() + ")";
+                    + " | on " + newState.getOn() + ")";
         }
     }
 }
