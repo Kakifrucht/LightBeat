@@ -105,11 +105,6 @@
             <artifactId>yetanotherhueapi</artifactId>
             <version>2.7.0-SNAPSHOT</version>
         </dependency>
-        <dependency> <!-- Temporary until yetanotherhueapi merges -->
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.13.2</version>
-        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
