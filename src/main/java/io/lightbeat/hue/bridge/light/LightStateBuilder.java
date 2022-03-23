@@ -104,10 +104,10 @@ public class LightStateBuilder {
             newLightState.on(setOn);
         }
 
-        if (alert != null && alert) {
-            return newLightState.alert(AlertType.SHORT_ALERT);
-        } else {
-            return newLightState.keepCurrentState();
+        if (alert != null) {
+            newLightState.alert(AlertType.SHORT_ALERT);
         }
+
+        return newLightState.build();
     }
 }
