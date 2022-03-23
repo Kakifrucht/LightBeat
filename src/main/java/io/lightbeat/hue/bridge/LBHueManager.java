@@ -214,8 +214,8 @@ public class LBHueManager implements HueManager {
             }
 
             State currentState = apiLight.getState();
-
             Light light = new LBLight(apiLight, lightQueue, componentHolder.getExecutorService());
+
             originalLightStates.put(light, currentState);
             lights.add(light);
         }

@@ -122,10 +122,19 @@ public class LightQueue {
                 mode = newState.getAlert().toString();
             }
 
+            String color = "null";
+            if (newState.getHue() != null) {
+                color = "hue/sat " + newState.getHue() + "/" + newState.getSat();
+            } else if (newState.getXy() != null) {
+                color = "x/y " + newState.getXy().get(0) + "/" + newState.getXy().get(1);
+            } else if (newState.getCt() != null) {
+                color = "ct " + newState.getCt();
+            }
+
             return light.getBase().getName()
                     + " (time " + newState.getTransitiontime()
                     + " | bri " + newState.getBri()
-                    + " | color " + newState.getHue() + "/" + newState.getSat()
+                    + " | color " + color
                     + " | mode " + mode
                     + " | on " + newState.getOn() + ")";
         }
