@@ -12,6 +12,15 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+/**
+ * Class handling a connection to a bridge.
+ * The constructor checks if given accesspoint is a bridge and will either initialize pushlinking
+ * or start a recurring task to check if the connection is still alive.
+ * Bridge API calls are handled asynchronously, callbacks are given through a listener
+ * implementing the {@link ConnectionListener} interface.
+ *
+ * Bridge state is cached, which allows for state non-blocking state retrieval on {@link Light} objects.
+ */
 public class BridgeConnection {
 
     private static final Logger logger = LoggerFactory.getLogger(BridgeConnection.class);
@@ -109,6 +118,9 @@ public class BridgeConnection {
         }, 0, CONNECTION_CHECK_SECONDS, TimeUnit.SECONDS);
     }
 
+    /**
+     * @return list containing all valid lights with brightness controls.
+     */
     public List<Light> getLights() {
         if (!isConnected) {
             throw new IllegalStateException("Not connected to bridge");
@@ -120,10 +132,17 @@ public class BridgeConnection {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Refreshes bridge light state in cache.
+     */
     void refresh() {
         hue.refresh();
     }
 
+    /**
+     * Disconnect from bridge by stopping any active threads. This will not trigger a call
+     * through the {@link ConnectionListener} interface given via the constructor.
+     */
     void disconnect() {
         if (preconnectPushlinkTask != null && !preconnectPushlinkTask.isDone()) {
             preconnectPushlinkTask.cancel(true);
@@ -133,8 +152,14 @@ public class BridgeConnection {
         }
     }
 
+    /**
+     * Implementing class listens for connection state changes.
+     */
     interface ConnectionListener {
 
+        /**
+         * @param key key/username to connect to given bridge
+         */
         void connectionSuccess(String key);
 
         void connectionError();

@@ -1,5 +1,8 @@
 package io.lightbeat.hue.bridge;
 
+/**
+ * Simple wrapper around an ip address and a login key/username.
+ */
 public class AccessPoint {
 
     private final String ip;
