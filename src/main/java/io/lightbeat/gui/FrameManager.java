@@ -36,8 +36,8 @@ public class FrameManager implements HueStateObserver {
         HueManager hueManager = componentHolder.getHueManager();
         hueManager.setStateObserver(this);
 
-        boolean darkTheme = componentHolder.getConfig().getBoolean(ConfigNode.WINDOW_DARK_THEME);
-        LafManager.install(darkTheme ? new DarculaTheme() : new IntelliJTheme());
+        boolean lightTheme = componentHolder.getConfig().getBoolean(ConfigNode.WINDOW_LIGHT_THEME);
+        LafManager.install(lightTheme ? new IntelliJTheme() : new DarculaTheme());
 
         boolean doesAttemptConnection = hueManager.attemptStoredConnection();
         if (!doesAttemptConnection) {
