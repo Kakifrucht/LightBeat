@@ -203,6 +203,8 @@ public class LBHueManager implements HueManager {
     @Override
     public boolean initializeLights() {
 
+        bridgeConnection.refresh();
+
         List<Light> lights = new ArrayList<>();
         originalLightStates = new HashMap<>();
 

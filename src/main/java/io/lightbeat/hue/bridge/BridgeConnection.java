@@ -113,7 +113,15 @@ public class BridgeConnection {
         if (!isConnected) {
             throw new IllegalStateException("Not connected to bridge");
         }
-        return hue.getAllLights().getLights().stream().filter(light -> light.getMaxLumens() != null).collect(Collectors.toList());
+        return hue.getAllLights().getLights()
+                .stream()
+                .filter(light -> light.getMaxLumens() != null)
+                .sorted((light1, light2) -> light2.getId().compareTo(light1.getId()))
+                .collect(Collectors.toList());
+    }
+
+    void refresh() {
+        hue.refresh();
     }
 
     void disconnect() {
