@@ -289,7 +289,7 @@
                         </constraints>
                         <properties>
                           <maximum value="10"/>
-                          <toolTipText value="Probability in percent (10% steps) that an additional light will be selected on beat.&lt;br&gt;Setting this to 10 will cause updates to every light on every beat, if a light effect is currently not active.&lt;br&gt;More light updates can lead to higher latency."/>
+                          <toolTipText value="Probability that an additional light will be selected on beat.&lt;br&gt;Setting this to 100% will cause updates to every light on every beat, if a light effect is currently not active.&lt;br&gt;More light updates can lead to higher latency."/>
                         </properties>
                       </component>
                       <component id="d3368" class="javax.swing.JLabel">
@@ -337,7 +337,7 @@
                     </constraints>
                     <properties>
                       <maximum value="254"/>
-                      <toolTipText value="Define the minimum brightness level, reached when the music is currently less intense than on average.&lt;br&gt;For best visualization effects it is recommended to keep this value below 60."/>
+                      <toolTipText value="Define the minimum brightness level, reached when the music is currently less intense than on average.&lt;br&gt;For best visualization effects it is recommended to keep this value below 25%."/>
                     </properties>
                   </component>
                   <component id="58e34" class="javax.swing.JLabel">

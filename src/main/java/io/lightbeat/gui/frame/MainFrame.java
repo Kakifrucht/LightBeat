@@ -205,11 +205,11 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         bannerLabel = new JIconLabel("/png/banner.png", "/png/bannerflash.png", 482, 100);
 
-        beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN);
-        lightAmountProbabilitySlider = new JConfigSlider(config, ConfigNode.LIGHT_AMOUNT_PROBABILITY);
+        beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN, value -> value + " millis");
+        lightAmountProbabilitySlider = new JConfigSlider(config, ConfigNode.LIGHT_AMOUNT_PROBABILITY, value -> value * 10 + "%");
 
-        minBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MIN);
-        maxBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MAX);
+        minBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MIN, value -> (int) (value / 254f * 100) + "%");
+        maxBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_MAX, value -> (int) (value / 254f * 100) + "%");
 
         strobeCheckBox = new JConfigCheckBox(config, ConfigNode.EFFECT_STROBE);
         colorStrobeCheckbox = new JConfigCheckBox(config, ConfigNode.EFFECT_COLOR_STROBE);
@@ -218,7 +218,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
         colorRandomizationSlider = new JConfigSlider(config, ConfigNode.COLOR_RANDOMIZATION_RANGE);
         fadeBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_FADE_DIFFERENCE);
-        maxTransitionTimeSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_FADE_MAX_TIME);
+        maxTransitionTimeSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_FADE_MAX_TIME, value -> value * 100 + " millis");
 
         showAdvancedCheckbox = new JConfigCheckBox(config, ConfigNode.SHOW_ADVANCED_SETTINGS);
         autoStartCheckBox = new JConfigCheckBox(config, ConfigNode.AUTOSTART);
