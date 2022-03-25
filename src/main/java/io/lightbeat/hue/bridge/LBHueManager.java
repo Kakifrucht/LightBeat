@@ -99,7 +99,7 @@ public class LBHueManager implements HueManager {
                 stateObserver.displayFoundBridges(accessPoints);
             }, 0, TimeUnit.SECONDS);
 
-            stateObserver.isScanningForBridges(currentState.equals(ManagerState.CONNECTION_LOST));
+            stateObserver.isScanningForBridges();
             currentState = ManagerState.SCANNING_FOR_BRIDGES;
         }
     }
@@ -122,18 +122,15 @@ public class LBHueManager implements HueManager {
             }
 
             @Override
-            public void connectionError() {
-                logger.warn("Connection to bridge at {} could not be established", bridgeIp);
-                currentState = ManagerState.CONNECTION_LOST;
-                stateObserver.connectionWasLost();
-            }
+            public void connectionError(Error error) {
+                if (error.equals(Error.CONNECTION_LOST)) {
+                    logger.info("Connection to bridge at {} was lost", bridgeIp);
+                } else {
+                    logger.info("Connection to bridge at {} could not be established (Error {})", bridgeIp, error);
+                }
 
-            @Override
-            public void connectionLost() {
-                logger.warn("Connection to bridge at {} was lost", bridgeIp);
-                setBridgeDisconnected();
                 currentState = ManagerState.CONNECTION_LOST;
-                stateObserver.connectionWasLost();
+                stateObserver.connectionWasLost(error);
             }
 
             @Override

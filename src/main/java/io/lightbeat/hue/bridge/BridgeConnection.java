@@ -2,6 +2,7 @@ package io.lightbeat.hue.bridge;
 
 import io.github.zeroone3010.yahueapi.Hue;
 import io.github.zeroone3010.yahueapi.Light;
+import io.github.zeroone3010.yahueapi.LightType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,14 +57,14 @@ public class BridgeConnection {
 
                 } else {
                     logger.info("Endpoint at {} is not a hue bridge", accessPoint.getIp());
-                    connectionListener.connectionError();
+                    connectionListener.connectionError(ConnectionListener.Error.NOT_A_BRIDGE);
                     return;
                 }
             } catch (InterruptedException e) {
                 return;
             } catch (Exception e) {
                 logger.warn("Exception during check if endpoint is hue bridge", e);
-                connectionListener.connectionError();
+                connectionListener.connectionError(ConnectionListener.Error.EXCEPTION);
                 return;
             }
 
@@ -79,7 +80,6 @@ public class BridgeConnection {
                 }
                 scheduleHeartbeat(new AccessPoint(accessPoint.getIp(), key));
             } catch (InterruptedException ignored) {
-
             } catch (Exception e) {
                 if (e.getMessage().contains("link button not pressed")) {
                     logger.warn("Pushlinking failed");
@@ -102,9 +102,9 @@ public class BridgeConnection {
                 hue.refresh();
             } catch (Exception e) {
                 if (isConnected) {
-                    connectionListener.connectionLost();
+                    connectionListener.connectionError(ConnectionListener.Error.CONNECTION_LOST);
                 } else {
-                    connectionListener.connectionError();
+                    connectionListener.connectionError(ConnectionListener.Error.EXCEPTION);
                 }
 
                 heartbeatTask.cancel(false);
@@ -113,7 +113,11 @@ public class BridgeConnection {
 
             if (!isConnected) {
                 isConnected = true;
-                connectionListener.connectionSuccess(accessPoint.getKey());
+                if (getLights().isEmpty()) {
+                    connectionListener.connectionError(ConnectionListener.Error.NO_LIGHTS);
+                } else {
+                    connectionListener.connectionSuccess(accessPoint.getKey());
+                }
             }
         }, 0, CONNECTION_CHECK_SECONDS, TimeUnit.SECONDS);
     }
@@ -127,7 +131,7 @@ public class BridgeConnection {
         }
         return hue.getAllLights().getLights()
                 .stream()
-                .filter(light -> light.getMaxLumens() != null)
+                .filter(light -> !light.getType().equals(LightType.ON_OFF_PLUGIN_UNIT) && !light.getType().equals(LightType.ON_OFF_LIGHT))
                 .sorted((light1, light2) -> light2.getId().compareTo(light1.getId()))
                 .collect(Collectors.toList());
     }
@@ -155,19 +159,24 @@ public class BridgeConnection {
     /**
      * Implementing class listens for connection state changes.
      */
-    interface ConnectionListener {
+    public interface ConnectionListener {
 
         /**
          * @param key key/username to connect to given bridge
          */
         void connectionSuccess(String key);
 
-        void connectionError();
-
-        void connectionLost();
+        void connectionError(Error error);
 
         void pushlinkRequired();
 
         void pushlinkFailed();
+
+        enum Error {
+            CONNECTION_LOST,
+            EXCEPTION,
+            NOT_A_BRIDGE,
+            NO_LIGHTS
+        }
     }
 }

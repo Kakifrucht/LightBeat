@@ -9,6 +9,7 @@ import io.lightbeat.gui.frame.ConnectFrame;
 import io.lightbeat.gui.frame.HueFrame;
 import io.lightbeat.gui.frame.MainFrame;
 import io.lightbeat.hue.bridge.AccessPoint;
+import io.lightbeat.hue.bridge.BridgeConnection;
 import io.lightbeat.hue.bridge.HueManager;
 import io.lightbeat.hue.bridge.HueStateObserver;
 
@@ -53,8 +54,8 @@ public class FrameManager implements HueStateObserver {
     }
 
     @Override
-    public void isScanningForBridges(boolean connectFailed) {
-        showConnectFrame().isScanningForBridges(connectFailed);
+    public void isScanningForBridges() {
+        showConnectFrame().isScanningForBridges();
     }
 
     @Override
@@ -85,8 +86,8 @@ public class FrameManager implements HueStateObserver {
     }
 
     @Override
-    public void connectionWasLost() {
-        showConnectFrame().connectionWasLost();
+    public void connectionWasLost(BridgeConnection.ConnectionListener.Error error) {
+        showConnectFrame().connectionWasLost(error);
     }
 
     private HueStateObserver showConnectFrame() {

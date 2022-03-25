@@ -34,6 +34,8 @@
           </grid>
         </constraints>
         <properties>
+          <foreground color="-8355712"/>
+          <text value="Enter your Bridge's IP (supports custom port)"/>
           <visible value="false"/>
         </properties>
       </component>

@@ -8,7 +8,7 @@ import java.util.List;
  */
 public interface HueStateObserver {
 
-    void isScanningForBridges(boolean connectFailed);
+    void isScanningForBridges();
 
     void displayFoundBridges(List<AccessPoint> list);
 
@@ -20,5 +20,5 @@ public interface HueStateObserver {
 
     void hasConnected();
 
-    void connectionWasLost();
+    void connectionWasLost(BridgeConnection.ConnectionListener.Error error);
 }
