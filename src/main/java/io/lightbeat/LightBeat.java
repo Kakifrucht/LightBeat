@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Entry point for application. Starts modules to bootstrap the application.
@@ -85,10 +86,14 @@ public class LightBeat implements ComponentHolder {
         audioReader.stop();
         frameManager.shutdown();
         hueManager.shutdown();
-        executorService.shutdown();
+        try {
+            executorService.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.warn("Executor service forcefully shutdown, some tasks have not completed");
+        }
 
-        // dispatch thread that force exits if still running after 10 seconds
-        TimeThreshold forceShutdownThreshold = new TimeThreshold(10000L);
+        // dispatch thread that force exits if still running after 5 seconds
+        TimeThreshold forceShutdownThreshold = new TimeThreshold(5000L);
         Thread forceShutdownThread = new Thread(() -> {
             while (true) {
                 if (forceShutdownThreshold.isMet()) {
