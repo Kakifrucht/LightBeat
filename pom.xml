@@ -21,7 +21,7 @@
                 <directory>${basedir}/src/main/resources/</directory>
                 <includes>
                     <include>metadata.properties</include>
-                    <include>META-INF/MANIFEST.MF</include>
+                    <include>simplelogger.properties</include>
                     <include>png/*.png</include>
                 </includes>
             </resource>
