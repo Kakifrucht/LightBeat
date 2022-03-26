@@ -34,7 +34,12 @@ public class UpdateChecker {
             }
         }
 
-        return !currentVersionString.equals(latestVersionString);
+        if (!currentVersionString.equals(latestVersionString)) {
+            logger.info("Update to LightBeat version {} found", latestVersionString);
+            return true;
+        }
+
+        return false;
     }
 
     public String getVersionString() throws Exception {

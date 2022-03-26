@@ -48,26 +48,19 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="86f3b" class="javax.swing.JButton" binding="startButton" default-binding="true">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <font size="18"/>
-              <text value="Start"/>
-            </properties>
-          </component>
-          <grid id="972a9" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="972a9" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="2"/>
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                <maximum-size width="1000" height="80"/>
+              </grid>
             </constraints>
             <properties/>
             <border type="none"/>
             <children>
               <component id="bf7bd" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="showAdvancedCheckbox" custom-create="true">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <text value="Show Advanced Settings"/>
@@ -76,7 +69,7 @@
               </component>
               <component id="c0777" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="autoStartCheckBox" custom-create="true" default-binding="true">
                 <constraints>
-                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <text value="Auto Start On Launch"/>
@@ -85,11 +78,20 @@
               </component>
               <component id="a975e" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="lightThemeCheckbox" custom-create="true" default-binding="true">
                 <constraints>
-                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <text value="Light Theme"/>
                   <toolTipText value="Use the light theme."/>
+                </properties>
+              </component>
+              <component id="86f3b" class="javax.swing.JButton" binding="startButton" default-binding="true">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="6" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <font size="18"/>
+                  <text value="Start"/>
                 </properties>
               </component>
             </children>
@@ -105,7 +107,9 @@
       <grid id="984b9" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <maximum-size width="1000" height="500"/>
+          </grid>
         </constraints>
         <properties/>
         <border type="none"/>
@@ -121,7 +125,9 @@
               <grid id="9296e" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="5" bottom="2" right="5"/>
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <maximum-size width="1000" height="-1"/>
+                  </grid>
                 </constraints>
                 <properties/>
                 <border type="etched" title="Audio Source" title-position="2">
@@ -176,7 +182,9 @@
               <grid id="defca" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="5" bottom="2" right="5"/>
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <maximum-size width="1000" height="-1"/>
+                  </grid>
                 </constraints>
                 <properties/>
                 <border type="etched" title="Colors" title-position="2">
@@ -240,7 +248,9 @@
               <grid id="bdb23" binding="lightsPanel" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="5" bottom="2" right="5"/>
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <maximum-size width="500" height="-1"/>
+                  </grid>
                 </constraints>
                 <properties/>
                 <border type="etched" title="Lights" title-position="2">
@@ -249,7 +259,7 @@
                 <children>
                   <grid id="1a4ca" binding="lightSelectPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                     <constraints>
-                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                      <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
                         <maximum-size width="500" height="-1"/>
                       </grid>
                     </constraints>
@@ -324,7 +334,9 @@
               <grid id="65d60" binding="brightnessPanel" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="5" bottom="2" right="5"/>
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                    <maximum-size width="500" height="-1"/>
+                  </grid>
                 </constraints>
                 <properties/>
                 <border type="etched" title="Brightness" title-position="2">
@@ -382,10 +394,12 @@
           </grid>
         </children>
       </grid>
-      <grid id="2d76b" binding="advancedPanel" layout-manager="GridLayoutManager" row-count="6" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="2d76b" binding="advancedPanel" layout-manager="GridLayoutManager" row-count="4" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="5" bottom="2" right="5"/>
         <constraints>
-          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <maximum-size width="1000" height="-1"/>
+          </grid>
         </constraints>
         <properties/>
         <border type="etched" title="Advanced" title-position="2">
@@ -395,7 +409,7 @@
           <grid id="2b0b9" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -447,24 +461,6 @@
               <text value="Color Randomization Range"/>
             </properties>
           </component>
-          <component id="d6514" class="io.lightbeat.gui.swing.JConfigSlider" binding="fadeBrightnessSlider" custom-create="true">
-            <constraints>
-              <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <maximum value="10"/>
-              <minimum value="1"/>
-              <toolTipText value="Higher values cause higher differences between the on beat brightness and fade brightness."/>
-            </properties>
-          </component>
-          <component id="c3c53" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Fade Brightness Difference"/>
-            </properties>
-          </component>
           <component id="2cc7e" class="javax.swing.JLabel">
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -476,7 +472,7 @@
           <grid id="89ef1" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="5" bottom="0" right="5"/>
             <constraints>
-              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
             <border type="none"/>
@@ -510,24 +506,6 @@
               </component>
             </children>
           </grid>
-          <component id="6dbf3" class="io.lightbeat.gui.swing.JConfigSlider" binding="maxTransitionTimeSlider" custom-create="true">
-            <constraints>
-              <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <maximum value="8"/>
-              <minimum value="1"/>
-              <toolTipText value="The maximum transition time for the light fade effect, in 100ms steps.&lt;br&gt;The transition time is dependant on the relative time between beats."/>
-            </properties>
-          </component>
-          <component id="de35a" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Maximum Fade Transition Time"/>
-            </properties>
-          </component>
           <component id="f4198" class="javax.swing.JLabel">
             <constraints>
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -544,6 +522,42 @@
               <maximum value="10"/>
               <minimum value="1"/>
               <toolTipText value="Setting this value higher may cause more beats to get detected.&lt;br&gt;It is usually not necessary to change this value as beat detection calibrates automatically."/>
+            </properties>
+          </component>
+          <component id="c3c53" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Fade Brightness Difference"/>
+            </properties>
+          </component>
+          <component id="d6514" class="io.lightbeat.gui.swing.JConfigSlider" binding="fadeBrightnessSlider" custom-create="true">
+            <constraints>
+              <grid row="2" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <maximum value="10"/>
+              <minimum value="1"/>
+              <toolTipText value="Higher values cause higher differences between the on beat brightness and fade brightness."/>
+            </properties>
+          </component>
+          <component id="de35a" class="javax.swing.JLabel">
+            <constraints>
+              <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Maximum Fade Transition Time"/>
+            </properties>
+          </component>
+          <component id="6dbf3" class="io.lightbeat.gui.swing.JConfigSlider" binding="maxTransitionTimeSlider" custom-create="true">
+            <constraints>
+              <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <maximum value="8"/>
+              <minimum value="1"/>
+              <toolTipText value="The maximum transition time for the light fade effect, in 100ms steps.&lt;br&gt;The transition time is dependant on the relative time between beats."/>
             </properties>
           </component>
         </children>
