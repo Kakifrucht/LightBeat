@@ -128,6 +128,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             }
         });
 
+        colorSelectPanel.setLayout(new WrapLayout(0));
         refreshColorSets();
         if (colorSelectPanel.getComponentCount() < 2) {
             addColorSetPresets();

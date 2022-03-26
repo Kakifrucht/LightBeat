@@ -57,17 +57,14 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
         manualField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
+                executorService.schedule(() -> runOnSwingThread(() -> {
+                    boolean isEnabled = manualField.getText().length() > MANUAL_FIELD_MIN_LENGTH;
+                    connectButton.setEnabled(isEnabled);
 
-                executorService.schedule(() -> {
-                    runOnSwingThread(() -> {
-                        boolean isEnabled = manualField.getText().length() > MANUAL_FIELD_MIN_LENGTH;
-                        connectButton.setEnabled(isEnabled);
-
-                        if (isEnabled && e.getKeyCode() == KeyEvent.VK_ENTER) {
-                            connectButton.doClick();
-                        }
-                    });
-                }, 1 , TimeUnit.MILLISECONDS);
+                    if (isEnabled && e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        connectButton.doClick();
+                    }
+                }), 1 , TimeUnit.MILLISECONDS);
             }
         });
 
@@ -189,7 +186,6 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
     @Override
     public void connectionWasLost(BridgeConnection.ConnectionListener.Error error) {
-        hueManager.doBridgesScan();
         String message = "";
         switch (error) {
             case CONNECTION_LOST:
@@ -202,8 +198,9 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             case NO_LIGHTS:
                 message = "This bridge has no valid lights exposed";
         }
-        message += ", scanning for bridges";
-        toggleButtonAndDropdown(false, message);
+
+        toggleButtonAndDropdown(false, message + ", scanning for bridges");
+        hueManager.doBridgesScan();
     }
 
     private void toggleButtonAndDropdown(boolean setEnabled, String labelText) {
