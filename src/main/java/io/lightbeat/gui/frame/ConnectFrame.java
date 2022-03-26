@@ -22,6 +22,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
+    private static final int MANUAL_FIELD_MIN_LENGTH = 6;
+
     private JPanel mainPanel;
 
     private LoadingIndicator statusLabelIndicator;
@@ -47,16 +49,25 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
             if (setVisible != manualField.isVisible()) {
                 manualField.setVisible(setVisible);
+                connectButton.setEnabled(manualField.getText().length() > MANUAL_FIELD_MIN_LENGTH && !manualField.getForeground().equals(Color.GRAY));
                 getJFrame().pack();
             }
         });
 
         manualField.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    connectButton.doClick();
-                }
+            public void keyTyped(KeyEvent e) {
+
+                executorService.schedule(() -> {
+                    runOnSwingThread(() -> {
+                        boolean isEnabled = manualField.getText().length() > MANUAL_FIELD_MIN_LENGTH;
+                        connectButton.setEnabled(isEnabled);
+
+                        if (isEnabled && e.getKeyCode() == KeyEvent.VK_ENTER) {
+                            connectButton.doClick();
+                        }
+                    });
+                }, 1 , TimeUnit.MILLISECONDS);
             }
         });
 
@@ -66,7 +77,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             public void focusGained(FocusEvent e) {
                 if (manualField.getText().equals(text)) {
                     manualField.setText("");
-                    manualField.setForeground(Color.BLACK);
+                    manualField.setForeground(statusLabelIndicator.getForeground());
                 }
             }
             @Override
@@ -92,7 +103,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
                 // manual connect
                 if (selectBridgeBox.getItemCount() == selectedIndex + 1) {
                     String address = manualField.getText();
-                    if (address.length() > 6 && manualField.getForeground().equals(Color.BLACK)) {
+                    if (manualField.getForeground().equals(statusLabelIndicator.getForeground())) {
                         hueManager.setAttemptConnection(new AccessPoint(address));
                     }
                 } else {
@@ -105,6 +116,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             }
         });
 
+        frame.getRootPane().setDefaultButton(connectButton);
         drawFrame(mainPanel, true);
     }
 
@@ -206,6 +218,9 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             manualField.setEnabled(setEnabled);
             statusLabelIndicator.setText(labelText);
             statusLabelIndicator.setRunning(!setEnabled);
+            if (connectButton.isEnabled()) {
+                connectButton.requestFocus();
+            }
             frame.pack();
         });
     }

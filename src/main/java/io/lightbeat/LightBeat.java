@@ -8,7 +8,6 @@ import io.lightbeat.config.LBConfig;
 import io.lightbeat.gui.FrameManager;
 import io.lightbeat.hue.bridge.HueManager;
 import io.lightbeat.hue.bridge.LBHueManager;
-import io.lightbeat.util.TimeThreshold;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,25 +88,11 @@ public class LightBeat implements ComponentHolder {
         try {
             executorService.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            logger.warn("Executor service forcefully shutdown, some tasks have not completed");
+            logger.warn("Executor service forcefully shut down, some tasks have not completed");
         }
 
-        // dispatch thread that force exits if still running after 5 seconds
-        TimeThreshold forceShutdownThreshold = new TimeThreshold(5000L);
-        Thread forceShutdownThread = new Thread(() -> {
-            while (true) {
-                if (forceShutdownThreshold.isMet()) {
-                    logger.info("Forcing runtime exit");
-                    Runtime.getRuntime().exit(0);
-                }
-
-                try {
-                    Thread.sleep(1000L);
-                } catch (InterruptedException ignored) {}
-            }
-        });
-        forceShutdownThread.setDaemon(true);
-        forceShutdownThread.start();
+        // ensure that we exit
+        Runtime.getRuntime().exit(0);
     }
 
     @Override

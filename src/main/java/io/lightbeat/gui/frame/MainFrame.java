@@ -383,16 +383,17 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                         infoLabel.setText("Running | Some settings cannot be changed during visualisation");
                         componentHolder.getAudioEventManager().registerBeatObserver(this);
                         setElementsEnabled(false);
-                        return;
                     }
                 } else {
                     showErrorMessage("Please select at least one light");
-                    return;
                 }
+
+                return;
             }
         }
 
         showErrorMessage("Selected audio source is no longer available");
+        refreshDeviceSelectComboBox();
     }
 
     private void stopBeatDetection() {
