@@ -128,15 +128,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             }
         });
 
-        colorSelectPanel.setLayout(new WrapLayout(0));
-        refreshColorSets();
-        if (colorSelectPanel.getComponentCount() < 2) {
-            addColorSetPresets();
-        }
-
         // lights panel
         updateLightsPanel();
-        lightSelectPanel.setLayout(new WrapLayout(0));
         restoreLightsButton.addActionListener(e -> {
 
             // restore lights
@@ -197,8 +190,12 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
 
         drawFrame(mainPanel, true);
-        runOnSwingThread(startButton::requestFocus);
+        refreshColorSets();
+        if (colorSelectPanel.getComponentCount() < 2) {
+            addColorSetPresets();
+        }
 
+        runOnSwingThread(startButton::requestFocus);
         restoreLastWindowLocation();
         scheduleUpdateCheck(version);
     }
@@ -206,6 +203,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     public void createUIComponents() {
 
         bannerLabel = new JIconLabel("/png/banner.png", "/png/bannerflash.png", 482, 100);
+
+        colorSelectPanel = new JPanel(new WrapLayout(FlowLayout.CENTER));
+        lightSelectPanel = new JPanel(new WrapLayout(FlowLayout.CENTER));
 
         beatTimeBetweenSlider = new JConfigSlider(config, ConfigNode.BEAT_MIN_TIME_BETWEEN, value -> value + " millis");
         lightAmountProbabilitySlider = new JConfigSlider(config, ConfigNode.LIGHT_AMOUNT_PROBABILITY, value -> value * 10 + "%");
