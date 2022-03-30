@@ -45,13 +45,14 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
         selectBridgeBox.addActionListener(e -> {
 
-            boolean setVisible = selectBridgeBox.getSelectedIndex() + 1 == selectBridgeBox.getItemCount();
-
-            if (setVisible != manualField.isVisible()) {
-                manualField.setVisible(setVisible);
+            boolean setManualVisible = selectBridgeBox.getSelectedIndex() + 1 == selectBridgeBox.getItemCount();
+            if (!setManualVisible) {
+                connectButton.setEnabled(true);
+            } else if (!manualField.isVisible()) {
                 connectButton.setEnabled(manualField.getText().length() > MANUAL_FIELD_MIN_LENGTH && !manualField.getForeground().equals(Color.GRAY));
-                getJFrame().pack();
             }
+            manualField.setVisible(setManualVisible);
+            getJFrame().pack();
         });
 
         manualField.addKeyListener(new KeyAdapter() {
