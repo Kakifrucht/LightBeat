@@ -17,6 +17,14 @@ public interface AudioReader {
     List<Mixer> getSupportedMixers();
 
     /**
+     * Returns a mixer matching the name supplied.
+     *
+     * @param name that mixer must match
+     * @return mixer matching given name or null if no mixer does
+     */
+    Mixer getMixerByName(String name);
+
+    /**
      * Start reading and interpreting audio data on the selected mixer.
      *
      * @param mixer to read audio data from

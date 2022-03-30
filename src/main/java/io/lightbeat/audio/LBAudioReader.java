@@ -60,6 +60,14 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     }
 
     @Override
+    public Mixer getMixerByName(String name) {
+        return getSupportedMixers().stream()
+                .filter(mixer -> mixer.getMixerInfo().getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
     public boolean start(Mixer mixer) {
 
         if (isOpen()) {

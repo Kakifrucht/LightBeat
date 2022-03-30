@@ -5,7 +5,6 @@ import com.github.weisj.darklaf.components.border.DarkBorders;
 import com.github.weisj.darklaf.components.help.HelpButton;
 import com.github.weisj.darklaf.theme.DarculaTheme;
 import com.github.weisj.darklaf.theme.IntelliJTheme;
-import io.github.zeroone3010.yahueapi.Light;
 import io.lightbeat.ComponentHolder;
 import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
@@ -370,33 +369,28 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
 
         String selectedMixerName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
-        List<Mixer> supportedMixers = audioReader.getSupportedMixers();
-        for (Mixer supportedMixer : supportedMixers) {
-            String mixerName = supportedMixer.getMixerInfo().getName();
-            if (mixerName.equals(selectedMixerName)) {
-                config.put(ConfigNode.LAST_AUDIO_SOURCE, mixerName);
+        Mixer mixer = audioReader.getMixerByName(selectedMixerName);
+        if (mixer != null) {
+            config.put(ConfigNode.LAST_AUDIO_SOURCE, selectedMixerName);
 
-                boolean lightsInitialized = hueManager.initializeLights();
-                if (lightsInitialized) {
-                    boolean audioReaderStarted = audioReader.start(supportedMixer);
-                    if (audioReaderStarted) {
-                        startButton.setText("Stop");
-                        startButton.requestFocus();
+            boolean lightsInitialized = hueManager.initializeLights();
+            if (lightsInitialized) {
+                boolean audioReaderStarted = audioReader.start(mixer);
+                if (audioReaderStarted) {
+                    startButton.setText("Stop");
+                    startButton.requestFocus();
 
-                        infoLabel.setText("Running | Some settings cannot be changed during visualisation");
-                        componentHolder.getAudioEventManager().registerBeatObserver(this);
-                        setElementsEnabled(false);
-                    }
-                } else {
-                    showErrorMessage("Please select at least one light");
+                    infoLabel.setText("Running | Some settings cannot be changed during visualisation");
+                    componentHolder.getAudioEventManager().registerBeatObserver(this);
+                    setElementsEnabled(false);
                 }
-
-                return;
+            } else {
+                showErrorMessage("Please select at least one light");
             }
+        } else {
+            showErrorMessage("Selected audio source is no longer available");
+            refreshDeviceSelectComboBox();
         }
-
-        showErrorMessage("Selected audio source is no longer available");
-        refreshDeviceSelectComboBox();
     }
 
     private void stopBeatDetection() {
@@ -454,19 +448,15 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         // add mixer names to combobox
         deviceSelectComboBox.removeAllItems();
         if (lastSource != null) {
-            for (String mixerName : mixerNames) {
-                if (mixerName.equals(lastSource)) {
-                    deviceSelectComboBox.addItem(mixerName);
-                    break;
-                }
-            }
+            mixerNames.stream()
+                    .filter(name -> name.equals(lastSource))
+                    .findFirst()
+                    .ifPresent(name -> deviceSelectComboBox.addItem(name));
         }
 
-        for (String mixerName : mixerNames) {
-            if (!mixerName.equals(lastSource)) {
-                deviceSelectComboBox.addItem(mixerName);
-            }
-        }
+        mixerNames.stream()
+                .filter(name -> !name.equals(lastSource))
+                .forEach(name -> deviceSelectComboBox.addItem(name));
     }
 
     private void updateLightsPanel() {
@@ -474,8 +464,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         lightSelectPanel.removeAll();
 
         List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-        for (Light light : hueManager.getBridge().getLights()) {
-
+        hueManager.getBridge()
+                .getLights()
+                .forEach(light -> {
             JCheckBox checkBox = new JCheckBox();
             checkBox.setText(light.getName());
             if (!disabledLights.contains(light.getId())) {
@@ -496,7 +487,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
                 config.putList(ConfigNode.LIGHTS_DISABLED, disabledLightsList);
             });
-        }
+        });
 
         runOnSwingThread(() -> {
             lightSelectPanel.updateUI();

@@ -16,8 +16,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Sub frame that opens a color selection GUI. Stores data via {@link io.lightbeat.config.Config}.
@@ -195,13 +196,10 @@ public class ColorSelectionFrame extends AbstractFrame {
                 storedPresets.add(setName);
             }
 
-            List<Integer> colorList = new ArrayList<>();
-            for (Component component : selectedColorsPanel.getComponents()) {
-                if (component instanceof JPanel) {
-                    JPanel panel = (JPanel) component;
-                    colorList.add(panel.getBackground().getRGB());
-                }
-            }
+            List<Integer> colorList = Arrays.stream(selectedColorsPanel.getComponents())
+                    .filter(component -> component instanceof JPanel)
+                    .map(panel -> panel.getBackground().getRGB())
+                    .collect(Collectors.toList());
 
             config.putList(ConfigNode.COLOR_SET_LIST, storedPresets);
             config.putList(ConfigNode.getCustomNode("color.sets." + setName), colorList);
