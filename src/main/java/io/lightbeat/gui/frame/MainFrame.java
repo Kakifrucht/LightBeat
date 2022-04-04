@@ -166,8 +166,12 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
 
         showAdvancedCheckbox.setToRunOnChange(() -> {
+            boolean isWindowMinimumBefore = frame.getMinimumSize().equals(frame.getSize());
             advancedPanel.setVisible(showAdvancedCheckbox.isSelected());
-            frame.pack();
+            Dimension minimumSize = frame.getMinimumSize();
+            if (isWindowMinimumBefore || frame.getSize().width < minimumSize.width || frame.getSize().height < minimumSize.height) {
+                frame.pack();
+            }
         });
 
         lightThemeCheckbox.setToRunOnChange(() -> {
@@ -181,7 +185,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             Font startButtonFont = startButton.getFont();
             LafManager.install(setToDark ? new DarculaTheme() : new IntelliJTheme());
             startButton.setFont(startButtonFont);
-            frame.pack();
         });
 
         if (config.getBoolean(ConfigNode.AUTOSTART)) {
@@ -237,8 +240,10 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         // store last location of window
         long locationStore = ByteBuffer.allocate(8)
-                .putInt(frame.getX())
-                .putInt(frame.getY())
+                .putShort((short) frame.getX())
+                .putShort((short) frame.getY())
+                .putShort((short) frame.getWidth())
+                .putShort((short) frame.getHeight())
                 .getLong(0);
 
         config.putLong(ConfigNode.WINDOW_LOCATION, locationStore);
@@ -340,24 +345,20 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         long locationStore = config.getLong(ConfigNode.WINDOW_LOCATION);
         if (locationStore > 0) {
             ByteBuffer locationBuffer = ByteBuffer.allocate(8).putLong(locationStore);
-            int storedX = locationBuffer.getInt(0);
-            int storedY = locationBuffer.getInt(4);
+            short storedX = locationBuffer.getShort(0);
+            short storedY = locationBuffer.getShort(2);
+            short width = locationBuffer.getShort(4);
+            short height = locationBuffer.getShort(6);
+
+            Rectangle newBounds = new Rectangle(storedX, storedY, width, height);
 
             // check if in bounds
-            Rectangle newBounds = new Rectangle(storedX, storedY, 100, 100);
             Rectangle screenBounds = new Rectangle(0, 0, 0, 0);
-
-            GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            GraphicsDevice[] screenDevices = graphicsEnvironment.getScreenDevices();
-            for (GraphicsDevice device : screenDevices) {
-                screenBounds.add(device.getDefaultConfiguration().getBounds());
-            }
+            Arrays.stream(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())
+                    .forEach(sd -> screenBounds.add(sd.getDefaultConfiguration().getBounds()));
 
             if (screenBounds.contains(newBounds)) {
-                runOnSwingThread(() -> {
-                    newBounds.setSize(frame.getSize());
-                    frame.setBounds(newBounds);
-                });
+                runOnSwingThread(() -> frame.setBounds(newBounds));
             }
         }
     }

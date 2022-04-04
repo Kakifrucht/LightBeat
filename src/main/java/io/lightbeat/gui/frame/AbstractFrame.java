@@ -6,12 +6,15 @@ import io.lightbeat.hue.bridge.HueManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract implementation of {@link HueFrame} that handles standard frame drawing.
@@ -68,6 +71,17 @@ public abstract class AbstractFrame implements HueFrame {
             }
 
             frame.pack();
+            // ensure that frame is large enough
+            frame.addComponentListener(new ComponentAdapter() {
+                public void componentResized(ComponentEvent componentEvent) {
+                    Component component = componentEvent.getComponent();
+                    Dimension size = component.getSize();
+                    Dimension minimumSize = component.getMinimumSize();
+                    if (size.getWidth() < minimumSize.getWidth() || size.getHeight() < minimumSize.getHeight()) {
+                        executorService.schedule(() -> runOnSwingThread(frame::pack), 500, TimeUnit.MILLISECONDS);
+                    }
+                }
+            });
 
             frame.addWindowListener(new WindowAdapter() {
                 @Override
