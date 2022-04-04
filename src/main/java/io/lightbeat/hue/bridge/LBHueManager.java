@@ -43,7 +43,6 @@ public class LBHueManager implements HueManager {
 
 
     public LBHueManager(ComponentHolder componentHolder) {
-
         this.componentHolder = componentHolder;
         this.config = componentHolder.getConfig();
 
@@ -62,7 +61,6 @@ public class LBHueManager implements HueManager {
 
     @Override
     public boolean attemptStoredConnection() {
-
         String bridgeIP = config.get(ConfigNode.BRIDGE_IPADDRESS);
         String bridgeKey = config.get(ConfigNode.BRIDGE_USERNAME);
 
@@ -165,7 +163,6 @@ public class LBHueManager implements HueManager {
 
     @Override
     public void shutdown() {
-
         if (isConnected()) {
             recoverOriginalState();
             lightQueue.markShutdown();
@@ -180,9 +177,7 @@ public class LBHueManager implements HueManager {
 
     @Override
     public ColorSet getColorSet() {
-
         String selectedColorSet = config.get(ConfigNode.COLOR_SET_SELECTED);
-
         ColorSet colorSet;
         if (selectedColorSet == null || selectedColorSet.equals("Random")) {
             colorSet = new RandomColorSet();
@@ -212,21 +207,13 @@ public class LBHueManager implements HueManager {
                 continue;
             }
 
-            State currentState = apiLight.getState();
             Light light = new LBLight(apiLight, lightQueue, componentHolder.getExecutorService());
-
-            originalLightStates.put(light, currentState);
+            originalLightStates.put(light, apiLight.getState());
             lights.add(light);
         }
 
         if (!lights.isEmpty()) {
-
-            for (Light light : lights) {
-                if (!light.isOn()) {
-                    light.setOn(true);
-                }
-            }
-
+            lights.stream().filter(l -> !l.isOn()).forEach(light -> light.setOn(true));
             HueBeatObserver beatObserver = new HueBeatObserver(componentHolder, new ArrayList<>(lights));
             componentHolder.getAudioEventManager().registerBeatObserver(beatObserver);
             return true;
@@ -237,13 +224,8 @@ public class LBHueManager implements HueManager {
 
     @Override
     public void recoverOriginalState() {
-
         if (originalLightStates != null) {
-
-            for (Light light : originalLightStates.keySet()) {
-                lightQueue.addUpdate(light, originalLightStates.get(light));
-            }
-
+            originalLightStates.forEach(lightQueue::addUpdate);
             originalLightStates = null;
         }
     }
