@@ -194,7 +194,7 @@ public class LBHueManager implements HueManager {
             this.colorSet = colorSet;
         }
 
-        return colorSet;
+        return this.colorSet;
     }
 
     @Override
