@@ -10,7 +10,7 @@ public interface HueStateObserver {
 
     void isScanningForBridges();
 
-    void displayFoundBridges(List<AccessPoint> list);
+    void displayFoundBridges(List<AccessPoint> foundBridges);
 
     void isAttemptingConnection();
 
@@ -21,4 +21,6 @@ public interface HueStateObserver {
     void hasConnected();
 
     void connectionWasLost(BridgeConnection.ConnectionListener.Error error);
+
+    void disconnected();
 }

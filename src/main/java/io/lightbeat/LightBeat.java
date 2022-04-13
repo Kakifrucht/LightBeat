@@ -4,15 +4,16 @@ import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEventManager;
 import io.lightbeat.audio.LBAudioReader;
 import io.lightbeat.config.Config;
+import io.lightbeat.config.ConfigNode;
 import io.lightbeat.config.LBConfig;
 import io.lightbeat.gui.FrameManager;
+import io.lightbeat.hue.bridge.AccessPoint;
 import io.lightbeat.hue.bridge.HueManager;
 import io.lightbeat.hue.bridge.LBHueManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Properties;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +51,29 @@ public class LightBeat implements ComponentHolder {
         audioReader = new LBAudioReader(config, executorService);
         hueManager = new LBHueManager(this);
         frameManager = new FrameManager(this);
+
+        List<AccessPoint> accessPoints = hueManager.getPreviousBridges();
+        if (accessPoints.isEmpty()) {
+            AccessPoint accessPoint = getLastConnectedLegacy();
+            if (accessPoint != null) {
+                hueManager.setAttemptConnection(accessPoint);
+            } else {
+                hueManager.doBridgesScan();
+            }
+
+        } else {
+            hueManager.setAttemptConnection(accessPoints.get(0));
+        }
+    }
+
+    private AccessPoint getLastConnectedLegacy() {
+        // will be removed sooner or later, alongside their confignodes
+        String oldIp = config.get(ConfigNode.BRIDGE_IPADDRESS_LEGACY);
+        if (oldIp != null) {
+            String oldUsername = config.get(ConfigNode.BRIDGE_USERNAME_LEGACY);
+            return new AccessPoint(oldIp, oldUsername);
+        }
+        return null;
     }
 
     @Override

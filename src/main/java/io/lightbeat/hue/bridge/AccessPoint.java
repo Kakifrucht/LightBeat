@@ -12,7 +12,7 @@ public class AccessPoint {
         this(ip, null);
     }
 
-    AccessPoint(String ip, String key) {
+    public AccessPoint(String ip, String key) {
         this.ip = ip;
         this.key = key;
     }
@@ -21,11 +21,13 @@ public class AccessPoint {
         return ip;
     }
 
+    public boolean hasKey() {
+        return key != null;
+    }
+
     String getKey() {
         return key;
     }
 
-    boolean hasKey() {
-        return key != null;
-    }
+
 }

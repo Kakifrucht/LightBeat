@@ -2,6 +2,8 @@ package io.lightbeat.hue.bridge;
 
 import io.lightbeat.hue.bridge.color.ColorSet;
 
+import java.util.List;
+
 /**
  * Implementing class manages the current connection state to the hue bridge
  * and passes its information to be rendered/interfaced through a {@link HueStateObserver}.
@@ -21,11 +23,9 @@ public interface HueManager {
     void setStateObserver(HueStateObserver observer);
 
     /**
-     * Attempts to connect to the last connected bridge.
-     *
-     * @return true if there is a previous bridge stored
+     * @return list containing previously connected bridges
      */
-    boolean attemptStoredConnection();
+    List<AccessPoint> getPreviousBridges();
 
     /**
      * Causes a scan for bridges in the connected network.
@@ -35,7 +35,7 @@ public interface HueManager {
     /**
      * Tries to establish a connection with the provided access point.
      *
-     * @param accessPoint wrapper containg ip of bridge and key
+     * @param accessPoint wrapper containing ip of bridge and key
      */
     void setAttemptConnection(AccessPoint accessPoint);
 
@@ -45,7 +45,7 @@ public interface HueManager {
     boolean isConnected();
 
     /**
-     * Disconnect from currently connected bridge and trigger a rescan.
+     * Disconnect from currently connected bridge.
      */
     void disconnect();
 

@@ -39,11 +39,6 @@ public class FrameManager implements HueStateObserver {
 
         boolean lightTheme = componentHolder.getConfig().getBoolean(ConfigNode.WINDOW_LIGHT_THEME);
         LafManager.install(lightTheme ? new IntelliJTheme() : new DarculaTheme());
-
-        boolean doesAttemptConnection = hueManager.attemptStoredConnection();
-        if (!doesAttemptConnection) {
-            hueManager.doBridgesScan();
-        }
     }
 
     public void shutdown() {
@@ -59,8 +54,8 @@ public class FrameManager implements HueStateObserver {
     }
 
     @Override
-    public void displayFoundBridges(List<AccessPoint> list) {
-        showConnectFrame().displayFoundBridges(list);
+    public void displayFoundBridges(List<AccessPoint> foundBridges) {
+        showConnectFrame().displayFoundBridges(foundBridges);
     }
 
     @Override
@@ -88,6 +83,11 @@ public class FrameManager implements HueStateObserver {
     @Override
     public void connectionWasLost(BridgeConnection.ConnectionListener.Error error) {
         showConnectFrame().connectionWasLost(error);
+    }
+
+    @Override
+    public void disconnected() {
+        showConnectFrame().disconnected();
     }
 
     private HueStateObserver showConnectFrame() {

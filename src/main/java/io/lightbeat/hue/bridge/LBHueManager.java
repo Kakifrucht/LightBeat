@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 public class LBHueManager implements HueManager {
 
     private static final Logger logger = LoggerFactory.getLogger(LBHueManager.class);
+    private static final String CONFIG_BRIDGE_PREFIX = "bridge.entry.";
 
     private final ComponentHolder componentHolder;
     private final Config config;
@@ -60,16 +61,17 @@ public class LBHueManager implements HueManager {
     }
 
     @Override
-    public boolean attemptStoredConnection() {
-        String bridgeIP = config.get(ConfigNode.BRIDGE_IPADDRESS);
-        String bridgeKey = config.get(ConfigNode.BRIDGE_USERNAME);
-
-        if (bridgeIP != null && bridgeKey != null) {
-            setAttemptConnection(new AccessPoint(bridgeIP, bridgeKey));
-            return true;
-        }
-
-        return false;
+    public List<AccessPoint> getPreviousBridges() {
+        return config.getStringList(ConfigNode.BRIDGE_LIST)
+                .stream()
+                .map(bridgeIp -> {
+                    String key = config.get(ConfigNode.getCustomNode(CONFIG_BRIDGE_PREFIX + bridgeIp));
+                    if (key == null) {
+                        return null;
+                    }
+                    return new AccessPoint(bridgeIp, key);
+                }).filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -112,8 +114,11 @@ public class LBHueManager implements HueManager {
             public void connectionSuccess(String key) {
                 logger.info("Connected to bridge at {} with key {}", bridgeIp, key);
 
-                config.put(ConfigNode.BRIDGE_IPADDRESS, bridgeIp);
-                config.put(ConfigNode.BRIDGE_USERNAME, key);
+                List<String> bridgeList = new ArrayList<>(config.getStringList(ConfigNode.BRIDGE_LIST));
+                bridgeList.remove(bridgeIp);
+                bridgeList.add(0, bridgeIp);
+                config.putList(ConfigNode.BRIDGE_LIST, bridgeList);
+                config.put(ConfigNode.getCustomNode(CONFIG_BRIDGE_PREFIX + bridgeIp), key);
 
                 currentState = ManagerState.CONNECTED;
                 stateObserver.hasConnected();
@@ -155,10 +160,14 @@ public class LBHueManager implements HueManager {
 
     @Override
     public void disconnect() {
-        setBridgeDisconnected();
-        logger.info("Disconnected from bridge");
+        if (currentState.equals(ManagerState.CONNECTED)) {
+            bridgeConnection.disconnect();
+            logger.info("Disconnected from bridge");
+            bridgeConnection = null;
+        }
+
         currentState = ManagerState.NOT_CONNECTED;
-        doBridgesScan();
+        stateObserver.disconnected();
     }
 
     @Override
@@ -227,13 +236,6 @@ public class LBHueManager implements HueManager {
         if (originalLightStates != null) {
             originalLightStates.forEach(lightQueue::addUpdate);
             originalLightStates = null;
-        }
-    }
-
-    private void setBridgeDisconnected() {
-        if (currentState.equals(ManagerState.CONNECTED)) {
-            bridgeConnection.disconnect();
-            bridgeConnection = null;
         }
     }
 

@@ -109,7 +109,7 @@
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false">
             <minimum-size width="950" height="-1"/>
-            <maximum-size width="1500" height="500"/>
+            <maximum-size width="1200" height="-1"/>
           </grid>
         </constraints>
         <properties/>
@@ -190,7 +190,9 @@
                 <children>
                   <grid id="2958d" binding="colorSelectPanel" custom-create="true" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
                     <constraints>
-                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                      <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                        <maximum-size width="800" height="-1"/>
+                      </grid>
                     </constraints>
                     <properties/>
                     <border type="none"/>
@@ -426,7 +428,7 @@
                 </constraints>
                 <properties>
                   <text value="Disconnect Bridge"/>
-                  <toolTipText value="Opens the bridge selection prompt."/>
+                  <toolTipText value="Opens the bridge selection prompt, which allows you to reconnect to previous bridges."/>
                 </properties>
               </component>
               <component id="f22ac" class="javax.swing.JButton" binding="restoreAdvancedButton" default-binding="true">

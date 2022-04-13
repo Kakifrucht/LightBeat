@@ -2,7 +2,6 @@ package io.lightbeat.gui.frame;
 
 import com.github.weisj.darklaf.components.loading.LoadingIndicator;
 import io.lightbeat.ComponentHolder;
-import io.lightbeat.config.ConfigNode;
 import io.lightbeat.hue.bridge.AccessPoint;
 import io.lightbeat.hue.bridge.BridgeConnection;
 import io.lightbeat.hue.bridge.HueStateObserver;
@@ -13,6 +12,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +29,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     private LoadingIndicator statusLabelIndicator;
     private JComboBox<String> selectBridgeBox;
     private JTextField manualField;
-    private JButton refreshButton;
+    private JButton scanButton;
 
     private JLabel pushlinkImageLabel;
     private JProgressBar pushlinkProgressBar;
@@ -49,7 +49,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             if (!setManualVisible) {
                 connectButton.setEnabled(true);
             } else if (!manualField.isVisible()) {
-                connectButton.setEnabled(manualField.getText().length() > MANUAL_FIELD_MIN_LENGTH && !manualField.getForeground().equals(Color.GRAY));
+                connectButton.setEnabled(isManualFieldFilled());
             }
             manualField.setVisible(setManualVisible);
             getJFrame().pack();
@@ -59,7 +59,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             @Override
             public void keyTyped(KeyEvent e) {
                 executorService.schedule(() -> runOnSwingThread(() -> {
-                    boolean isEnabled = manualField.getText().length() > MANUAL_FIELD_MIN_LENGTH;
+                    boolean isEnabled = isManualFieldFilled();
                     connectButton.setEnabled(isEnabled);
 
                     if (isEnabled && e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -87,8 +87,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             }
         });
 
-        refreshButton.addActionListener(e -> {
-            currentAccessPoints = null;
+        scanButton.addActionListener(e -> {
             toggleButtonAndDropdown(false, "Refreshing ...");
             hueManager.doBridgesScan();
         });
@@ -96,21 +95,13 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
         connectButton.addActionListener(e -> {
 
             int selectedIndex = selectBridgeBox.getSelectedIndex();
-            if (currentAccessPoints == null || selectedIndex >= currentAccessPoints.size()) {
-
-                // manual connect
-                if (selectBridgeBox.getItemCount() == selectedIndex + 1) {
-                    String address = manualField.getText();
-                    if (manualField.getForeground().equals(statusLabelIndicator.getForeground())) {
-                        hueManager.setAttemptConnection(new AccessPoint(address));
-                    }
-                } else {
-                    hueManager.attemptStoredConnection();
-                }
-
-            } else {
+            if (currentAccessPoints != null && selectedIndex < currentAccessPoints.size()) {
                 AccessPoint accessPoint = currentAccessPoints.get(selectBridgeBox.getSelectedIndex());
                 hueManager.setAttemptConnection(accessPoint);
+            } else /* manual connect */ {
+                if (manualField.getForeground().equals(statusLabelIndicator.getForeground())) {
+                    hueManager.setAttemptConnection(new AccessPoint(manualField.getText()));
+                }
             }
         });
 
@@ -127,22 +118,11 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     }
 
     @Override
-    public void displayFoundBridges(List<AccessPoint> list) {
-        runOnSwingThread(() -> {
-            selectBridgeBox.removeAllItems();
-            currentAccessPoints = list.isEmpty() ? null : list;
-
-            list.forEach(accessPoint -> selectBridgeBox.addItem("Bridge at " + accessPoint.getIp()));
-
-            String previousAddress = config.get(ConfigNode.BRIDGE_IPADDRESS);
-            if (previousAddress != null) {
-                selectBridgeBox.addItem("Previous bridge at " + previousAddress);
-            }
-
-            selectBridgeBox.addItem("Enter IP manually");
-            selectBridgeBox.setSelectedIndex(0);
-            toggleButtonAndDropdown(true, list.isEmpty() ? "No bridges found" : "Bridges found, please select your bridge");
-        });
+    public void displayFoundBridges(List<AccessPoint> foundBridges) {
+        List<AccessPoint> allBridges = new ArrayList<>(hueManager.getPreviousBridges());
+        allBridges.addAll(foundBridges);
+        setBridgeList(allBridges);
+        toggleButtonAndDropdown(true, foundBridges.isEmpty() ? "No bridges found" : "Bridges found, please select your bridge");
     }
 
     @Override
@@ -200,8 +180,38 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
                 message = "This bridge has no valid lights exposed";
         }
 
-        toggleButtonAndDropdown(false, message + ", scanning for bridges");
-        hueManager.doBridgesScan();
+        List<AccessPoint> previousBridges = hueManager.getPreviousBridges();
+        if (previousBridges.isEmpty()) {
+            hueManager.doBridgesScan();
+            toggleButtonAndDropdown(false, message + ", scanning for bridges");
+        } else {
+            setBridgeList(previousBridges);
+            toggleButtonAndDropdown(true, message);
+        }
+    }
+
+    @Override
+    public void disconnected() {
+        setBridgeList(hueManager.getPreviousBridges());
+        toggleButtonAndDropdown(true, "Bridge disconnected");
+    }
+
+    private void setBridgeList(List<AccessPoint> bridges) {
+        currentAccessPoints = bridges;
+        runOnSwingThread(() -> {
+            selectBridgeBox.removeAllItems();
+
+            bridges.stream()
+                    .map(bridge -> (bridge.hasKey() ? "Reconnect to bridge at " : "Bridge at ") + bridge.getIp())
+                    .forEach(selectBridgeBox::addItem);
+
+            selectBridgeBox.addItem("Enter IP manually");
+            selectBridgeBox.setSelectedIndex(0);
+        });
+    }
+
+    private boolean isManualFieldFilled() {
+        return manualField.getText().length() > MANUAL_FIELD_MIN_LENGTH && !manualField.getForeground().equals(Color.GRAY);
     }
 
     private void toggleButtonAndDropdown(boolean setEnabled, String labelText) {
@@ -211,8 +221,8 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
         runOnSwingThread(() -> {
             selectBridgeBox.setEnabled(setEnabled);
-            refreshButton.setEnabled(setEnabled);
-            connectButton.setEnabled(setEnabled && selectBridgeBox.getItemCount() > 0);
+            scanButton.setEnabled(setEnabled);
+            connectButton.setEnabled(setEnabled && (selectBridgeBox.getItemCount() > 1 || isManualFieldFilled()));
             manualField.setEnabled(setEnabled);
             statusLabelIndicator.setText(labelText);
             statusLabelIndicator.setRunning(!setEnabled);
