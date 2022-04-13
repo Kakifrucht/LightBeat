@@ -185,6 +185,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             Font startButtonFont = startButton.getFont();
             LafManager.install(setToDark ? new DarculaTheme() : new IntelliJTheme());
             startButton.setFont(startButtonFont);
+            refreshColorSets();
         });
 
         if (config.getBoolean(ConfigNode.AUTOSTART)) {
@@ -301,8 +302,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         colorsPreviewPanel.setColorSet(hueManager.getColorSet());
         colorSelectPanel.setBorder(DarkBorders.createWidgetLineBorder(1, 1, 1, 1));
-        colorSelectPanel.repaint();
-        frame.pack();
+        // ugly hack to refresh
+        colorSelectPanel.setVisible(false);
+        colorSelectPanel.setVisible(true);
     }
 
     private void scheduleUpdateCheck(String version) {
