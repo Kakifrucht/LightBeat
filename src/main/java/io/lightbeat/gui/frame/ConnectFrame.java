@@ -93,15 +93,12 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
         });
 
         connectButton.addActionListener(e -> {
-
             int selectedIndex = selectBridgeBox.getSelectedIndex();
             if (currentAccessPoints != null && selectedIndex < currentAccessPoints.size()) {
-                AccessPoint accessPoint = currentAccessPoints.get(selectBridgeBox.getSelectedIndex());
+                AccessPoint accessPoint = currentAccessPoints.get(selectedIndex);
                 hueManager.setAttemptConnection(accessPoint);
-            } else /* manual connect */ {
-                if (manualField.getForeground().equals(statusLabelIndicator.getForeground())) {
-                    hueManager.setAttemptConnection(new AccessPoint(manualField.getText()));
-                }
+            } else if (isManualFieldFilled()) {
+                hueManager.setAttemptConnection(new AccessPoint(manualField.getText()));
             }
         });
 

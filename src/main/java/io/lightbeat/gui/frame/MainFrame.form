@@ -448,8 +448,8 @@
             </constraints>
             <properties>
               <maximum value="10"/>
-              <minimum value="1"/>
-              <toolTipText value="Colors are generally a little randomized to allow for small color sets without breaking color effects.&lt;br&gt;The higher you set this value the more difference will be in the actual colors from the ones you selected."/>
+              <minimum value="0"/>
+              <toolTipText value="Colors are always randomized in the given range to allow for small color sets without breaking color effects.&lt;br&gt;The higher you set this value the more difference will be in the actual colors from the ones you selected.&lt;br&gt;This feature can be disabled by setting it to 0%."/>
             </properties>
           </component>
           <component id="7da7f" class="javax.swing.JLabel">
@@ -538,7 +538,7 @@
             <properties>
               <maximum value="10"/>
               <minimum value="1"/>
-              <toolTipText value="Higher values cause higher differences between the on beat brightness and fade brightness."/>
+              <toolTipText value="Maximum brightness difference between a beat and its associated fade to a lower brightness."/>
             </properties>
           </component>
           <component id="de35a" class="javax.swing.JLabel">
@@ -556,7 +556,7 @@
             <properties>
               <maximum value="8"/>
               <minimum value="1"/>
-              <toolTipText value="The maximum transition time for the light fade effect, in 100ms steps.&lt;br&gt;The transition time is dependant on the relative time between beats."/>
+              <toolTipText value="The maximum transition time for the light fade after a beat.&lt;br&gt;The transition time is dependant on the BPM of the audio that is being listened to."/>
             </properties>
           </component>
         </children>

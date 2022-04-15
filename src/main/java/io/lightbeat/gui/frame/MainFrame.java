@@ -220,9 +220,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         colorStrobeCheckbox = new JConfigCheckBox(config, ConfigNode.EFFECT_COLOR_STROBE);
         glowCheckBox = new JConfigCheckBox(config, ConfigNode.EFFECT_ALERT);
         bassOnlyModeCheckBox = new JConfigCheckBox(config, ConfigNode.BEAT_BASS_ONLY_MODE);
-        beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY);
-        colorRandomizationSlider = new JConfigSlider(config, ConfigNode.COLOR_RANDOMIZATION_RANGE);
-        fadeBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_FADE_DIFFERENCE);
+        beatSensitivitySlider = new JConfigSlider(config, ConfigNode.BEAT_SENSITIVITY, value -> value * 10 + "%");
+        colorRandomizationSlider = new JConfigSlider(config, ConfigNode.COLOR_RANDOMIZATION_RANGE, value -> value * 2 + "%");
+        fadeBrightnessSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_FADE_DIFFERENCE, value -> value * 8 + "%");
         maxTransitionTimeSlider = new JConfigSlider(config, ConfigNode.BRIGHTNESS_FADE_MAX_TIME, value -> value * 100 + " millis");
 
         showAdvancedCheckbox = new JConfigCheckBox(config, ConfigNode.SHOW_ADVANCED_SETTINGS);

@@ -27,10 +27,6 @@ public class JConfigSlider extends JSlider implements ConfigComponent {
     private boolean toolTipIsSet = false;
 
 
-    public JConfigSlider(Config config, ConfigNode nodeToChange) {
-        this(config, nodeToChange, null);
-    }
-
     /**
      * @param config LightBeat config object
      * @param nodeToChange node that this slider will read and write
