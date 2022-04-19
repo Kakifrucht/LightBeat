@@ -12,6 +12,8 @@ import io.lightbeat.hue.bridge.AccessPoint;
 import io.lightbeat.hue.bridge.BridgeConnection;
 import io.lightbeat.hue.bridge.HueManager;
 import io.lightbeat.hue.bridge.HueStateObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.util.List;
@@ -23,6 +25,8 @@ import java.util.List;
  * the currently shown window accordingly.
  */
 public class FrameManager implements HueStateObserver {
+
+    private static final Logger logger = LoggerFactory.getLogger(FrameManager.class);
 
     private final ComponentHolder componentHolder;
 
@@ -96,7 +100,11 @@ public class FrameManager implements HueStateObserver {
         }
 
         disposeCurrentWindow();
-        currentFrame = new ConnectFrame(componentHolder, lastX, lastY);
+        try {
+            currentFrame = new ConnectFrame(componentHolder, lastX, lastY);
+        } catch (Throwable t) {
+            logger.error("Exception thrown during frame creation", t);
+        }
         return (HueStateObserver) currentFrame;
     }
 
@@ -106,7 +114,11 @@ public class FrameManager implements HueStateObserver {
         }
 
         disposeCurrentWindow();
-        currentFrame = new MainFrame(componentHolder, lastX, lastY);
+        try {
+            currentFrame = new MainFrame(componentHolder, lastX, lastY);
+        } catch (Throwable t) {
+            logger.error("Exception thrown during frame creation", t);
+        }
     }
 
     private void disposeCurrentWindow() {
