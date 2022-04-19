@@ -26,6 +26,11 @@ public class UpdateChecker {
     }
 
     public boolean isUpdateAvailable() {
+
+        if (currentVersionString.equals("dev")) {
+            return false;
+        }
+
         if (latestVersionString == null) {
             try {
                 latestVersionString = getVersionString();

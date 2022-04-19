@@ -121,21 +121,7 @@ public class LightBeat implements ComponentHolder {
 
     @Override
     public String getVersion() {
-
-        final String ERROR_STRING = "Error";
-
-        Properties properties = new Properties();
-        try {
-            properties.load(LightBeat.class.getClassLoader().getResourceAsStream("metadata.properties"));
-        } catch (IOException e) {
-            return ERROR_STRING;
-        }
-
-        String version = properties.getProperty("version");
-        if (version == null) {
-            version = ERROR_STRING;
-        }
-
-        return version;
+        String version = getClass().getPackage().getImplementationVersion();
+        return (version != null) ? version : "dev";
     }
 }

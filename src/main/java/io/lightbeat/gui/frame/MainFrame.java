@@ -314,8 +314,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
             // only show notification every 4 days, disable if on snapshot version
             long TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS = 345600;
-            if (updateDisableNotificationTime + TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS > (System.currentTimeMillis() / 1000)
-                    || version.endsWith("SNAPSHOT")) {
+            if (updateDisableNotificationTime + TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS > (System.currentTimeMillis() / 1000)) {
                 return;
             }
 
