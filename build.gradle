@@ -6,7 +6,7 @@ plugins {
     id 'io.github.file5.guidesigner' version '1.0.2'
 }
 
-group = 'io.lightbeat'
+group = 'pw.wunderlich.lightbeat'
 version = '1.7.0'
 description = 'LightBeat'
 
@@ -17,7 +17,7 @@ java {
 }
 
 application {
-    mainClass = 'io.lightbeat.LightBeat'
+    mainClass = 'pw.wunderlich.lightbeat.LightBeat'
 }
 
 repositories {
