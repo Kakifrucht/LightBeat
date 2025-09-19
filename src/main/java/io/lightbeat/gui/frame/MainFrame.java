@@ -9,11 +9,11 @@ import io.lightbeat.ComponentHolder;
 import io.lightbeat.audio.AudioReader;
 import io.lightbeat.audio.BeatEvent;
 import io.lightbeat.audio.BeatObserver;
+import io.lightbeat.audio.device.AudioDevice;
 import io.lightbeat.config.ConfigNode;
 import io.lightbeat.gui.swing.*;
 import io.lightbeat.util.UpdateChecker;
 
-import javax.sound.sampled.Mixer;
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
@@ -21,6 +21,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private JIconLabel bannerLabel;
 
+    private JLabel audioSourceLabel;
     private JComboBox<String> deviceSelectComboBox;
     private HelpButton deviceHelpButton;
 
@@ -88,8 +90,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         audioReader = componentHolder.getAudioReader();
 
         // audio source panel
-        refreshDeviceSelectComboBox();
-        deviceHelpButton.addActionListener(e -> openLinkInBrowser("https://lightbeat.io/audioguide"));
+        refreshDeviceSelector();
+        deviceHelpButton.addActionListener(e -> openLinkInBrowser("https://lightbeat.wunderlich.pw/audioguide"));
 
         // colors panel
         colorsPreviewPanel.addMouseListener(new MouseAdapter() {
@@ -161,7 +163,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         urlLabel.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                openLinkInBrowser("https://lightbeat.io");
+                openLinkInBrowser("https://lightbeat.wunderlich.pw");
             }
         });
 
@@ -269,7 +271,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             startButton.setText("Start");
             startButton.setEnabled(false);
 
-            refreshDeviceSelectComboBox();
+            refreshDeviceSelector();
 
             // re-enable startbutton with small delay
             executorService.schedule(() -> runOnSwingThread(() -> {
@@ -312,7 +314,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
             long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
 
-            // only show notification every 4 days, disable if on snapshot version
+            // only show notification every 4 days
             long TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS = 345600;
             if (updateDisableNotificationTime + TIME_UNTIL_UPDATE_NOTIFICATION_SECONDS > (System.currentTimeMillis() / 1000)) {
                 return;
@@ -328,7 +330,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                             "Update Found",
                             JOptionPane.YES_NO_OPTION);
                     if (answerCode == 0) {
-                        openLinkInBrowser("https://lightbeat.io/?downloads");
+                        openLinkInBrowser("https://lightbeat.wunderlich.pw/?downloads");
                     } else if (answerCode == 1) {
                         config.putLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION, (int) (System.currentTimeMillis() / 1000));
                     }
@@ -370,14 +372,14 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             return;
         }
 
-        String selectedMixerName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
-        Mixer mixer = audioReader.getMixerByName(selectedMixerName);
-        if (mixer != null) {
-            config.put(ConfigNode.LAST_AUDIO_SOURCE, selectedMixerName);
+        String selectedDeviceName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
+        AudioDevice audioDevice = audioReader.getDeviceByName(selectedDeviceName);
+        if (audioDevice != null) {
+            config.put(ConfigNode.LAST_AUDIO_SOURCE, selectedDeviceName);
 
             boolean lightsInitialized = hueManager.initializeLights();
             if (lightsInitialized) {
-                boolean audioReaderStarted = audioReader.start(mixer);
+                boolean audioReaderStarted = audioReader.start(audioDevice);
                 if (audioReaderStarted) {
                     startButton.setText("Stop");
                     startButton.requestFocus();
@@ -385,14 +387,16 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                     infoLabel.setText("Running | Some settings cannot be changed during visualisation");
                     componentHolder.getAudioEventManager().registerBeatObserver(this);
                     setElementsEnabled(false);
+                    return;
                 }
             } else {
                 showErrorMessage("Please select at least one light");
+                return;
             }
-        } else {
-            showErrorMessage("Selected audio source is no longer available");
-            refreshDeviceSelectComboBox();
         }
+
+        showErrorMessage("Selected audio source is no longer available");
+        refreshDeviceSelector();
     }
 
     private void stopBeatDetection() {
@@ -434,10 +438,10 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         glowCheckBox.setEnabled(enabled);
     }
 
-    private void refreshDeviceSelectComboBox() {
+    private void refreshDeviceSelector() {
 
-        List<String> mixerNames = audioReader.getSupportedMixers().stream()
-                .map(mixer -> mixer.getMixerInfo().getName())
+        List<String> deviceNames = audioReader.getSupportedDevices().stream()
+                .map(AudioDevice::getName)
                 .collect(Collectors.toList());
 
         String lastSource;
@@ -450,15 +454,19 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         // add mixer names to combobox
         deviceSelectComboBox.removeAllItems();
         if (lastSource != null) {
-            mixerNames.stream()
+            deviceNames.stream()
                     .filter(name -> name.equals(lastSource))
                     .findFirst()
                     .ifPresent(name -> deviceSelectComboBox.addItem(name));
         }
 
-        mixerNames.stream()
+        deviceNames.stream()
                 .filter(name -> !name.equals(lastSource))
-                .forEach(name -> deviceSelectComboBox.addItem(name));
+                .forEach(deviceSelectComboBox::addItem);
+
+        if (deviceNames.stream().anyMatch(name -> name.startsWith("Loopback: "))) {
+            audioSourceLabel.setText("Select your main audio devices Loopback, \"Stereo Mix\" or a virtual audio cable for best results.");
+        }
     }
 
     private void updateLightsPanel() {

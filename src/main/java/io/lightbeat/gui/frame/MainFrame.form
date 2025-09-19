@@ -34,8 +34,8 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="lightbeat.io" noi18n="true"/>
-              <toolTipText value="Click to open lightbeat.io in your browser."/>
+              <text value="lightbeat.wunderlich.pw" noi18n="true"/>
+              <toolTipText value="Click to open lightbeat.wunderlich.pw in your browser."/>
             </properties>
           </component>
         </children>
@@ -133,7 +133,7 @@
                   <font size="16"/>
                 </border>
                 <children>
-                  <component id="f5f3" class="javax.swing.JLabel">
+                  <component id="f5f3" class="javax.swing.JLabel" binding="audioSourceLabel">
                     <constraints>
                       <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
@@ -154,15 +154,16 @@
                           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
                         <properties>
-                          <toolTipText value="&lt;html&gt;&#10;Select the audio device that will be read from.&lt;br&gt;You can always use your systems microphone, however for best results&lt;br&gt;it is recommended to select &quot;Stereo Mix&quot; (if available, sometimes called &quot;Wave&quot;).&lt;br&gt;&lt;br&gt;Alternatively you can install a virtual audio cable, to directly read your systems audio.&lt;br&gt;This is necessary if you don't have a microphone or want to use headphones.&lt;br&gt;Click on the &quot;?&quot; button for more setup information.&#10;&lt;/html&gt;"/>
+                          <toolTipText value="&lt;html&gt;&#10;Select the audio device that will be read from.&lt;br&gt;On Windows you can use the &quot;Loopback&quot; device corresponding to your speaker setup.&lt;br&gt;Using your systems microphone is also possible, however for best results it is recommended&lt;br&gt;to select a stereo mix device if available (sometimes called &quot;Wave&quot;/&quot;What you hear&quot;).&lt;br&gt;&lt;br&gt;Alternatively you can install a virtual audio cable. This is necessary if you don't have a&lt;br&gt;microphone or want to use headphones, have no stereo mix device and are not on Windows.&lt;br&gt;Click on the &quot;?&quot; button for more setup information.&#10;&lt;/html&gt;"/>
                         </properties>
                       </component>
                       <component id="6976a" class="com.github.weisj.darklaf.components.help.HelpButton" binding="deviceHelpButton">
                         <constraints>
-                          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
                         </constraints>
                         <properties>
                           <toolTipText value="Opens audio setup help in your browser."/>
+                          <useColoredIcon value="true"/>
                         </properties>
                       </component>
                       <component id="a54fc" class="io.lightbeat.gui.swing.JConfigCheckBox" binding="bassOnlyModeCheckBox" custom-create="true">
@@ -281,7 +282,7 @@
                         <properties>
                           <maximum value="1000"/>
                           <minimum value="100"/>
-                          <toolTipText value="Minimum time in milliseconds until the next beat can be detected.&lt;br&gt;Setting this value too low might cause network congestion and additional latency, setting it too high might skip beats.&lt;br&gt;The best setting is dependant on your individual setup. Try setting it as low as possible."/>
+                          <toolTipText value="Minimum time in milliseconds until the next beat can be detected.&lt;br&gt;Setting this value too low might cause network congestion and additional latency, setting it too high might skip beats.&lt;br&gt;The best setting is dependent on your individual setup. Try setting it as low as possible."/>
                         </properties>
                       </component>
                       <component id="33417" class="javax.swing.JLabel">
@@ -556,7 +557,7 @@
             <properties>
               <maximum value="8"/>
               <minimum value="1"/>
-              <toolTipText value="The maximum transition time for the light fade after a beat.&lt;br&gt;The transition time is dependant on the BPM of the audio that is being listened to."/>
+              <toolTipText value="The maximum transition time for the light fade after a beat.&lt;br&gt;The transition time is dependent on the BPM of the audio that is being listened to."/>
             </properties>
           </component>
         </children>
