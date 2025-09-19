@@ -28,11 +28,11 @@ class TransitionTimeCalibrator {
     }
 
     /**
-     * Gets the transition time for a given time since last beat ocurred.
+     * Gets the transition time for a given time since last beat occurred.
      * Returned value is higher if the timeSinceLastBeat is higher than average.
      * The first {@link #CALIBRATION_SIZE} entries will return given (maxTransitionTime / 2).
      *
-     * @param timeSinceLastBeat time in milliseconds since the last beat ocurred
+     * @param timeSinceLastBeat time in milliseconds since the last beat occurred
      * @return Integer that is at least {@link #MIN_TRANSITION_TIME} and at max the given maxTransitionTime in
      *          the constructor
      */

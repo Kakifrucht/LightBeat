@@ -24,7 +24,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Main application frame. Interface to set the applications settings and start the magic.
@@ -442,7 +441,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         List<String> deviceNames = audioReader.getSupportedDevices().stream()
                 .map(AudioDevice::getName)
-                .collect(Collectors.toList());
+                .toList();
 
         String lastSource;
         if (deviceSelectComboBox.getItemCount() == 0) {

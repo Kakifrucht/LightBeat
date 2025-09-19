@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Entry point for application. Starts modules to bootstrap the application.
- * Implements {@link ComponentHolder} interface for accessing seperate modules.
+ * Implements {@link ComponentHolder} interface for accessing separate modules.
  *
  * @author Fabian Prieto Wunderlich
  */
@@ -67,7 +67,7 @@ public class LightBeat implements ComponentHolder {
     }
 
     private AccessPoint getLastConnectedLegacy() {
-        // will be removed sooner or later, alongside their confignodes
+        // will be removed sooner or later, alongside their config nodes
         String oldIp = config.get(ConfigNode.BRIDGE_IPADDRESS_LEGACY);
         if (oldIp != null) {
             String oldUsername = config.get(ConfigNode.BRIDGE_USERNAME_LEGACY);

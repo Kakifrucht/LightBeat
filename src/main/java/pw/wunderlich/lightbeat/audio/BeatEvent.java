@@ -3,11 +3,7 @@ package pw.wunderlich.lightbeat.audio;
 /**
  * Event called by a {@link BeatEventManager} to be passed to all {@link BeatObserver}'s.
  */
-public class BeatEvent {
-
-    private final double triggeringAmplitude;
-    private final double average;
-
+public record BeatEvent(double triggeringAmplitude, double average) {
 
     /**
      * Construct a BeatEvent consisting of silence.
@@ -31,24 +27,24 @@ public class BeatEvent {
      * Construct a BeatEvent when a beat was detected.
      *
      * @param triggeringAmplitude beat amplitude as normalized double value
-     * @param average amplitude average when the beat was detected as normalized double value
+     * @param average             amplitude average when the beat was detected as normalized double value
      */
-    BeatEvent(double triggeringAmplitude, double average) {
-        this.triggeringAmplitude = triggeringAmplitude;
-        this.average = average;
+    public BeatEvent {
     }
 
     /**
      * @return amplitude as normalized double that triggered the event dispatch
      */
-    public double getTriggeringAmplitude() {
+    @Override
+    public double triggeringAmplitude() {
         return triggeringAmplitude;
     }
 
     /**
      * @return average amplitude as normalized double when event was dispatched
      */
-    public double getAverage() {
+    @Override
+    public double average() {
         return average;
     }
 

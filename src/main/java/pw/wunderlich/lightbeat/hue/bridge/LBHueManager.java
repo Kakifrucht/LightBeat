@@ -106,7 +106,7 @@ public class LBHueManager implements HueManager {
 
     @Override
     public void setAttemptConnection(AccessPoint accessPoint) {
-        String bridgeIp = accessPoint.getIp();
+        String bridgeIp = accessPoint.ip();
         currentState = ManagerState.ATTEMPTING_CONNECTION;
         stateObserver.isAttemptingConnection();
         BridgeConnection.ConnectionListener listener = new BridgeConnection.ConnectionListener() {

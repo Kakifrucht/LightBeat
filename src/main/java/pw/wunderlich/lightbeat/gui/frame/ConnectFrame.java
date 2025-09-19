@@ -164,18 +164,11 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
     @Override
     public void connectionWasLost(BridgeConnection.ConnectionListener.Error error) {
-        String message = "";
-        switch (error) {
-            case CONNECTION_LOST:
-                message = "Connection was lost";
-                break;
-            case EXCEPTION:
-            case NOT_A_BRIDGE:
-                message = "Connection could not be established";
-                break;
-            case NO_LIGHTS:
-                message = "This bridge has no valid lights exposed";
-        }
+        String message = switch (error) {
+            case CONNECTION_LOST -> "Connection was lost";
+            case EXCEPTION, NOT_A_BRIDGE -> "Connection could not be established";
+            case NO_LIGHTS -> "This bridge has no valid lights exposed";
+        };
 
         List<AccessPoint> previousBridges = hueManager.getPreviousBridges();
         if (previousBridges.isEmpty()) {
@@ -199,7 +192,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             selectBridgeBox.removeAllItems();
 
             bridges.stream()
-                    .map(bridge -> (bridge.hasKey() ? "Reconnect to bridge at " : "Bridge at ") + bridge.getIp())
+                    .map(bridge -> (bridge.hasKey() ? "Reconnect to bridge at " : "Bridge at ") + bridge.ip())
                     .forEach(selectBridgeBox::addItem);
 
             selectBridgeBox.addItem("Enter IP manually");

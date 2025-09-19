@@ -86,12 +86,12 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
         this.beatInterpreter = new BeatInterpreter(config);
 
         LBAudioFormat audioFormat = audioDevice.getAudioFormat();
-        int bytesPerSecond = (int) (audioFormat.getSampleRate() * audioFormat.getBytesPerFrame());
+        int bytesPerSecond = (int) (audioFormat.sampleRate() * audioFormat.getBytesPerFrame());
         int bytesPerChunk = bytesPerSecond / AMPLITUDES_PER_SECOND;
         int samplesPerChunk = bytesPerChunk / audioFormat.getBytesPerFrame();
 
         audioBuffer = ByteBuffer.allocate(bytesPerChunk);
-        audioBuffer.order(audioFormat.isLittleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);//TODO why does big endian not work
+        audioBuffer.order(audioFormat.littleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);//TODO why does big endian not work
 
         //TODO investigate amplitude differences between jitsi and java audio api
         long intervalMillis = 1000 / AMPLITUDES_PER_SECOND;
@@ -129,9 +129,9 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
             // Convert to normalized values
             double[] normalizedAudioBuffer = new double[samplesPerChunk];
             for (int i = 0; i < normalizedAudioBuffer.length; i++) {
-                int bytePosition = i * audioFormat.getBytesPerSample();
+                int bytePosition = i * audioFormat.bytesPerSample();
 
-                if (audioFormat.getBytesPerSample() == 2) {
+                if (audioFormat.bytesPerSample() == 2) {
                     normalizedAudioBuffer[i] = audioBuffer.getShort(bytePosition) / (double) Short.MAX_VALUE;
                 } else {
                     normalizedAudioBuffer[i] = audioBuffer.get(bytePosition) / (double) Byte.MAX_VALUE;
@@ -177,7 +177,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
         fft.realForward(normalizedSampleArray);
 
         // Calculate the frequency represented by each bin in the FFT output.
-        double freqPerBin = format.getSampleRate() / sampleCount;
+        double freqPerBin = format.sampleRate() / sampleCount;
         int cutoffBin = (int) (BASS_CUTOFF_HZ / freqPerBin);
 
         for (int i = cutoffBin; i < sampleCount / 2; i++) {

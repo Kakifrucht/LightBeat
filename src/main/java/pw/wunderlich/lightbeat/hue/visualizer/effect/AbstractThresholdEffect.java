@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
  * Adds custom brightness threshold and, if met, activation probability parameters
  * to effects that shouldn't always be run. They will stop running once the current
  * brightness falls below the given threshold. Will also
- * disactivate the effect if no beat was received for a while. Calls {@link #executionDone(LightUpdate)}
+ * deactivate the effect if no beat was received for a while. Calls {@link #executionDone(LightUpdate)}
  * to allow effects to clean up.
  */
 public abstract class AbstractThresholdEffect extends AbstractEffect {

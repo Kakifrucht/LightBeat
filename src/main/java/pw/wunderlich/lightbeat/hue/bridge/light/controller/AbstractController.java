@@ -45,7 +45,7 @@ public abstract class AbstractController {
     }
 
     /**
-     * Unreserve this controller.
+     * Un-reserve this controller.
      *
      * @param effect effect to deregister
      * @return true if effect was deregistered

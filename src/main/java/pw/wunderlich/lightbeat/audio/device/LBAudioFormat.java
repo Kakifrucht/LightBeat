@@ -1,24 +1,13 @@
 package pw.wunderlich.lightbeat.audio.device;
 
+import org.jetbrains.annotations.NotNull;
+
 import javax.media.format.AudioFormat;
 
 /**
  * Wrapper around different audio format implementations.
  */
-public class LBAudioFormat {
-
-    private final double sampleRate;
-    private final boolean littleEndian;
-    private final int channels;
-    private final int bytesPerSample;
-
-
-    LBAudioFormat(double sampleRate, boolean littleEndian, int channels, int bytesPerSample) {
-        this.sampleRate = sampleRate;
-        this.littleEndian = littleEndian;
-        this.channels = channels;
-        this.bytesPerSample = bytesPerSample;
-    }
+public record LBAudioFormat(double sampleRate, boolean littleEndian, int channels, int bytesPerSample) {
 
     public LBAudioFormat(AudioFormat format) {
         this(
@@ -45,22 +34,7 @@ public class LBAudioFormat {
         return channels * bytesPerSample;
     }
 
-    public double getSampleRate() {
-        return sampleRate;
-    }
-
-    public boolean isLittleEndian() {
-        return littleEndian;
-    }
-
-    public int getChannels() {
-        return channels;
-    }
-
-    public int getBytesPerSample() {
-        return bytesPerSample;
-    }
-
+    @NotNull
     @Override
     public String toString() {
         return "LBAudioFormat{" +

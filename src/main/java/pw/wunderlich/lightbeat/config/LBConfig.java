@@ -132,7 +132,7 @@ public class LBConfig implements Config {
     public List<String> getStringList(ConfigNode node) {
 
         String value = preferences.get(node.getKey(), null);
-        if (value == null || value.length() == 0) {
+        if (value == null || value.isEmpty()) {
             value = getDefault(node);
             if (value == null || !value.contains(LIST_SPACER)) {
                 return new ArrayList<>();
@@ -154,7 +154,7 @@ public class LBConfig implements Config {
         for (Object listEntry : list) {
             listToString.append(listEntry).append(LIST_SPACER);
         }
-        if (listToString.length() > 0) {
+        if (!listToString.isEmpty()) {
             listToString.setLength(listToString.length() - 1);
         }
 

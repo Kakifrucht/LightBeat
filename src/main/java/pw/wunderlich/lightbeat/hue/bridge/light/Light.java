@@ -42,7 +42,7 @@ public interface Light {
      * and updates the light accordingly. Will only send the update if resulting light state would cause an update.
      * Resets the builder for the next call of this method.
      *
-     * @param transitionTime if transitionTime > 0, will cause a light fade aswell in 100 ms steps
+     * @param transitionTime if transitionTime > 0, will cause a light fade as well in 100 ms steps
      *                       (fadeTime of 2 would be 200ms fade)
      */
     void doLightUpdate(int transitionTime);

@@ -97,7 +97,7 @@ class BrightnessCalibrator {
 
         double brightnessDifference = brightnessPercentage - currentBrightnessPercentage;
 
-        // if ceilings are reached always do brightness update if necessary
+        // if ceilings are reached always do brightness update if necessary,
         // if reducing brightness ensure that reduction threshold is met
         boolean doBrightnessChange = forceBrightnessChange
                 || (Math.abs(brightnessDifference) > BRIGHTNESS_CHANGE_MINIMUM_PERCENTAGE

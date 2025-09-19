@@ -15,11 +15,11 @@ import java.util.stream.Collectors;
 
 /**
  * Class handling a connection to a bridge.
- * The constructor checks if given accesspoint is a bridge and will either initialize pushlinking
+ * The constructor checks if given access point is a bridge and will either initialize pushlinking
  * or start a recurring task to check if the connection is still alive.
  * Bridge API calls are handled asynchronously, callbacks are given through a listener
  * implementing the {@link ConnectionListener} interface.
- *
+ * <p>
  * Bridge state is cached, which allows for state non-blocking state retrieval on {@link Light} objects.
  */
 public class BridgeConnection {
@@ -44,7 +44,7 @@ public class BridgeConnection {
         this.connectionListener = listener;
 
         // check if is bridge
-        Future<Boolean> isBridgeFuture = Hue.hueBridgeConnectionBuilder(accessPoint.getIp()).isHueBridgeEndpoint();
+        Future<Boolean> isBridgeFuture = Hue.hueBridgeConnectionBuilder(accessPoint.ip()).isHueBridgeEndpoint();
         preconnectPushlinkTask = executorService.schedule(() -> {
             try {
                 boolean isBridge = isBridgeFuture.get(5, TimeUnit.SECONDS);
@@ -56,7 +56,7 @@ public class BridgeConnection {
                     }
 
                 } else {
-                    logger.info("Endpoint at {} is not a hue bridge", accessPoint.getIp());
+                    logger.info("Endpoint at {} is not a hue bridge", accessPoint.ip());
                     connectionListener.connectionError(ConnectionListener.Error.NOT_A_BRIDGE);
                     return;
                 }
@@ -70,7 +70,7 @@ public class BridgeConnection {
 
             // start pushlink
             connectionListener.pushlinkRequired();
-            Future<String> pushlinkFuture = Hue.hueBridgeConnectionBuilder(accessPoint.getIp())
+            Future<String> pushlinkFuture = Hue.hueBridgeConnectionBuilder(accessPoint.ip())
                     .initializeApiConnection(APP_NAME);
 
             try {
@@ -78,7 +78,7 @@ public class BridgeConnection {
                 if (pushlinkFuture.isCancelled()) {
                     logger.info("Pushlinking failed");
                 }
-                scheduleHeartbeat(new AccessPoint(accessPoint.getIp(), key));
+                scheduleHeartbeat(new AccessPoint(accessPoint.ip(), key));
             } catch (InterruptedException ignored) {
             } catch (Exception e) {
                 if (e.getMessage().contains("link button not pressed")) {
@@ -94,7 +94,7 @@ public class BridgeConnection {
 
     private void scheduleHeartbeat(AccessPoint accessPoint) {
 
-        this.hue = new Hue(accessPoint.getIp(), accessPoint.getKey());
+        this.hue = new Hue(accessPoint.ip(), accessPoint.key());
         hue.setCaching(true);
 
         heartbeatTask = executorService.scheduleAtFixedRate(() -> {
@@ -116,7 +116,7 @@ public class BridgeConnection {
                 if (getLights().isEmpty()) {
                     connectionListener.connectionError(ConnectionListener.Error.NO_LIGHTS);
                 } else {
-                    connectionListener.connectionSuccess(accessPoint.getKey());
+                    connectionListener.connectionSuccess(accessPoint.key());
                 }
             }
         }, 0, CONNECTION_CHECK_SECONDS, TimeUnit.SECONDS);

@@ -71,9 +71,9 @@ public class HueBeatObserver implements BeatObserver {
     @Override
     public void beatReceived(BeatEvent event) {
 
-        amplitudeHistory.add(event.getTriggeringAmplitude());
+        amplitudeHistory.add(event.triggeringAmplitude());
 
-        double amplitudeDifference = event.getTriggeringAmplitude() - amplitudeHistory.getCurrentAverage();
+        double amplitudeDifference = event.triggeringAmplitude() - amplitudeHistory.getCurrentAverage();
         BrightnessCalibrator.BrightnessData data = brightnessCalibrator.getBrightness(amplitudeDifference);
 
         passDataToEffectPipe(data, true);

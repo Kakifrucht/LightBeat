@@ -12,8 +12,8 @@ public interface Color {
     float getSaturation();
 
     /**
-     * @param derivationRange range for new hue and saturation values, can be both added and substracted
-     * @return new color that is similiar from this one
+     * @param derivationRange range for new hue and saturation values, can be both added and subtracted
+     * @return new color that is similar from this one
      */
     Color getDerivedColor(double derivationRange);
 
@@ -21,7 +21,7 @@ public interface Color {
      * @param color color to compare to
      * @param colorRandomizationRange range that was used for a potential {@link #getDerivedColor(double)} call
      * @return true if supplied argument could be a result of calling {@link #getDerivedColor(double)}
-     *         or if {@link #equals(Object)} is true
+     *         or if it is the same color
      */
     boolean isSimilar(Color color, double colorRandomizationRange);
 }
