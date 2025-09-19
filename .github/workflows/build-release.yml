@@ -65,12 +65,16 @@ jobs:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.artifact_path }}
 
-      - name: Upload JAR Artifact (Linux build only)
+      - name: Bundle JAR and Launch Script into ZIP
+        if: matrix.os == 'ubuntu-22.04'
+        run: ./gradlew bundleReleaseZip
+
+      - name: Upload ZIP Bundle Artifact
         if: matrix.os == 'ubuntu-22.04'
         uses: actions/upload-artifact@v4
         with:
-          name: LightBeat-${{ github.ref_name }}-JAR
-          path: build/libs/LightBeat-*-all.jar
+          name: LightBeat-${{ github.ref_name }}-All
+          path: build/distributions/LightBeat-*.zip
 
   create-release:
     name: Create GitHub Release
@@ -95,4 +99,4 @@ jobs:
             installers/LightBeat-${{ github.ref_name }}-Windows/*
             installers/LightBeat-${{ github.ref_name }}-macOS/*
             installers/LightBeat-${{ github.ref_name }}-Linux/*
-            installers/LightBeat-${{ github.ref_name }}-JAR/*
+            installers/LightBeat-${{ github.ref_name }}-All/*
