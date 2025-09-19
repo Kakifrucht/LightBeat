@@ -234,7 +234,10 @@ public class LBHueManager implements HueManager {
     @Override
     public void recoverOriginalState() {
         if (originalLightStates != null) {
-            originalLightStates.forEach(lightQueue::addUpdate);
+            originalLightStates.forEach((light, state) -> {
+                state.removeAlert();
+                lightQueue.addUpdate(light, state);
+            });
             originalLightStates = null;
         }
     }
