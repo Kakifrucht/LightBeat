@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  */
 public class LBAudioReader implements BeatEventManager, AudioReader {
 
-    private static final int AMPLITUDES_PER_SECOND = 100;
+    private static final int AMPLITUDES_PER_SECOND = 50;
     // Define a specific frequency for the bass cutoff instead of a magic percentage.
     private static final double BASS_CUTOFF_HZ = 200.0;
     private static final double MINIMUM_AMPLITUDE = 0.005d;
@@ -91,11 +91,9 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
         int samplesPerChunk = bytesPerChunk / audioFormat.getBytesPerFrame();
 
         audioBuffer = ByteBuffer.allocate(bytesPerChunk);
-        audioBuffer.order(audioFormat.littleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);//TODO why does big endian not work
+        audioBuffer.order(audioFormat.littleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
 
-        //TODO investigate amplitude differences between jitsi and java audio api
-        long intervalMillis = 1000 / AMPLITUDES_PER_SECOND;
-
+        final long intervalMillis = 1000 / AMPLITUDES_PER_SECOND;
         future = executorService.scheduleAtFixedRate(() -> {
             if (!isOpen()) {
                 logger.error("Selected audio stream is no longer available");

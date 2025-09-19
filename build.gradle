@@ -94,11 +94,9 @@ shadowJar {
 tasks.register('bundleReleaseZip', Zip) {
     dependsOn shadowJar
 
-    // Set the group and description for better organization in Gradle's task list.
     group = 'Distribution'
     description = 'Bundles the application JAR and launcher script into a ZIP file.'
 
-    // Add the output from the shadowJar task (e.g., LightBeat-1.7.0-all.jar)
     from shadowJar.archiveFile
     from('src/main/resources/launch_lightbeat.sh') {
         filePermissions {
