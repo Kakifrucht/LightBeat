@@ -1,0 +1,154 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.gradleup.shadow' version '9.1.0'
+    id 'com.datavitec.runtime' version '1.13.1-patch-2'
+    id 'io.github.file5.guidesigner' version '1.0.2'
+}
+
+group = 'io.lightbeat'
+version = '1.7.0'
+description = 'LightBeat'
+
+// Set Java version compatibility
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+application {
+    mainClass = 'io.lightbeat.LightBeat'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+configurations {
+    windowsNatives
+}
+
+dependencies {
+    implementation 'io.github.zeroone3010:yetanotherhueapi:2.7.0-SNAPSHOT' // github.com/Kakifrucht/yetanotherhueapi -> install to maven local
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'org.slf4j:slf4j-simple:1.7.36'
+    implementation 'org.slf4j:jul-to-slf4j:1.7.36'
+    implementation 'com.google.guava:guava:33.2.1-jre'
+    implementation 'com.github.wendykierp:JTransforms:3.1'
+    implementation 'com.github.weisj:darklaf-core:3.1.1'
+    implementation 'com.jetbrains.intellij.java:java-gui-forms-rt:222.1149'
+
+    compileOnly 'org.jitsi:libjitsi:1.1-34-gb93ce2ee'
+    windowsNatives 'org.jitsi:libjitsi:1.1-34-gb93ce2ee'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation 'org.mockito:mockito-core:4.5.1'
+}
+
+tasks.named('instrumentForms') {
+    inputs.files(sourceSets.main.allSource.filter { it.name.endsWith('.form') })
+    outputs.dir(sourceSets.main.output.classesDirs)
+}
+
+def libjitsiAddOpensArgs = [ '--add-opens', 'java.base/java.lang=ALL-UNNAMED' ]
+runShadow {
+    jvmArgs libjitsiAddOpensArgs
+}
+
+boolean isWindowsBuild = project.hasProperty('windows-msi')
+boolean isMacBuild = project.hasProperty('macos-dmg')
+boolean isLinuxBuild = project.hasProperty('linux-deb')
+
+// If no property is specified, fall back to detecting the OS
+if (!isWindowsBuild && !isMacBuild && !isLinuxBuild) {
+    String os = System.getProperty("os.name").toLowerCase()
+    if (os.contains("win")) isWindowsBuild = true
+    if (os.contains("mac")) isMacBuild = true
+    if (os.contains("nix") || os.contains("nux")) isLinuxBuild = true
+}
+
+shadowJar {
+    archiveBaseName = 'LightBeat'
+    manifest {
+        attributes(
+                'Main-Class': application.getMainClass(),
+                'Implementation-Version': project.version
+        )
+    }
+    exclude 'jpackage/*'
+
+    if (isWindowsBuild) {
+        // For Windows, include the Jitsi native libraries
+        configurations = [project.configurations.runtimeClasspath, project.configurations.windowsNatives]
+        exclude 'linux-*/**'
+        exclude 'darwin-*/**'
+    } else {
+        // For Mac/Linux, use only the runtime classpath
+        configurations = [project.configurations.runtimeClasspath]
+    }
+}
+
+runtime {
+    if (isWindowsBuild) {
+        launcher {
+            jvmArgs = libjitsiAddOpensArgs
+        }
+    }
+
+    modules = ['jdk.crypto.ec']
+    additive = true
+
+    jpackage {
+
+        // Windows MSI Configuration
+        if (isWindowsBuild) {
+            installerType = 'msi'
+            imageOptions = [
+                    '--icon', 'src/main/resources/jpackage/icon.ico',
+                    '--add-launcher', "${project.name}-console=src/main/resources/jpackage/debug_build.properties",
+            ]
+            installerOptions = [
+                    '--vendor', 'wunderlich.pw',
+                    '--win-menu',
+                    '--win-menu-group', 'LightBeat',
+                    '--win-shortcut',
+                    '--win-upgrade-uuid', 'c7d7f7e9-7b5c-4f1a-9a0e-8f2c3d4b5e6f',
+            ]
+        }
+        // macOS DMG Configuration
+        else if (isMacBuild) {
+            installerType = 'dmg'
+            imageOptions = [
+                    '--icon', 'src/main/resources/jpackage/icon.icns'
+            ]
+            installerOptions = [
+                    '--vendor', 'wunderlich.pw',
+                    '--mac-package-name', 'LightBeat',
+            ]
+        }
+        // Linux DEB Configuration
+        else if (isLinuxBuild) {
+            installerType = 'deb'
+            imageOptions = [
+                    '--icon', 'src/main/resources/jpackage/icon.png'
+            ]
+            installerOptions = [
+                    '--vendor', 'wunderlich.pw',
+                    '--linux-deb-maintainer', 'lightbeat@wunderlich.pw',
+                    '--linux-menu-group', 'Audio',
+                    '--linux-app-category', 'Audio',
+                    '--linux-shortcut'
+            ]
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+}
