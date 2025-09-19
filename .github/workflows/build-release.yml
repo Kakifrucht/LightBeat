@@ -1,0 +1,98 @@
+name: Build & Release Installers
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-installers:
+    name: Build on ${{ matrix.os }}
+    # Use a matrix to run the same steps on different operating systems
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            artifact_name: LightBeat-${{ github.ref_name }}-Windows
+            build_command: .\gradlew.bat jpackage -Pwindows-msi
+            artifact_path: 'build/jpackage/LightBeat-*.msi'
+
+          - os: macos-latest
+            artifact_name: LightBeat-${{ github.ref_name }}-macOS
+            build_command: ./gradlew jpackage -Pmacos-dmg
+            artifact_path: 'build/jpackage/LightBeat-*.dmg'
+
+          - os: ubuntu-22.04
+            artifact_name: LightBeat-${{ github.ref_name }}-Linux
+            build_command: ./gradlew jpackage -Plinux-deb
+            artifact_path: 'build/jpackage/*.deb'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Clone Maven Dependency
+        uses: actions/checkout@v4
+        with:
+          repository: Kakifrucht/yetanotherhueapi
+          path: yetanotherhueapi_repo
+
+      - name: Install Maven Dependency
+        working-directory: yetanotherhueapi_repo
+        shell: bash
+        run: |
+          echo "Building and installing dependency to Maven Local..."
+          mvn install
+          echo "Dependency installed successfully."
+
+      - name: Make gradlew executable
+        if: runner.os != 'Windows'
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ${{ matrix.build_command }}
+
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_path }}
+
+      - name: Upload JAR Artifact (Linux build only)
+        if: matrix.os == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LightBeat-${{ github.ref_name }}-JAR
+          path: build/libs/LightBeat-*-all.jar
+
+  create-release:
+    name: Create GitHub Release
+    needs: build-installers
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: installers/
+
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            installers/LightBeat-${{ github.ref_name }}-Windows/*
+            installers/LightBeat-${{ github.ref_name }}-macOS/*
+            installers/LightBeat-${{ github.ref_name }}-Linux/*
+            installers/LightBeat-${{ github.ref_name }}-JAR/*
