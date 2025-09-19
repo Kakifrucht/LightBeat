@@ -239,6 +239,7 @@ public class LBHueManager implements HueManager {
                 lightQueue.addUpdate(light, state);
             });
             originalLightStates = null;
+            bridgeConnection.refresh();
         }
     }
 
