@@ -6,8 +6,8 @@ import io.lightbeat.hue.bridge.light.Light;
 import io.lightbeat.hue.visualizer.LightUpdate;
 
 /**
- * Sends the same fade color to all lights to cause a continous color update fade effect.
- * Sets the main lights to the fade color during the beat while reselecting a new color
+ * Sends the same fade color to all lights to cause a continuous color update fade effect.
+ * Sets the main lights to the fade color during the beat while re-selecting a new color
  * on every beat.
  */
 public class ColorFadeEffect extends AbstractThresholdEffect {

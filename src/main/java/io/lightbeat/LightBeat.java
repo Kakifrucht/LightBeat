@@ -43,7 +43,7 @@ public class LightBeat implements ComponentHolder {
 
     private LightBeat() {
 
-        logger.info("LightBeat v" + getVersion() + " starting");
+        logger.info("LightBeat v{} starting", getVersion());
 
         executorService = Executors.newScheduledThreadPool(2);
         config = new LBConfig();
@@ -109,14 +109,18 @@ public class LightBeat implements ComponentHolder {
         audioReader.stop();
         frameManager.shutdown();
         hueManager.shutdown();
+
+        boolean didShutDown = false;
         try {
-            executorService.awaitTermination(5, TimeUnit.SECONDS);
+            didShutDown = executorService.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             logger.warn("Executor service forcefully shut down, some tasks have not completed");
         }
 
         // ensure that we exit
-        Runtime.getRuntime().exit(0);
+        if (!didShutDown) {
+            Runtime.getRuntime().exit(0);
+        }
     }
 
     @Override

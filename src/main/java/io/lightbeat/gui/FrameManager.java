@@ -42,7 +42,7 @@ public class FrameManager implements HueStateObserver {
         hueManager.setStateObserver(this);
 
         boolean lightTheme = componentHolder.getConfig().getBoolean(ConfigNode.WINDOW_LIGHT_THEME);
-        LafManager.install(lightTheme ? new IntelliJTheme() : new DarculaTheme());
+        LafManager.installTheme(lightTheme ? new IntelliJTheme() : new DarculaTheme());
     }
 
     public void shutdown() {
