@@ -50,20 +50,26 @@ public class LBColor implements Color {
 
     @Override
     public Color getDerivedColor(double derivationBound) {
-        return new LBColor(getRandomizedFloat(hue, derivationBound), getRandomizedFloat(saturation, derivationBound));
+        float newHue = getRandomizedFloat(this.hue, derivationBound, true);
+        float newSaturation = getRandomizedFloat(this.saturation, derivationBound, false);
+        return new LBColor(newHue, newSaturation);
     }
 
-    private float getRandomizedFloat(float toRandomize, double derivationBound) {
-        if (derivationBound == 0d) {
-            return toRandomize;
+    private float getRandomizedFloat(float value, double bound, boolean isCyclical) {
+        if (bound == 0d) {
+            return value;
         }
-        // add random value between -derivationBound and +derivationBound
-        double normalizationVal = 0.5d / derivationBound;
-        double randomized = toRandomize + ((Math.random() / normalizationVal) - derivationBound);
-        if (0d <= randomized && randomized <= 1d) {
-            return (float) randomized;
+
+        double randomOffset = (Math.random() * 2 * bound) - bound;
+        double randomized = value + randomOffset;
+
+        if (randomized < 0d) {
+            return isCyclical ? (float) (randomized + 1d) : 0f;
         }
-        return (float) (randomized + (randomized < 0d ? 1d : -1d));
+        if (randomized > 1d) {
+            return isCyclical ? (float) (randomized - 1d) : 1f;
+        }
+        return (float) randomized;
     }
 
     @Override
