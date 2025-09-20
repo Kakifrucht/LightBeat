@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'pw.wunderlich.lightbeat'
-version = '1.7.0'
+version = '1.7.1-SNAPSHOT'
 description = 'LightBeat'
 
 // Set Java version compatibility
