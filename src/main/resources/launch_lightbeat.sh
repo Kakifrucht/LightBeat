@@ -40,6 +40,7 @@ show_download_and_exit() {
 
     echo "Please download and install Java 17 (JRE) or later from the link below:"
     echo "$DOWNLOAD_URL"
+    printf "Press [Enter] to close this window. "; read dummy_var
     exit 1
 }
 
@@ -67,6 +68,7 @@ JAR_FILE=$(find . -maxdepth 1 -name "$JAR_PATTERN" -printf '%T@ %p\n' | sort -nr
 if [ -z "$JAR_FILE" ]; then
     echo "❌ Error: No application JAR found matching '$JAR_PATTERN'."
     echo "Please make sure the JAR file is in this directory."
+    printf "Press [Enter] to close this window. "; read dummy_var
     exit 1
 fi
 
@@ -87,6 +89,7 @@ if ! kill -0 "$APP_PID" >/dev/null 2>&1; then
     if [ "$LOGGING_ENABLED" = true ]; then
         echo "Please check the log file for details: $LOG_FILE"
     fi
+    printf "Press [Enter] to close this window. "; read dummy_var
     exit 1
 fi
 
@@ -95,3 +98,4 @@ echo "   - Process ID (PID): $APP_PID"
 if [ "$LOGGING_ENABLED" = true ]; then
     echo "   - Logs are being written to: $LOG_FILE (disable with --no-log flag)"
 fi
+sleep 5

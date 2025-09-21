@@ -104,8 +104,19 @@ tasks.register('bundleReleaseZip', Zip) {
         }
     }
 
+    from('THIRD_PARTY_LICENSES.md')
+
     archiveFileName = "LightBeat-${project.version}.zip"
     destinationDirectory = layout.buildDirectory.dir('distributions')
+}
+
+jpackageImage {
+    doLast {
+        copy {
+            from('THIRD_PARTY_LICENSES.md')
+            into(layout.buildDirectory.dir("jpackage/${description}"))
+        }
+    }
 }
 
 runtime {
