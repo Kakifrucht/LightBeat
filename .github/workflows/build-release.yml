@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-installers:
-    name: Build on ${{ matrix.os }} (${{ runner.arch }})
+    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
