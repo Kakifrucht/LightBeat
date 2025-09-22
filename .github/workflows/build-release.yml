@@ -7,26 +7,15 @@ on:
 
 jobs:
   build-installers:
-    name: Build on ${{ matrix.os }}
-    # Use a matrix to run the same steps on different operating systems
+    name: Build on ${{ matrix.os }} (${{ runner.arch }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
           - os: windows-latest
-            artifact_name: LightBeat-${{ github.ref_name }}-Windows
-            build_command: .\gradlew.bat jpackage -Pwindows-msi
-            artifact_path: 'build/jpackage/LightBeat-*.msi'
-
+          - os: windows-latest-arm64
           - os: macos-latest
-            artifact_name: LightBeat-${{ github.ref_name }}-macOS
-            build_command: ./gradlew jpackage -Pmacos-dmg
-            artifact_path: 'build/jpackage/LightBeat-*.dmg'
-
           - os: ubuntu-22.04
-            artifact_name: LightBeat-${{ github.ref_name }}-Linux
-            build_command: ./gradlew jpackage -Plinux-deb
-            artifact_path: 'build/jpackage/*.deb'
 
     steps:
       - name: Checkout repository
@@ -37,6 +26,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+          architecture: ${{ runner.arch }}
 
       - name: Clone Maven Dependency
         uses: actions/checkout@v4
@@ -56,25 +46,62 @@ jobs:
         if: runner.os != 'Windows'
         run: chmod +x ./gradlew
 
-      - name: Build with Gradle
-        run: ${{ matrix.build_command }}
+      # --- Build Native Installers ---
+      - name: Build Native Installer (MSI, DEB, DMG)
+        # This step runs for all jobs EXCEPT Windows ARM64
+        if: runner.os != 'Windows' || runner.arch != 'ARM64'
+        run: |
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            ./gradlew.bat jpackage
+          else
+            ./gradlew jpackage
+          fi
+        shell: bash
 
-      - name: Upload Installer Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: ${{ matrix.artifact_path }}
+      - name: Build Windows App Image
+        if: runner.os == 'Windows'
+        run: .\gradlew.bat jpackage -Pwindows-appimage
 
+      # --- Platform-Agnostic ZIP Bundle ---
       - name: Bundle JAR and Launch Script into ZIP
-        if: matrix.os == 'ubuntu-22.04'
+        if: runner.os == 'Linux'
         run: ./gradlew bundleReleaseZip
 
+      # --- Artifact Upload Steps ---
+      - name: Upload MSI Installer Artifact
+        if: runner.os == 'Windows' && runner.arch == 'X64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LightBeat-${{ github.ref_name }}-Windows-MSI
+          path: 'build/jpackage/*.msi'
+
+      - name: Archive and Upload Windows App Image Artifact
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LightBeat-${{ github.ref_name }}-Windows-AppImage-${{ runner.arch }}
+          path: 'build/jpackage/LightBeat/'
+
+      - name: Upload DEB Installer Artifact
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LightBeat-${{ github.ref_name }}-Linux-DEB
+          path: 'build/jpackage/*.deb'
+
+      - name: Upload DMG Installer Artifact
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LightBeat-${{ github.ref_name }}-macOS-DMG
+          path: 'build/jpackage/*.dmg'
+
       - name: Upload ZIP Bundle Artifact
-        if: matrix.os == 'ubuntu-22.04'
+        if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
           name: LightBeat-${{ github.ref_name }}-All
-          path: build/distributions/LightBeat-*.zip
+          path: 'build/distributions/LightBeat-*.zip'
 
   create-release:
     name: Create GitHub Release
@@ -89,6 +116,9 @@ jobs:
         with:
           path: installers/
 
+      - name: Display downloaded files structure
+        run: ls -R installers/
+
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v2
         with:
@@ -96,7 +126,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
           files: |
-            installers/LightBeat-${{ github.ref_name }}-Windows/*
-            installers/LightBeat-${{ github.ref_name }}-macOS/*
-            installers/LightBeat-${{ github.ref_name }}-Linux/*
+            installers/LightBeat-${{ github.ref_name }}-Windows-MSI/*
+            installers/LightBeat-${{ github.ref_name }}-Linux-DEB/*
+            installers/LightBeat-${{ github.ref_name }}-macOS-DMG/*
             installers/LightBeat-${{ github.ref_name }}-All/*

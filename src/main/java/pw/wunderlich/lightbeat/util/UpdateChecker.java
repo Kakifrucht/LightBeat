@@ -30,10 +30,17 @@ public class UpdateChecker {
 
     /**
      * Checks if a newer version of the software is available.
+     * This check can be disabled by setting the system property {@systemProperty updatechecker.disabled} to true.
      *
      * @return true if an update is found, false otherwise.
      */
     public boolean isUpdateAvailable() {
+
+        String updateCheckerProperty = System.getProperty("updatechecker.disabled");
+        if ("true".equalsIgnoreCase(updateCheckerProperty)) {
+            logger.info("Update checker is disabled via system property.");
+            return false;
+        }
 
         if (currentVersionString.equals("dev")) {
             return false;

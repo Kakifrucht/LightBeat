@@ -52,11 +52,6 @@ tasks.named('instrumentForms') {
     outputs.dir(sourceSets.main.output.classesDirs)
 }
 
-def libjitsiAddOpensArgs = [ '--add-opens', 'java.base/java.lang=ALL-UNNAMED' ]
-runShadow {
-    jvmArgs libjitsiAddOpensArgs
-}
-
 boolean isWindowsBuild = project.hasProperty('windows-msi')
 boolean isMacBuild = project.hasProperty('macos-dmg')
 boolean isLinuxBuild = project.hasProperty('linux-deb')
@@ -67,6 +62,13 @@ if (!isWindowsBuild && !isMacBuild && !isLinuxBuild) {
     if (os.contains("win")) isWindowsBuild = true
     if (os.contains("mac")) isMacBuild = true
     if (os.contains("nix") || os.contains("nux")) isLinuxBuild = true
+}
+
+def libjitsiAddOpensArgs = [ '--add-opens', 'java.base/java.lang=ALL-UNNAMED' ]
+runShadow {
+    if (isWindowsBuild) {
+        jvmArgs libjitsiAddOpensArgs
+    }
 }
 
 shadowJar {
@@ -121,7 +123,12 @@ jpackageImage {
 runtime {
     if (isWindowsBuild) {
         launcher {
-            jvmArgs = libjitsiAddOpensArgs
+            def customJvmArgs = new ArrayList(libjitsiAddOpensArgs)
+            if (project.hasProperty('windows-appimage')) {
+                customJvmArgs.add('-Dupdatechecker.disabled=true')
+            }
+
+            jvmArgs = customJvmArgs
         }
     }
 
@@ -130,9 +137,9 @@ runtime {
 
     jpackage {
 
-        // Windows MSI Configuration
+        // Windows MSI & App-Image Configuration
         if (isWindowsBuild) {
-            installerType = 'msi'
+            installerType = project.hasProperty('windows-appimage') ? 'app-image' : 'msi'
             imageOptions = [
                     '--icon', 'src/main/resources/jpackage/icon.ico',
                     '--add-launcher', "${project.name}-console=src/main/resources/jpackage/debug_build.properties",
