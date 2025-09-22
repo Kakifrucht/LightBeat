@@ -3,8 +3,8 @@ package pw.wunderlich.lightbeat.gui.frame;
 import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.components.border.DarkBorders;
 import com.github.weisj.darklaf.components.help.HelpButton;
-import com.github.weisj.darklaf.theme.DarculaTheme;
 import com.github.weisj.darklaf.theme.IntelliJTheme;
+import com.github.weisj.darklaf.theme.OneDarkTheme;
 import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.audio.AudioReader;
 import pw.wunderlich.lightbeat.audio.BeatEvent;
@@ -176,15 +176,14 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         });
 
         lightThemeCheckbox.setToRunOnChange(() -> {
-
-            boolean isDarkCurrently = LafManager.getInstalledTheme().getThemeClass().equals(DarculaTheme.class);
+            boolean isDarkCurrently = LafManager.getInstalledTheme().getThemeClass().equals(OneDarkTheme.class);
             boolean setToDark = !lightThemeCheckbox.isSelected();
             if (isDarkCurrently == setToDark) {
                 return;
             }
 
             Font startButtonFont = startButton.getFont();
-            LafManager.install(setToDark ? new DarculaTheme() : new IntelliJTheme());
+            LafManager.install(setToDark ? new OneDarkTheme() : new IntelliJTheme());
             startButton.setFont(startButtonFont);
             refreshColorSets();
         });
@@ -194,6 +193,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
 
         drawFrame(mainPanel, true);
+        restoreLastWindowLocation();
+
         refreshColorSets();
         if (colorSelectPanel.getComponentCount() < 2) {
             addColorSetPresets();
@@ -360,6 +361,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                     .forEach(sd -> screenBounds.add(sd.getDefaultConfiguration().getBounds()));
 
             if (screenBounds.contains(newBounds)) {
+                this.x = newBounds.x;
+                this.y = newBounds.y;
                 runOnSwingThread(() -> frame.setBounds(newBounds));
             }
         }

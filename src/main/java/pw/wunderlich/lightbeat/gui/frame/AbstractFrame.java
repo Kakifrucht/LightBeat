@@ -29,8 +29,8 @@ public abstract class AbstractFrame implements HueFrame {
     final JFrame frame = new JFrame();
 
     private final String frameTitle;
-    private final int x;
-    private final int y;
+    int x;
+    int y;
 
 
     AbstractFrame(ComponentHolder componentHolder, int x, int y) {

@@ -1,8 +1,10 @@
 package pw.wunderlich.lightbeat.gui;
 
 import com.github.weisj.darklaf.LafManager;
-import com.github.weisj.darklaf.theme.DarculaTheme;
 import com.github.weisj.darklaf.theme.IntelliJTheme;
+import com.github.weisj.darklaf.theme.OneDarkTheme;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.config.ConfigNode;
 import pw.wunderlich.lightbeat.gui.frame.ConnectFrame;
@@ -12,8 +14,6 @@ import pw.wunderlich.lightbeat.hue.bridge.AccessPoint;
 import pw.wunderlich.lightbeat.hue.bridge.BridgeConnection;
 import pw.wunderlich.lightbeat.hue.bridge.HueManager;
 import pw.wunderlich.lightbeat.hue.bridge.HueStateObserver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.util.List;
@@ -42,7 +42,7 @@ public class FrameManager implements HueStateObserver {
         hueManager.setStateObserver(this);
 
         boolean lightTheme = componentHolder.getConfig().getBoolean(ConfigNode.WINDOW_LIGHT_THEME);
-        LafManager.installTheme(lightTheme ? new IntelliJTheme() : new DarculaTheme());
+        LafManager.installTheme(lightTheme ? new IntelliJTheme() : new OneDarkTheme());
     }
 
     public void shutdown() {
@@ -85,8 +85,8 @@ public class FrameManager implements HueStateObserver {
     }
 
     @Override
-    public void connectionWasLost(BridgeConnection.ConnectionListener.Error error) {
-        showConnectFrame().connectionWasLost(error);
+    public void connectionWasLost(AccessPoint accessPoint, BridgeConnection.ConnectionListener.Error error) {
+        showConnectFrame().connectionWasLost(accessPoint, error);
     }
 
     @Override
