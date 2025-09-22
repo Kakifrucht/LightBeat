@@ -30,7 +30,7 @@ configurations {
 }
 
 dependencies {
-    implementation 'io.github.zeroone3010:yetanotherhueapi:2.7.0-SNAPSHOT' // github.com/Kakifrucht/yetanotherhueapi -> install to maven local
+    implementation 'io.github.zeroone3010:yetanotherhueapi:2.8.0-lb' // github.com/Kakifrucht/yetanotherhueapi -> install to maven local
     implementation 'org.slf4j:slf4j-api:1.7.36'
     implementation 'org.slf4j:slf4j-simple:1.7.36'
     implementation 'org.slf4j:jul-to-slf4j:1.7.36'

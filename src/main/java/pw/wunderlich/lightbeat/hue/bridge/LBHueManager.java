@@ -3,6 +3,8 @@ package pw.wunderlich.lightbeat.hue.bridge;
 import io.github.zeroone3010.yahueapi.HueBridge;
 import io.github.zeroone3010.yahueapi.State;
 import io.github.zeroone3010.yahueapi.discovery.HueBridgeDiscoveryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.config.Config;
 import pw.wunderlich.lightbeat.config.ConfigNode;
@@ -12,8 +14,6 @@ import pw.wunderlich.lightbeat.hue.bridge.color.RandomColorSet;
 import pw.wunderlich.lightbeat.hue.bridge.light.LBLight;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
 import pw.wunderlich.lightbeat.hue.visualizer.HueBeatObserver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -65,11 +65,14 @@ public class LBHueManager implements HueManager {
         return config.getStringList(ConfigNode.BRIDGE_LIST)
                 .stream()
                 .map(bridgeIp -> {
-                    String key = config.get(ConfigNode.getCustomNode(CONFIG_BRIDGE_PREFIX + bridgeIp));
-                    if (key == null) {
+                    List<String> bridgeData = config.getStringList(ConfigNode.getCustomNode(CONFIG_BRIDGE_PREFIX + bridgeIp));
+                    if (bridgeData.isEmpty()) {
                         return null;
+                    } else if (bridgeData.size() == 1) { // only ip
+                        return new AccessPoint(bridgeIp, bridgeData.get(0));
+                    } else {
+                        return new AccessPoint(bridgeIp, bridgeData.get(0), bridgeData.get(1), bridgeData.get(2));
                     }
-                    return new AccessPoint(bridgeIp, key);
                 }).filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
@@ -95,7 +98,8 @@ public class LBHueManager implements HueManager {
                 currentState = ManagerState.NOT_CONNECTED;
 
                 List<AccessPoint> accessPoints = bridgesFound.stream()
-                        .map(bridge -> new AccessPoint(bridge.getIp())).collect(Collectors.toList());
+                        .map(bridge -> new AccessPoint(bridge.getIp(), null, bridge.getName()))
+                        .collect(Collectors.toList());
                 stateObserver.displayFoundBridges(accessPoints);
             }, 0, TimeUnit.SECONDS);
 
@@ -111,21 +115,26 @@ public class LBHueManager implements HueManager {
         stateObserver.isAttemptingConnection();
         BridgeConnection.ConnectionListener listener = new BridgeConnection.ConnectionListener() {
             @Override
-            public void connectionSuccess(String key) {
-                logger.info("Connected to bridge at {} with key {}", bridgeIp, key);
+            public void connectionSuccess(String key, String name, String certificateHash) {
+                logger.info("Connected to bridge {} at {} with key {}", name, bridgeIp, key);
 
                 List<String> bridgeList = new ArrayList<>(config.getStringList(ConfigNode.BRIDGE_LIST));
                 bridgeList.remove(bridgeIp);
                 bridgeList.add(0, bridgeIp);
                 config.putList(ConfigNode.BRIDGE_LIST, bridgeList);
-                config.put(ConfigNode.getCustomNode(CONFIG_BRIDGE_PREFIX + bridgeIp), key);
+
+                List<String> bridgeData = new ArrayList<>();
+                bridgeData.add(key);
+                bridgeData.add(name);
+                bridgeData.add(certificateHash);
+                config.putList(ConfigNode.getCustomNode(CONFIG_BRIDGE_PREFIX + bridgeIp), bridgeData);
 
                 currentState = ManagerState.CONNECTED;
                 stateObserver.hasConnected();
             }
 
             @Override
-            public void connectionError(Error error) {
+            public void connectionError(AccessPoint ap, Error error) {
                 if (error.equals(Error.CONNECTION_LOST)) {
                     logger.info("Connection to bridge at {} was lost", bridgeIp);
                 } else {
@@ -133,7 +142,7 @@ public class LBHueManager implements HueManager {
                 }
 
                 currentState = ManagerState.CONNECTION_LOST;
-                stateObserver.connectionWasLost(error);
+                stateObserver.connectionWasLost(ap, error);
             }
 
             @Override

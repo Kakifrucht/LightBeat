@@ -14,6 +14,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -163,12 +164,37 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     public void hasConnected() {}
 
     @Override
-    public void connectionWasLost(BridgeConnection.ConnectionListener.Error error) {
+    public void connectionWasLost(AccessPoint accessPoint, BridgeConnection.ConnectionListener.Error error) {
         String message = switch (error) {
             case CONNECTION_LOST -> "Connection was lost";
             case EXCEPTION, NOT_A_BRIDGE -> "Connection could not be established";
+            case WRONG_CERTIFICATE -> "The security certificate could not be verified.";
             case NO_LIGHTS -> "This bridge has no valid lights exposed";
         };
+
+        if (error.equals(BridgeConnection.ConnectionListener.Error.WRONG_CERTIFICATE)) {
+            String dialogTitle = "Security Warning";
+            String dialogMessage = String.format(
+                    "<html>The security certificate for the bridge at %s has changed.<br><br>" +
+                            "This could be a security risk, or the device may have been reset.<br>" +
+                            "Do you want to trust this new certificate and connect anyway?</html>",
+                    accessPoint.ip()
+            );
+            int result = JOptionPane.showConfirmDialog(
+                    mainPanel,
+                    dialogMessage,
+                    dialogTitle,
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+            if (result == JOptionPane.YES_OPTION) {
+                AccessPoint resetCertificate = new AccessPoint(accessPoint.ip(), accessPoint.key(), accessPoint.name());
+                runOnSwingThread(() -> {
+                    hueManager.setAttemptConnection(resetCertificate);
+                });
+                return;
+            }
+        }
 
         List<AccessPoint> previousBridges = hueManager.getPreviousBridges();
         if (previousBridges.isEmpty()) {
@@ -192,7 +218,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
             selectBridgeBox.removeAllItems();
 
             bridges.stream()
-                    .map(bridge -> (bridge.hasKey() ? "Reconnect to bridge at " : "Bridge at ") + bridge.ip())
+                    .map(bridge -> (bridge.hasKey() ? "Reconnect to " : "Connect to ") + Objects.requireNonNullElse(bridge.name(), "Unknown") + " at " + bridge.ip())
                     .forEach(selectBridgeBox::addItem);
 
             selectBridgeBox.addItem("Enter IP manually");

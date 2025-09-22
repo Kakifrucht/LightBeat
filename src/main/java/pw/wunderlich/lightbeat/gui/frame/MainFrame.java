@@ -200,8 +200,8 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             addColorSetPresets();
         }
 
+        setIdleInfoLabelText();
         runOnSwingThread(startButton::requestFocus);
-        restoreLastWindowLocation();
         scheduleUpdateCheck(version);
     }
 
@@ -282,7 +282,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             if (status.equals(StopStatus.ERROR)) {
                 showErrorMessage("Selected audio source could not be read");
             } else {
-                infoLabel.setText("Idle | Hover over a setting to get a description");
+                setIdleInfoLabelText();
             }
         });
     }
@@ -386,7 +386,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                     startButton.setText("Stop");
                     startButton.requestFocus();
 
-                    infoLabel.setText("Running | Some settings cannot be changed during visualisation");
+                    setInfoLabelText("Some settings cannot be changed during visualisation", true);
                     componentHolder.getAudioEventManager().registerBeatObserver(this);
                     setElementsEnabled(false);
                     return;
@@ -591,8 +591,22 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         return selectionFrame != null && selectionFrame.getJFrame().isDisplayable();
     }
 
+    private void setIdleInfoLabelText() {
+        setInfoLabelText("Hover over a setting to get a description", false);
+    }
+
+    private void setInfoLabelText(String message, boolean running) {
+        final String spacer = " | ";
+        final String bridgeName = hueManager.getBridge().getName();
+        String status = (running ? "Running" : "Idle") + spacer;
+        status += "Connected to " + bridgeName + spacer;
+        status += message;
+
+        infoLabel.setText(status);
+    }
+
     private void showErrorMessage(String message) {
-        infoLabel.setText("Idle | " + message);
+        setInfoLabelText(message, false);
         JOptionPane.showMessageDialog(frame, message + ".", "Error", JOptionPane.ERROR_MESSAGE);
     }
 }

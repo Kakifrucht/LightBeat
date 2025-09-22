@@ -44,27 +44,28 @@ public class BridgeConnection {
         this.connectionListener = listener;
 
         // check if is bridge
-        Future<Boolean> isBridgeFuture = Hue.hueBridgeConnectionBuilder(accessPoint.ip()).isHueBridgeEndpoint();
+        Future<String> certificateHashFuture = Hue.hueBridgeConnectionBuilder(accessPoint.ip()).getVerifiedBridgeCertificateHash();
         preconnectPushlinkTask = executorService.schedule(() -> {
+            String certificateHash;
             try {
-                boolean isBridge = isBridgeFuture.get(5, TimeUnit.SECONDS);
-                if (isBridge) {
+                certificateHash = certificateHashFuture.get(5, TimeUnit.SECONDS);
+                if (certificateHash != null) {
 
                     if (accessPoint.hasKey()) {
-                        scheduleHeartbeat(accessPoint);
+                        scheduleHeartbeat(accessPoint, certificateHash);
                         return;
                     }
 
                 } else {
                     logger.info("Endpoint at {} is not a hue bridge", accessPoint.ip());
-                    connectionListener.connectionError(ConnectionListener.Error.NOT_A_BRIDGE);
+                    connectionListener.connectionError(accessPoint, ConnectionListener.Error.NOT_A_BRIDGE);
                     return;
                 }
             } catch (InterruptedException e) {
                 return;
             } catch (Exception e) {
                 logger.warn("Exception during check if endpoint is hue bridge", e);
-                connectionListener.connectionError(ConnectionListener.Error.EXCEPTION);
+                connectionListener.connectionError(accessPoint, ConnectionListener.Error.EXCEPTION);
                 return;
             }
 
@@ -78,7 +79,7 @@ public class BridgeConnection {
                 if (pushlinkFuture.isCancelled()) {
                     logger.info("Pushlinking failed");
                 }
-                scheduleHeartbeat(new AccessPoint(accessPoint.ip(), key));
+                scheduleHeartbeat(new AccessPoint(accessPoint.ip(), key), certificateHash);
             } catch (InterruptedException ignored) {
             } catch (Exception e) {
                 if (e.getMessage().contains("link button not pressed")) {
@@ -92,7 +93,13 @@ public class BridgeConnection {
         }, 0, TimeUnit.SECONDS);
     }
 
-    private void scheduleHeartbeat(AccessPoint accessPoint) {
+    private void scheduleHeartbeat(AccessPoint accessPoint, String certificateHash) {
+
+        // check that the certificate matches our first connection
+        if (accessPoint.hasCertificateHash() && !accessPoint.certificateHash().equals(certificateHash)) {
+            connectionListener.connectionError(accessPoint, ConnectionListener.Error.WRONG_CERTIFICATE);
+            return;
+        }
 
         this.hue = new Hue(accessPoint.ip(), accessPoint.key());
         hue.setCaching(true);
@@ -102,9 +109,9 @@ public class BridgeConnection {
                 hue.refresh();
             } catch (Exception e) {
                 if (isConnected) {
-                    connectionListener.connectionError(ConnectionListener.Error.CONNECTION_LOST);
+                    connectionListener.connectionError(accessPoint, ConnectionListener.Error.CONNECTION_LOST);
                 } else {
-                    connectionListener.connectionError(ConnectionListener.Error.EXCEPTION);
+                    connectionListener.connectionError(accessPoint, ConnectionListener.Error.EXCEPTION);
                 }
 
                 heartbeatTask.cancel(false);
@@ -114,12 +121,16 @@ public class BridgeConnection {
             if (!isConnected) {
                 isConnected = true;
                 if (getLights().isEmpty()) {
-                    connectionListener.connectionError(ConnectionListener.Error.NO_LIGHTS);
+                    connectionListener.connectionError(accessPoint, ConnectionListener.Error.NO_LIGHTS);
                 } else {
-                    connectionListener.connectionSuccess(accessPoint.key());
+                    connectionListener.connectionSuccess(accessPoint.key(), getName(), certificateHash);
                 }
             }
         }, 0, CONNECTION_CHECK_SECONDS, TimeUnit.SECONDS);
+    }
+
+    public String getName() {
+        return hue.getRaw().getConfig().getName();
     }
 
     /**
@@ -163,10 +174,12 @@ public class BridgeConnection {
 
         /**
          * @param key key/username to connect to given bridge
+         * @param name name of the bridge
+         * @param certificateHash SHA-256 hash of the TLS certificate used by this bridge
          */
-        void connectionSuccess(String key);
+        void connectionSuccess(String key, String name, String certificateHash);
 
-        void connectionError(Error error);
+        void connectionError(AccessPoint accessPoint, Error error);
 
         void pushlinkRequired();
 
@@ -176,6 +189,7 @@ public class BridgeConnection {
             CONNECTION_LOST,
             EXCEPTION,
             NOT_A_BRIDGE,
+            WRONG_CERTIFICATE,
             NO_LIGHTS
         }
     }

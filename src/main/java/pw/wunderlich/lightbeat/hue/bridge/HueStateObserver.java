@@ -20,7 +20,7 @@ public interface HueStateObserver {
 
     void hasConnected();
 
-    void connectionWasLost(BridgeConnection.ConnectionListener.Error error);
+    void connectionWasLost(AccessPoint accessPoint, BridgeConnection.ConnectionListener.Error error);
 
     void disconnected();
 }
