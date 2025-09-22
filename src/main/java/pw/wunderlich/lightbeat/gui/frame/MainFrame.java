@@ -1,7 +1,6 @@
 package pw.wunderlich.lightbeat.gui.frame;
 
 import com.github.weisj.darklaf.LafManager;
-import com.github.weisj.darklaf.components.border.DarkBorders;
 import com.github.weisj.darklaf.components.help.HelpButton;
 import com.github.weisj.darklaf.theme.IntelliJTheme;
 import com.github.weisj.darklaf.theme.OneDarkTheme;
@@ -303,7 +302,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
 
         colorsPreviewPanel.setColorSet(hueManager.getColorSet());
-        colorSelectPanel.setBorder(DarkBorders.createWidgetLineBorder(1, 1, 1, 1));
         // ugly hack to refresh
         colorSelectPanel.setVisible(false);
         colorSelectPanel.setVisible(true);
