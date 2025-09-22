@@ -103,7 +103,6 @@ tasks.register('bundleReleaseZip', Zip) {
             unix('0755')
         }
     }
-
     from('THIRD_PARTY_LICENSES.md')
 
     archiveFileName = "LightBeat-${project.version}.zip"
@@ -114,7 +113,7 @@ jpackageImage {
     doLast {
         copy {
             from('THIRD_PARTY_LICENSES.md')
-            into(layout.buildDirectory.dir("jpackage/${description}"))
+            into(layout.buildDirectory.dir("jpackage/${project.description}"))
         }
     }
 }

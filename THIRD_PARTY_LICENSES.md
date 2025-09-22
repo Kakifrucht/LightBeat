@@ -37,6 +37,9 @@ The following components are licensed under the Apache License, Version 2.0.
 
 **JetBrains Java GUI Forms Runtime**
 > Copyright 2000-2023 JetBrains s.r.o.
+ 
+**libjitsi**
+> Copyright 2015-2025 libjitsi authors
 
 ### License Text (Apache 2.0)
 
