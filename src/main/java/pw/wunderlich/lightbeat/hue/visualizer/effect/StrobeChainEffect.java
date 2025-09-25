@@ -1,6 +1,5 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
 import pw.wunderlich.lightbeat.hue.visualizer.LightUpdate;
 
@@ -17,8 +16,8 @@ public class StrobeChainEffect extends AbstractThresholdEffect {
     private int currentIndex;
 
 
-    public StrobeChainEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability) {
-        super(componentHolder, brightnessThreshold, activationProbability);
+    public StrobeChainEffect(double brightnessThreshold, double activationProbability) {
+        super(brightnessThreshold, activationProbability);
         setBrightnessDeactivationThreshold(brightnessThreshold - 0.1d);
     }
 

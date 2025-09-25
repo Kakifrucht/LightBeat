@@ -1,6 +1,5 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
 import pw.wunderlich.lightbeat.hue.visualizer.LightUpdate;
 
@@ -17,9 +16,8 @@ public class StrobeEffect extends AbstractRandomEffect {
     private int nextLightInBeats;
 
 
-    public StrobeEffect(ComponentHolder componentHolder,
-                        double brightnessThreshold, double activationProbability, double randomProbability) {
-        super(componentHolder, brightnessThreshold, activationProbability, randomProbability);
+    public StrobeEffect(double brightnessThreshold, double activationProbability, double randomProbability) {
+        super(brightnessThreshold, activationProbability, randomProbability);
         setBrightnessDeactivationThreshold(brightnessThreshold - 0.2d);
     }
 

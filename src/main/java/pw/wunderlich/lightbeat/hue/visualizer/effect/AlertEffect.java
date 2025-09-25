@@ -1,6 +1,5 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
 import pw.wunderlich.lightbeat.hue.visualizer.LightUpdate;
 import pw.wunderlich.lightbeat.util.TimeThreshold;
@@ -21,8 +20,8 @@ public class AlertEffect extends AbstractRandomEffect {
     private TimeThreshold alertThreshold;
 
 
-    public AlertEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability, double randomProbability) {
-        super(componentHolder, brightnessThreshold, activationProbability, randomProbability);
+    public AlertEffect(double brightnessThreshold, double activationProbability, double randomProbability) {
+        super(brightnessThreshold, activationProbability, randomProbability);
     }
 
     @Override

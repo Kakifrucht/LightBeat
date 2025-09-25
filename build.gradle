@@ -115,7 +115,7 @@ jpackageImage {
     doLast {
         copy {
             from('THIRD_PARTY_LICENSES.md')
-            into(layout.buildDirectory.dir("jpackage/${project.description}"))
+            into(layout.buildDirectory.dir("jpackage/${project.name}"))
         }
     }
 }

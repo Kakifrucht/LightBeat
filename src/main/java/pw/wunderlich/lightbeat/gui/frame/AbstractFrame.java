@@ -1,6 +1,7 @@
 package pw.wunderlich.lightbeat.gui.frame;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pw.wunderlich.lightbeat.config.Config;
 import pw.wunderlich.lightbeat.hue.bridge.HueManager;
 
@@ -21,7 +22,8 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractFrame implements HueFrame {
 
-    final ComponentHolder componentHolder;
+    private static final Logger logger = LoggerFactory.getLogger(AbstractFrame.class);
+
     final ScheduledExecutorService executorService;
     final Config config;
     final HueManager hueManager;
@@ -33,19 +35,22 @@ public abstract class AbstractFrame implements HueFrame {
     int y;
 
 
-    AbstractFrame(ComponentHolder componentHolder, int x, int y) {
-        this(componentHolder, null, x, y);
+    AbstractFrame(Config config, ScheduledExecutorService executorService, HueManager hueManager, int x, int y) {
+        this(config, executorService, hueManager, null, x, y);
     }
 
-    AbstractFrame(ComponentHolder componentHolder, String frameTitle, int x, int y) {
+    AbstractFrame(Config config, String title, int x, int y) {
+        this(config, null, null, title, x, y);
+    }
+
+    AbstractFrame(Config config, ScheduledExecutorService executorService, HueManager hueManager, String frameTitle, int x, int y) {
         this.frameTitle = "LightBeat" + (frameTitle != null ? (" - " + frameTitle) : "" );
         this.x = x;
         this.y = y;
 
-        this.componentHolder = componentHolder;
-        this.config = componentHolder.getConfig();
-        this.executorService = componentHolder.getExecutorService();
-        this.hueManager = componentHolder.getHueManager();
+        this.config = config;
+        this.executorService = executorService;
+        this.hueManager = hueManager;
     }
 
     void drawFrame(Container mainContainer, boolean isPrimaryFrame) {
@@ -86,10 +91,42 @@ public abstract class AbstractFrame implements HueFrame {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
+                    dispose();
                     if (isPrimaryFrame) {
-                        componentHolder.shutdownAll();
-                    } else {
-                        dispose();
+                        SwingWorker<Boolean, Void> shutdownWorker = new SwingWorker<>() {
+                            @Override
+                            protected Boolean doInBackground() {
+                                logger.info("Attempting graceful shutdown of executor service...");
+                                executorService.shutdown();
+                                try {
+                                    return executorService.awaitTermination(5, TimeUnit.SECONDS);
+                                } catch (InterruptedException ex) {
+                                    Thread.currentThread().interrupt();
+                                    logger.warn("Shutdown wait was interrupted.");
+                                    return false;
+                                }
+                            }
+
+                            @Override
+                            protected void done() {
+                                try {
+                                    boolean terminatedGracefully = get();
+                                    if (terminatedGracefully) {
+                                        logger.info("All tasks completed gracefully.");
+                                    } else {
+                                        logger.warn("Graceful shutdown timed out or was interrupted. Forcing shutdown...");
+                                        executorService.shutdownNow();
+                                    }
+                                } catch (Exception ex) {
+                                    logger.error("An error occurred during the shutdown process.", ex);
+                                } finally {
+                                    logger.info("Shutdown sequence complete. Terminating JVM.");
+                                    Runtime.getRuntime().exit(0);
+                                }
+                            }
+                        };
+
+                        shutdownWorker.execute();
                     }
                 }
             });

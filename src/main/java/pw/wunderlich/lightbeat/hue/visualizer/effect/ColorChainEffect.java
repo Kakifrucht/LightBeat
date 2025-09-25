@@ -1,6 +1,5 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.hue.bridge.color.Color;
 import pw.wunderlich.lightbeat.hue.bridge.color.ColorSet;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
@@ -23,8 +22,8 @@ public class ColorChainEffect extends AbstractThresholdEffect {
     private int currentIndex;
 
 
-    public ColorChainEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability) {
-        super(componentHolder, brightnessThreshold, activationProbability);
+    public ColorChainEffect(double brightnessThreshold, double activationProbability) {
+        super(brightnessThreshold, activationProbability);
     }
 
     @Override

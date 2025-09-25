@@ -1,6 +1,6 @@
 package pw.wunderlich.lightbeat.hue.bridge.light;
 
-import pw.wunderlich.lightbeat.hue.bridge.LightQueue;
+import io.github.zeroone3010.yahueapi.State;
 import pw.wunderlich.lightbeat.hue.bridge.light.controller.BrightnessController;
 import pw.wunderlich.lightbeat.hue.bridge.light.controller.ColorController;
 import pw.wunderlich.lightbeat.hue.bridge.light.controller.StrobeController;
@@ -13,7 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 public class LBLight implements Light {
 
     private final io.github.zeroone3010.yahueapi.Light light;
-    private final LightQueue lightQueue;
+    private final UpdateQueue updateQueue;
 
     private final ColorController colorController;
     private final BrightnessController brightnessController;
@@ -23,10 +23,12 @@ public class LBLight implements Light {
     private volatile LightStateBuilder builderToCopyAfterTurningOn;
     private volatile boolean isOn;
 
+    private volatile State storedState = null;
 
-    public LBLight(io.github.zeroone3010.yahueapi.Light light, LightQueue lightQueue, ScheduledExecutorService executorService) {
+
+    public LBLight(io.github.zeroone3010.yahueapi.Light light, UpdateQueue updateQueue, ScheduledExecutorService executorService) {
         this.light = light;
-        this.lightQueue = lightQueue;
+        this.updateQueue = updateQueue;
 
         this.colorController = new ColorController(this);
         this.brightnessController = new BrightnessController(this);
@@ -98,7 +100,7 @@ public class LBLight implements Light {
 
         if (!currentBuilder.isDefault() || brightnessController.isBrightnessWasIncreased()) {
             brightnessController.applyUpdates();
-            lightQueue.addUpdate(this, currentBuilder.getLightState());
+            updateQueue.addUpdate(this, currentBuilder.getLightState());
         }
 
         if (transitionTime > 0) {
@@ -108,11 +110,25 @@ public class LBLight implements Light {
             brightnessController.applyFadeUpdates();
 
             if (!currentBuilder.isDefault()) {
-                lightQueue.addUpdate(this, currentBuilder.getLightState());
+                updateQueue.addUpdate(this, currentBuilder.getLightState());
             }
         }
 
         this.currentBuilder = LightStateBuilder.create();
+    }
+
+    @Override
+    public void storeState() {
+        this.storedState = light.getState();
+        this.storedState.removeAlert();
+    }
+
+    @Override
+    public void restoreState() {
+        if (storedState != null) {
+            updateQueue.addUpdate(this, storedState);
+            storedState = null;
+        }
     }
 
     @Override

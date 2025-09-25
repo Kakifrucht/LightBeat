@@ -1,6 +1,6 @@
 package pw.wunderlich.lightbeat.hue.bridge;
 
-import pw.wunderlich.lightbeat.hue.bridge.color.ColorSet;
+import pw.wunderlich.lightbeat.hue.bridge.light.Light;
 
 import java.util.List;
 
@@ -16,6 +16,12 @@ public interface HueManager {
     BridgeConnection getBridge();
 
     /**
+     * @param disabledLights true if disabled lights should be omitted
+     * @return list containing all currently connected lights
+     */
+    List<Light> getLights(boolean disabledLights);
+
+    /**
      * Sets the given parameter as the state observer to receive api callbacks.
      *
      * @param observer to receive callbacks from state changes
@@ -28,7 +34,7 @@ public interface HueManager {
     List<AccessPoint> getPreviousBridges();
 
     /**
-     * Causes a scan for bridges in the connected network.
+     * Causes a scan for bridges on the connected network.
      */
     void doBridgesScan();
 
@@ -40,34 +46,7 @@ public interface HueManager {
     void setAttemptConnection(AccessPoint accessPoint);
 
     /**
-     * @return true if a bridge is connected
-     */
-    boolean isConnected();
-
-    /**
-     * Disconnect from currently connected bridge.
+     * Disconnect from the currently connected bridge.
      */
     void disconnect();
-
-    /**
-     * Shutdown all hue SDK related processes.
-     */
-    void shutdown();
-
-    /**
-     * @return the currently selected color set
-     */
-    ColorSet getColorSet();
-
-    /**
-     * Initializes the lights and store their state to be recovered by {@link #recoverOriginalState()}.
-     *
-     * @return false if no lights are selected/available
-     */
-    boolean initializeLights();
-
-    /**
-     * Recovers light states that were stored by {@link #initializeLights()}.
-     */
-    void recoverOriginalState();
 }

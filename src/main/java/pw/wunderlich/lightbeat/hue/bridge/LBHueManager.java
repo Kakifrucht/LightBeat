@@ -1,22 +1,21 @@
 package pw.wunderlich.lightbeat.hue.bridge;
 
 import io.github.zeroone3010.yahueapi.HueBridge;
-import io.github.zeroone3010.yahueapi.State;
 import io.github.zeroone3010.yahueapi.discovery.HueBridgeDiscoveryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.config.Config;
 import pw.wunderlich.lightbeat.config.ConfigNode;
-import pw.wunderlich.lightbeat.hue.bridge.color.ColorSet;
-import pw.wunderlich.lightbeat.hue.bridge.color.CustomColorSet;
-import pw.wunderlich.lightbeat.hue.bridge.color.RandomColorSet;
 import pw.wunderlich.lightbeat.hue.bridge.light.LBLight;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
-import pw.wunderlich.lightbeat.hue.visualizer.HueBeatObserver;
+import pw.wunderlich.lightbeat.hue.bridge.light.UpdateQueue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -28,31 +27,36 @@ public class LBHueManager implements HueManager {
     private static final Logger logger = LoggerFactory.getLogger(LBHueManager.class);
     private static final String CONFIG_BRIDGE_PREFIX = "bridge.entry.";
 
-    private final ComponentHolder componentHolder;
     private final Config config;
-
-    private final LightQueue lightQueue;
+    private final ScheduledExecutorService executorService;
 
     private BridgeConnection bridgeConnection;
     private ManagerState currentState = ManagerState.NOT_CONNECTED;
-    private ColorSet colorSet;
 
     private HueStateObserver stateObserver;
 
-    private Future<?> bridgeScanTask;
-    private Map<Light, State> originalLightStates;
 
-
-    public LBHueManager(ComponentHolder componentHolder) {
-        this.componentHolder = componentHolder;
-        this.config = componentHolder.getConfig();
-
-        this.lightQueue = new LightQueue(this, componentHolder.getExecutorService());
+    public LBHueManager(Config config, ScheduledExecutorService executorService) {
+        this.config = config;
+        this.executorService = executorService;
     }
 
     @Override
     public BridgeConnection getBridge() {
         return bridgeConnection;
+    }
+
+    @Override
+    public List<Light> getLights(boolean disabledLights) {
+        bridgeConnection.refresh();
+        List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+        UpdateQueue updateQueue = new UpdateQueue(executorService);
+
+        return bridgeConnection.getLights()
+                .stream()
+                .filter(light -> !disabledLights || !disabledLightsList.contains(light.getId()))
+                .map((light -> new LBLight(light, updateQueue, executorService)))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     @Override
@@ -83,7 +87,7 @@ public class LBHueManager implements HueManager {
             Future<List<HueBridge>> bridgesFuture = new HueBridgeDiscoveryService()
                     .discoverBridges(bridge -> logger.info("Discovered bridge at {}", bridge.getIp()));
 
-            bridgeScanTask = componentHolder.getExecutorService().schedule(() -> {
+            executorService.schedule(() -> {
                 List<HueBridge> bridgesFound;
                 try {
                     bridgesFound = bridgesFuture.get();
@@ -159,12 +163,7 @@ public class LBHueManager implements HueManager {
                 stateObserver.pushlinkHasFailed();
             }
         };
-        bridgeConnection = new BridgeConnection(accessPoint, componentHolder.getExecutorService(), listener);
-    }
-
-    @Override
-    public boolean isConnected() {
-        return currentState.equals(ManagerState.CONNECTED);
+        bridgeConnection = new BridgeConnection(accessPoint, executorService, listener);
     }
 
     @Override
@@ -177,79 +176,6 @@ public class LBHueManager implements HueManager {
 
         currentState = ManagerState.NOT_CONNECTED;
         stateObserver.disconnected();
-    }
-
-    @Override
-    public void shutdown() {
-        if (isConnected()) {
-            recoverOriginalState();
-            lightQueue.markShutdown();
-        } else if (bridgeConnection != null) {
-            bridgeConnection.disconnect();
-        }
-
-        if (bridgeScanTask != null && !bridgeScanTask.isDone()) {
-            bridgeScanTask.cancel(true);
-        }
-    }
-
-    @Override
-    public ColorSet getColorSet() {
-        String selectedColorSet = config.get(ConfigNode.COLOR_SET_SELECTED);
-        ColorSet colorSet;
-        if (selectedColorSet == null || selectedColorSet.equals("Random")) {
-            colorSet = new RandomColorSet();
-        } else {
-            colorSet = new CustomColorSet(config, selectedColorSet);
-        }
-
-        if (!colorSet.equals(this.colorSet)) {
-            this.colorSet = colorSet;
-        }
-
-        return this.colorSet;
-    }
-
-    @Override
-    public boolean initializeLights() {
-
-        bridgeConnection.refresh();
-
-        List<Light> lights = new ArrayList<>();
-        originalLightStates = new HashMap<>();
-
-        List<String> disabledLights = componentHolder.getConfig().getStringList(ConfigNode.LIGHTS_DISABLED);
-        for (io.github.zeroone3010.yahueapi.Light apiLight : bridgeConnection.getLights()) {
-
-            if (disabledLights.contains(apiLight.getId())) {
-                continue;
-            }
-
-            Light light = new LBLight(apiLight, lightQueue, componentHolder.getExecutorService());
-            originalLightStates.put(light, apiLight.getState());
-            lights.add(light);
-        }
-
-        if (!lights.isEmpty()) {
-            lights.stream().filter(l -> !l.isOn()).forEach(light -> light.setOn(true));
-            HueBeatObserver beatObserver = new HueBeatObserver(componentHolder, new ArrayList<>(lights));
-            componentHolder.getAudioEventManager().registerBeatObserver(beatObserver);
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
-    public void recoverOriginalState() {
-        if (originalLightStates != null) {
-            originalLightStates.forEach((light, state) -> {
-                state.removeAlert();
-                lightQueue.addUpdate(light, state);
-            });
-            originalLightStates = null;
-            bridgeConnection.refresh();
-        }
     }
 
     private enum ManagerState {

@@ -1,9 +1,8 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
-import pw.wunderlich.lightbeat.hue.visualizer.LightUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pw.wunderlich.lightbeat.hue.visualizer.LightUpdate;
 
 /**
  * Adds a random probability parameter to an effect that will only be checked
@@ -16,8 +15,8 @@ public abstract class AbstractRandomEffect extends AbstractThresholdEffect {
     private final double randomProbability;
 
 
-    AbstractRandomEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability, double randomProbability) {
-        super(componentHolder, brightnessThreshold, activationProbability);
+    AbstractRandomEffect(double brightnessThreshold, double activationProbability, double randomProbability) {
+        super(brightnessThreshold, activationProbability);
         this.randomProbability = randomProbability;
     }
 

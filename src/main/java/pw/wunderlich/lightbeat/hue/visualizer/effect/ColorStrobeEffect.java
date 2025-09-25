@@ -1,7 +1,5 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
-import pw.wunderlich.lightbeat.config.ConfigNode;
 import pw.wunderlich.lightbeat.hue.bridge.color.Color;
 import pw.wunderlich.lightbeat.hue.bridge.color.ColorSet;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
@@ -9,6 +7,7 @@ import pw.wunderlich.lightbeat.hue.visualizer.LightUpdate;
 import pw.wunderlich.lightbeat.util.TimeThreshold;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,20 +17,20 @@ import java.util.concurrent.TimeUnit;
 public class ColorStrobeEffect extends AbstractThresholdEffect {
 
     private static final long COLOR_CHANGE_IN_MILLIS = 5000L;
+    private static final long MAXIMUM_STROBE_DELAY_MILLIS = 1000L;
 
+    private final ScheduledExecutorService executorService;
     private final TimeThreshold newColorThreshold = new TimeThreshold();
-    private final long maximumStrobeDelayMillis;
     private Color[] colors;
 
     private Future<?> currentFuture;
     private Light currentLight;
 
 
-    public ColorStrobeEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability) {
-        super(componentHolder, brightnessThreshold, activationProbability);
+    public ColorStrobeEffect(ScheduledExecutorService executorService, double brightnessThreshold, double activationProbability) {
+        super(brightnessThreshold, activationProbability);
 
-        // maximum strobe delay, if last beat delay is higher than this value it will halve it as the strobe delay
-        maximumStrobeDelayMillis = componentHolder.getConfig().getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN) * 2L;
+        this.executorService = executorService;
     }
 
     @Override
@@ -61,11 +60,11 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
         }
 
         long delay = lightUpdate.getTimeSinceLastBeat();
-        while (delay > maximumStrobeDelayMillis) {
+        while (delay > MAXIMUM_STROBE_DELAY_MILLIS) {
             delay /= 2;
         }
 
-        currentFuture = componentHolder.getExecutorService().scheduleAtFixedRate(new Runnable() {
+        currentFuture = executorService.scheduleAtFixedRate(new Runnable() {
 
             int currentColor = 0;
 

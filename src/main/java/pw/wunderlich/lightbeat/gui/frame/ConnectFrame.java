@@ -1,9 +1,9 @@
 package pw.wunderlich.lightbeat.gui.frame;
 
 import com.github.weisj.darklaf.components.loading.LoadingIndicator;
-import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.hue.bridge.AccessPoint;
 import pw.wunderlich.lightbeat.hue.bridge.BridgeConnection;
+import pw.wunderlich.lightbeat.hue.bridge.HueManager;
 import pw.wunderlich.lightbeat.hue.bridge.HueStateObserver;
 
 import javax.swing.*;
@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -41,8 +42,8 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     private List<AccessPoint> currentAccessPoints = null;
 
 
-    public ConnectFrame(ComponentHolder componentHolder, int x, int y) {
-        super(componentHolder, "Connect", x, y);
+    public ConnectFrame(ScheduledExecutorService executorService, HueManager hueManager, int x, int y) {
+        super(null, executorService, hueManager, "Connect", x, y);
 
         selectBridgeBox.addActionListener(e -> {
 
@@ -181,17 +182,15 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
                     accessPoint.ip()
             );
             int result = JOptionPane.showConfirmDialog(
-                    mainPanel,
+                    frame,
                     dialogMessage,
                     dialogTitle,
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.WARNING_MESSAGE
             );
             if (result == JOptionPane.YES_OPTION) {
-                AccessPoint resetCertificate = new AccessPoint(accessPoint.ip(), accessPoint.key(), accessPoint.name());
-                runOnSwingThread(() -> {
-                    hueManager.setAttemptConnection(resetCertificate);
-                });
+                AccessPoint apNoCertificate = new AccessPoint(accessPoint.ip(), accessPoint.key(), accessPoint.name());
+                runOnSwingThread(() -> hueManager.setAttemptConnection(apNoCertificate));
                 return;
             }
         }

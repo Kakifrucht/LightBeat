@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Stores the current beats light update information while passing through effects.
  * Get the lights to update via {@link #getLights()} and {@link #getLightsTurnedOn()} to change
- * their settings. The updates can then be applied via {@link #doLightUpdates()}.
+ * their settings. The updates can then be applied via {@link #execute()}.
  */
 public class LightUpdate {
 
@@ -52,7 +52,7 @@ public class LightUpdate {
         this.transitionTime = transitionTime;
     }
 
-    void doLightUpdates() {
+    void execute() {
         for (Light light : lights) {
             light.doLightUpdate(transitionTime);
         }

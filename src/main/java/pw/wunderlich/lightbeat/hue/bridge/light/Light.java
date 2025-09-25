@@ -46,4 +46,18 @@ public interface Light {
      *                       (fadeTime of 2 would be 200ms fade)
      */
     void doLightUpdate(int transitionTime);
+
+    /**
+     * Store the current physical light state for later restoration. Removes notification effects from the state.
+     * State gets overridden if a state was stored before restoring it via {@link #restoreState()}.
+     */
+    void storeState();
+
+    /**
+     * Restore the previously stored light state.
+     * If a state was previously saved via {@link #storeState()}, this method should schedule or send
+     * an update that returns the light to that stored state and then discard the stored snapshot.
+     * Does nothing if no state was stored.
+     */
+    void restoreState();
 }

@@ -5,7 +5,9 @@ import com.github.weisj.darklaf.theme.IntelliJTheme;
 import com.github.weisj.darklaf.theme.OneDarkTheme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pw.wunderlich.lightbeat.ComponentHolder;
+import pw.wunderlich.lightbeat.audio.AudioReader;
+import pw.wunderlich.lightbeat.audio.BeatEventManager;
+import pw.wunderlich.lightbeat.config.Config;
 import pw.wunderlich.lightbeat.config.ConfigNode;
 import pw.wunderlich.lightbeat.gui.frame.ConnectFrame;
 import pw.wunderlich.lightbeat.gui.frame.HueFrame;
@@ -17,6 +19,7 @@ import pw.wunderlich.lightbeat.hue.bridge.HueStateObserver;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Manages the applications main frame, only showing one main frame at a time, which are either
@@ -28,28 +31,30 @@ public class FrameManager implements HueStateObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(FrameManager.class);
 
-    private final ComponentHolder componentHolder;
+    private final Config config;
+    private final ScheduledExecutorService executorService;
+    private final AudioReader audioReader;
+    private final BeatEventManager beatEventManager;
+    private final HueManager hueManager;
 
     private HueFrame currentFrame;
     private int lastX = 100;
     private int lastY = 100;
 
 
-    public FrameManager(ComponentHolder componentHolder) {
+    public FrameManager(Config config, ScheduledExecutorService executorService,
+                        AudioReader audioReader, BeatEventManager beatEventManager,
+                        HueManager hueManager) {
+        this.config = config;
+        this.executorService = executorService;
+        this.audioReader = audioReader;
+        this.beatEventManager = beatEventManager;
+        this.hueManager = hueManager;
 
-        this.componentHolder = componentHolder;
-        HueManager hueManager = componentHolder.getHueManager();
-        hueManager.setStateObserver(this);
+        this.hueManager.setStateObserver(this);
 
-        boolean lightTheme = componentHolder.getConfig().getBoolean(ConfigNode.WINDOW_LIGHT_THEME);
+        boolean lightTheme = this.config.getBoolean(ConfigNode.WINDOW_LIGHT_THEME);
         LafManager.installTheme(lightTheme ? new IntelliJTheme() : new OneDarkTheme());
-    }
-
-    public void shutdown() {
-        if (currentFrame != null && currentFrame.getJFrame().isDisplayable()) {
-            currentFrame.dispose();
-            currentFrame = null;
-        }
     }
 
     @Override
@@ -101,7 +106,7 @@ public class FrameManager implements HueStateObserver {
 
         disposeCurrentWindow();
         try {
-            currentFrame = new ConnectFrame(componentHolder, lastX, lastY);
+            currentFrame = new ConnectFrame(executorService, hueManager, lastX, lastY);
         } catch (Throwable t) {
             logger.error("Exception thrown during frame creation", t);
         }
@@ -115,7 +120,7 @@ public class FrameManager implements HueStateObserver {
 
         disposeCurrentWindow();
         try {
-            currentFrame = new MainFrame(componentHolder, lastX, lastY);
+            currentFrame = new MainFrame(config, executorService, audioReader, beatEventManager, hueManager, lastX, lastY);
         } catch (Throwable t) {
             logger.error("Exception thrown during frame creation", t);
         }

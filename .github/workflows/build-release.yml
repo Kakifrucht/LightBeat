@@ -13,7 +13,7 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-          - os: windows-latest-arm64
+          - os: windows-11-arm
           - os: macos-latest
           - os: ubuntu-22.04
 

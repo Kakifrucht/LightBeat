@@ -4,13 +4,21 @@ import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.components.help.HelpButton;
 import com.github.weisj.darklaf.theme.IntelliJTheme;
 import com.github.weisj.darklaf.theme.OneDarkTheme;
-import pw.wunderlich.lightbeat.ComponentHolder;
+import pw.wunderlich.lightbeat.LightBeat;
 import pw.wunderlich.lightbeat.audio.AudioReader;
 import pw.wunderlich.lightbeat.audio.BeatEvent;
+import pw.wunderlich.lightbeat.audio.BeatEventManager;
 import pw.wunderlich.lightbeat.audio.BeatObserver;
 import pw.wunderlich.lightbeat.audio.device.AudioDevice;
+import pw.wunderlich.lightbeat.config.Config;
 import pw.wunderlich.lightbeat.config.ConfigNode;
 import pw.wunderlich.lightbeat.gui.swing.*;
+import pw.wunderlich.lightbeat.hue.bridge.HueManager;
+import pw.wunderlich.lightbeat.hue.bridge.color.ColorSet;
+import pw.wunderlich.lightbeat.hue.bridge.color.CustomColorSet;
+import pw.wunderlich.lightbeat.hue.bridge.color.RandomColorSet;
+import pw.wunderlich.lightbeat.hue.bridge.light.Light;
+import pw.wunderlich.lightbeat.hue.visualizer.HueBeatObserver;
 import pw.wunderlich.lightbeat.util.UpdateChecker;
 
 import javax.swing.*;
@@ -22,6 +30,7 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,6 +41,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private static final int MINIMUM_BRIGHTNESS_DIFFERENCE = 36;
 
     private final AudioReader audioReader;
+    private final BeatEventManager beatEventManager;
 
     private JPanel mainPanel;
 
@@ -82,10 +92,13 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private HueFrame selectionFrame = null;
 
 
-    public MainFrame(ComponentHolder componentHolder, int x, int y) {
-        super(componentHolder, x, y);
+    public MainFrame(Config config, ScheduledExecutorService executorService,
+                     AudioReader audioReader, BeatEventManager beatEventManager,
+                     HueManager hueManager, int x, int y) {
+        super(config, executorService, hueManager, x, y);
 
-        audioReader = componentHolder.getAudioReader();
+        this.audioReader = audioReader;
+        this.beatEventManager = beatEventManager;
 
         // audio source panel
         refreshDeviceSelector();
@@ -156,7 +169,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             }
         });
 
-        String version = componentHolder.getVersion();
+        String version = LightBeat.getVersion();
         urlLabel.setText("v" + version + " | " + urlLabel.getText());
         urlLabel.addMouseListener(new MouseInputAdapter() {
             @Override
@@ -205,7 +218,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     }
 
     public void createUIComponents() {
-
         bannerLabel = new JIconLabel("/png/banner.png", "/png/bannerflash.png", 482, 100);
 
         colorSelectPanel = new JPanel(new WrapLayout(FlowLayout.CENTER));
@@ -270,9 +282,10 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             startButton.setText("Start");
             startButton.setEnabled(false);
 
+            setElementsEnabled(true);
             refreshDeviceSelector();
 
-            // re-enable startbutton with small delay
+            // re-enable start button with small delay
             executorService.schedule(() -> runOnSwingThread(() -> {
                 startButton.setEnabled(true);
                 startButton.requestFocus();
@@ -301,14 +314,11 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             config.put(ConfigNode.COLOR_SET_SELECTED, selectedSetButton.getText());
         }
 
-        colorsPreviewPanel.setColorSet(hueManager.getColorSet());
-        // ugly hack to refresh
-        colorSelectPanel.setVisible(false);
-        colorSelectPanel.setVisible(true);
+        updateColorPreview();
     }
 
     private void scheduleUpdateCheck(String version) {
-        componentHolder.getExecutorService().schedule(() -> {
+        executorService.schedule(() -> {
 
             long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
 
@@ -367,36 +377,41 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     }
 
     private void startBeatDetection() {
-
         if (audioReader.isOpen()) {
             return;
         }
 
-        String selectedDeviceName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
-        AudioDevice audioDevice = audioReader.getDeviceByName(selectedDeviceName);
-        if (audioDevice != null) {
-            config.put(ConfigNode.LAST_AUDIO_SOURCE, selectedDeviceName);
+        runOnSwingThread(() -> {
+            String selectedDeviceName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
+            AudioDevice audioDevice = audioReader.getDeviceByName(selectedDeviceName);
+            if (audioDevice != null) {
+                config.put(ConfigNode.LAST_AUDIO_SOURCE, selectedDeviceName);
 
-            boolean lightsInitialized = hueManager.initializeLights();
-            if (lightsInitialized) {
-                boolean audioReaderStarted = audioReader.start(audioDevice);
-                if (audioReaderStarted) {
-                    startButton.setText("Stop");
-                    startButton.requestFocus();
+                List<Light> lights = hueManager.getLights(false);
+                if (!lights.isEmpty()) {
+                    lights.stream().filter(l -> !l.isOn()).forEach(light -> light.setOn(true));
+                    HueBeatObserver beatObserver = new HueBeatObserver(config, executorService, lights);
+                    this.beatEventManager.registerBeatObserver(beatObserver);
+                    this.beatEventManager.registerBeatObserver(this);
 
-                    setInfoLabelText("Some settings cannot be changed during visualisation", true);
-                    componentHolder.getAudioEventManager().registerBeatObserver(this);
-                    setElementsEnabled(false);
+                    boolean audioReaderStarted = audioReader.start(audioDevice);
+                    if (audioReaderStarted) {
+                        startButton.setText("Stop");
+                        startButton.requestFocus();
+
+                        setInfoLabelText("Some settings cannot be changed during visualisation", true);
+                        setElementsEnabled(false);
+                        return;
+                    }
+                } else {
+                    showErrorMessage("Please select at least one light");
                     return;
                 }
-            } else {
-                showErrorMessage("Please select at least one light");
-                return;
             }
-        }
 
-        showErrorMessage("Selected audio source is no longer available");
-        refreshDeviceSelector();
+            showErrorMessage("Selected audio source is no longer available");
+            refreshDeviceSelector();
+        });
     }
 
     private void stopBeatDetection() {
@@ -509,11 +524,20 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         JRadioButton radioButton = new JRadioButton(setName);
         radioButton.addActionListener(e -> {
             config.put(ConfigNode.COLOR_SET_SELECTED, setName);
-            colorsPreviewPanel.setColorSet(hueManager.getColorSet());
+            updateColorPreview();
         });
 
         colorSelectPanel.add(radioButton);
         colorButtonGroup.add(radioButton);
+    }
+
+    private void updateColorPreview() {
+        String colorSetName = config.get(ConfigNode.COLOR_SET_SELECTED);
+        ColorSet colorSet = colorSetName.equals("Random") ? new RandomColorSet() : new CustomColorSet(config, colorSetName);
+        colorsPreviewPanel.setColorSet(colorSet);
+        // ugly hack to refresh
+        colorSelectPanel.setVisible(false);
+        colorSelectPanel.setVisible(true);
     }
 
     private void openColorSelectionFrame(String setName) {
@@ -533,7 +557,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             selectionFrame.getJFrame().requestFocus();
         } else {
             boolean showEditPanel = setName != null;
-            selectionFrame = showEditPanel ? new ColorSelectionFrame(this, setName) : new ColorSelectionFrame(this);
+            selectionFrame = showEditPanel ? new ColorSelectionFrame(config, this, setName) : new ColorSelectionFrame(config, this);
             selectionFrame.getJFrame().requestFocus();
         }
     }

@@ -1,7 +1,7 @@
 package pw.wunderlich.lightbeat;
 
-import pw.wunderlich.lightbeat.audio.AudioReader;
-import pw.wunderlich.lightbeat.audio.BeatEventManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pw.wunderlich.lightbeat.audio.LBAudioReader;
 import pw.wunderlich.lightbeat.config.Config;
 import pw.wunderlich.lightbeat.config.ConfigNode;
@@ -10,21 +10,18 @@ import pw.wunderlich.lightbeat.gui.FrameManager;
 import pw.wunderlich.lightbeat.hue.bridge.AccessPoint;
 import pw.wunderlich.lightbeat.hue.bridge.HueManager;
 import pw.wunderlich.lightbeat.hue.bridge.LBHueManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Entry point for application. Starts modules to bootstrap the application.
- * Implements {@link ComponentHolder} interface for accessing separate modules.
  *
  * @author Fabian Prieto Wunderlich
  */
-public class LightBeat implements ComponentHolder {
+public class LightBeat {
 
     private static final Logger logger = LoggerFactory.getLogger(LightBeat.class);
 
@@ -33,40 +30,33 @@ public class LightBeat implements ComponentHolder {
     }
 
 
-    private final ScheduledExecutorService executorService;
-    private final Config config;
-
-    private final LBAudioReader audioReader;
-    private final HueManager hueManager;
-    private final FrameManager frameManager;
-
-
     private LightBeat() {
 
         logger.info("LightBeat v{} starting", getVersion());
 
-        executorService = Executors.newScheduledThreadPool(2);
-        config = new LBConfig();
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+        Config config = new LBConfig();
 
-        audioReader = new LBAudioReader(config, executorService);
-        hueManager = new LBHueManager(this);
-        frameManager = new FrameManager(this);
+        LBAudioReader audioReader = new LBAudioReader(config, executorService);
+        HueManager hueManager = new LBHueManager(config, executorService);
+
+        // enter swing UI
+        new FrameManager(config, executorService, audioReader, audioReader, hueManager);
 
         List<AccessPoint> accessPoints = hueManager.getPreviousBridges();
         if (accessPoints.isEmpty()) {
-            AccessPoint accessPoint = getLastConnectedLegacy();
+            AccessPoint accessPoint = getLastConnectedLegacy(config);
             if (accessPoint != null) {
                 hueManager.setAttemptConnection(accessPoint);
             } else {
                 hueManager.doBridgesScan();
             }
-
         } else {
             hueManager.setAttemptConnection(accessPoints.get(0));
         }
     }
 
-    private AccessPoint getLastConnectedLegacy() {
+    private AccessPoint getLastConnectedLegacy(Config config) {
         // will be removed sooner or later, alongside their config nodes
         String oldIp = config.get(ConfigNode.BRIDGE_IPADDRESS_LEGACY);
         if (oldIp != null) {
@@ -76,56 +66,8 @@ public class LightBeat implements ComponentHolder {
         return null;
     }
 
-    @Override
-    public ScheduledExecutorService getExecutorService() {
-        return executorService;
-    }
-
-    @Override
-    public Config getConfig() {
-        return config;
-    }
-
-    @Override
-    public AudioReader getAudioReader() {
-        return audioReader;
-    }
-
-    @Override
-    public BeatEventManager getAudioEventManager() {
-        return audioReader;
-    }
-
-    @Override
-    public HueManager getHueManager() {
-        return hueManager;
-    }
-
-    @Override
-    public void shutdownAll() {
-
-        logger.info("Shutting down LightBeat");
-
-        audioReader.stop();
-        frameManager.shutdown();
-        hueManager.shutdown();
-
-        boolean didShutDown = false;
-        try {
-            didShutDown = executorService.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            logger.warn("Executor service forcefully shut down, some tasks have not completed");
-        }
-
-        // ensure that we exit
-        if (!didShutDown) {
-            Runtime.getRuntime().exit(0);
-        }
-    }
-
-    @Override
-    public String getVersion() {
-        String version = getClass().getPackage().getImplementationVersion();
-        return (version != null) ? version : "dev";
+    public static String getVersion() {
+        String version = LightBeat.class.getPackage().getImplementationVersion();
+        return Objects.requireNonNullElse(version, "");
     }
 }

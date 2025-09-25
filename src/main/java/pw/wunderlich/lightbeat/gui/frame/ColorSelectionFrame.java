@@ -47,8 +47,8 @@ public class ColorSelectionFrame extends AbstractFrame {
      *
      * @param mainFrame will receive a callback upon saving to refresh its contents
      */
-    ColorSelectionFrame(MainFrame mainFrame) {
-        this("New Color Set", mainFrame);
+    ColorSelectionFrame(Config config, MainFrame mainFrame) {
+        this(config, "New Color Set", mainFrame);
     }
 
     /**
@@ -57,8 +57,8 @@ public class ColorSelectionFrame extends AbstractFrame {
      * @param mainFrame will receive a callback upon saving to refresh its contents
      * @param setNameToEdit name of set to edit
      */
-    ColorSelectionFrame(MainFrame mainFrame, String setNameToEdit) {
-        this("Edit " + setNameToEdit, mainFrame);
+    ColorSelectionFrame(Config config, MainFrame mainFrame, String setNameToEdit) {
+        this(config, "Edit " + setNameToEdit, mainFrame);
 
         this.isEditing = true;
         this.originalName = setNameToEdit;
@@ -73,8 +73,8 @@ public class ColorSelectionFrame extends AbstractFrame {
         }
     }
 
-    private ColorSelectionFrame(String title, MainFrame mainFrame) {
-        super(mainFrame.componentHolder, title, mainFrame.getJFrame().getX() + 10, mainFrame.getJFrame().getY() + 10);
+    private ColorSelectionFrame(Config config, String title, MainFrame mainFrame) {
+        super(config, title, mainFrame.getJFrame().getX() + 10, mainFrame.getJFrame().getY() + 10);
 
         MouseAdapter colorSelectEventAdapter = new MouseAdapter() {
 

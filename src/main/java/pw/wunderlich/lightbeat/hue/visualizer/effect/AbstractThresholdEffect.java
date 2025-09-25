@@ -1,9 +1,8 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
-import pw.wunderlich.lightbeat.hue.visualizer.LightUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pw.wunderlich.lightbeat.hue.visualizer.LightUpdate;
 
 /**
  * Adds custom brightness threshold and, if met, activation probability parameters
@@ -23,8 +22,8 @@ public abstract class AbstractThresholdEffect extends AbstractEffect {
     boolean isActive = false;
 
 
-    AbstractThresholdEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability) {
-        super(componentHolder);
+    AbstractThresholdEffect(double brightnessThreshold, double activationProbability) {
+        super();
         this.brightnessThreshold = brightnessThreshold;
         this.activationProbability = activationProbability;
         this.brightnessDeactivationThreshold = brightnessThreshold;

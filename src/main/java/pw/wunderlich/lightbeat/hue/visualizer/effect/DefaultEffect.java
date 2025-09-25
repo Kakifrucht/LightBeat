@@ -1,6 +1,5 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.hue.bridge.color.Color;
 import pw.wunderlich.lightbeat.hue.bridge.color.ColorSet;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
@@ -15,10 +14,6 @@ public class DefaultEffect extends AbstractEffect {
     private Color color;
     private Color fadeColor;
 
-
-    public DefaultEffect(ComponentHolder componentHolder) {
-        super(componentHolder);
-    }
 
     @Override
     void execute(LightUpdate lightUpdate) {

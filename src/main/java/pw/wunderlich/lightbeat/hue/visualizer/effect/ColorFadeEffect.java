@@ -1,6 +1,5 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.hue.bridge.color.Color;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
 import pw.wunderlich.lightbeat.hue.visualizer.LightUpdate;
@@ -15,8 +14,8 @@ public class ColorFadeEffect extends AbstractThresholdEffect {
     private Color lastColor;
 
 
-    public ColorFadeEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability) {
-        super(componentHolder, brightnessThreshold, activationProbability);
+    public ColorFadeEffect(double brightnessThreshold, double activationProbability) {
+        super(brightnessThreshold, activationProbability);
     }
 
     @Override

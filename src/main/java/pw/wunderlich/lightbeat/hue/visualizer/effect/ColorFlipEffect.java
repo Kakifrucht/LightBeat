@@ -1,6 +1,5 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.hue.bridge.color.Color;
 import pw.wunderlich.lightbeat.hue.bridge.color.ColorSet;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
@@ -25,8 +24,8 @@ public class ColorFlipEffect extends AbstractThresholdEffect {
     private Color color2;
 
 
-    public ColorFlipEffect(ComponentHolder componentHolder, double brightnessThreshold, double activationProbability) {
-        super(componentHolder, brightnessThreshold, activationProbability);
+    public ColorFlipEffect(double brightnessThreshold, double activationProbability) {
+        super(brightnessThreshold, activationProbability);
     }
 
     @Override

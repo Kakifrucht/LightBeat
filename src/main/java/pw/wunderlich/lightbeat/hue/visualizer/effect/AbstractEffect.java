@@ -1,6 +1,5 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
-import pw.wunderlich.lightbeat.ComponentHolder;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
 import pw.wunderlich.lightbeat.hue.visualizer.LightUpdate;
 
@@ -13,14 +12,8 @@ import java.util.Random;
  */
 abstract class AbstractEffect implements LightEffect {
 
-    final ComponentHolder componentHolder;
-
     final Random rnd = new Random();
 
-
-    AbstractEffect(ComponentHolder componentHolder) {
-        this.componentHolder = componentHolder;
-    }
 
     @Override
     public void beatReceived(LightUpdate lightUpdate) {
