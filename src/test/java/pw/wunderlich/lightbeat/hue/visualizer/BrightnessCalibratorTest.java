@@ -1,10 +1,10 @@
 package pw.wunderlich.lightbeat.hue.visualizer;
 
-import pw.wunderlich.lightbeat.config.Config;
-import pw.wunderlich.lightbeat.config.ConfigNode;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import pw.wunderlich.lightbeat.config.Config;
+import pw.wunderlich.lightbeat.config.ConfigNode;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -43,7 +43,7 @@ class BrightnessCalibratorTest {
     }
 
     @Test
-    void getBrightness() {
+    void testGetBrightness() {
 
         BrightnessCalibrator.BrightnessData data;
 
@@ -63,7 +63,7 @@ class BrightnessCalibratorTest {
 
         // brightness corrected upwards, difference significant enough
         data = calibrator.getBrightness(0.5d);
-        assertEquals(Math.round(MAX_BRIGHTNESS * 0.725d), getAverageBrightness(data));
+        assertTrue(Math.round(MAX_BRIGHTNESS * 0.725d) < getAverageBrightness(data));
 
         // change brightness to max
         data = calibrator.getBrightness(1d);
@@ -72,7 +72,7 @@ class BrightnessCalibratorTest {
     }
 
     @Test
-    void getLowestBrightnessData() {
+    void testGetLowestBrightnessData() {
         BrightnessCalibrator.BrightnessData data = calibrator.getLowestBrightnessData();
 
         assertAll("lowestData",

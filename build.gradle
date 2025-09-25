@@ -27,6 +27,7 @@ repositories {
 
 configurations {
     windowsNatives
+    mockitoAgent
 }
 
 dependencies {
@@ -42,9 +43,13 @@ dependencies {
     compileOnly 'org.jitsi:libjitsi:1.1-34-gb93ce2ee'
     windowsNatives 'org.jitsi:libjitsi:1.1-34-gb93ce2ee'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-    testImplementation 'org.mockito:mockito-core:4.5.1'
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.mockito:mockito-core:5.20.0'
+    mockitoAgent('org.mockito:mockito-core:5.20.0') {
+        transitive = false
+    }
 }
 
 tasks.named('instrumentForms') {
@@ -182,6 +187,7 @@ runtime {
 
 test {
     useJUnitPlatform()
+    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
 }
 
 compileJava {

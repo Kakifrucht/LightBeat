@@ -25,7 +25,7 @@ class TimeThresholdTest {
             timeThreshold.setCurrentThreshold(-1);
             fail("No exception was thrown");
         } catch (Exception e) {
-            assertEquals(e.getClass(), IllegalArgumentException.class);
+            assertEquals(IllegalArgumentException.class, e.getClass());
         }
     }
 

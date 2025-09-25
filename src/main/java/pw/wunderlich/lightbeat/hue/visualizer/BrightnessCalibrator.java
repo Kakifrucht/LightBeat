@@ -43,6 +43,27 @@ class BrightnessCalibrator {
 
     BrightnessCalibrator(Config config) {
         this.config = config;
+        updateConfigValues();
+    }
+
+    private boolean updateConfigValues() {
+        int newBrightnessMin = config.getInt(ConfigNode.BRIGHTNESS_MIN);
+        int newBrightnessMax = config.getInt(ConfigNode.BRIGHTNESS_MAX);
+        int newFadeDifference = config.getInt(ConfigNode.BRIGHTNESS_FADE_DIFFERENCE);
+        int newBrightnessRange = newBrightnessMax - newBrightnessMin;
+        double newBrightnessFadeDifference = newFadeDifference * BRIGHTNESS_DIFFERENCE_PERCENTAGE_BASE;
+        // Check if any of the configuration values have changed
+        if (this.brightnessMin != newBrightnessMin
+                || this.brightnessRange != newBrightnessRange
+                || this.brightnessFadeDifference != newBrightnessFadeDifference) {
+            this.brightnessMin = newBrightnessMin;
+            this.brightnessRange = newBrightnessRange;
+            this.brightnessFadeDifference = newBrightnessFadeDifference;
+            this.brightnessLowestBeat = newBrightnessFadeDifference * 2;
+            this.brightnessHighestFade = 1d - brightnessLowestBeat;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -53,24 +74,8 @@ class BrightnessCalibrator {
      */
     BrightnessData getBrightness(double amplitudeDifference) {
 
-        int brightnessMin = config.getInt(ConfigNode.BRIGHTNESS_MIN);
-        int brightnessRange = config.getInt(ConfigNode.BRIGHTNESS_MAX) - brightnessMin;
-        double brightnessFadeDifference = config.getInt(ConfigNode.BRIGHTNESS_FADE_DIFFERENCE) * BRIGHTNESS_DIFFERENCE_PERCENTAGE_BASE;
-
         // if config was changed, determine new values and force a brightness change
-        boolean forceBrightnessChange = false;
-        if (this.brightnessMin != brightnessMin
-                || this.brightnessRange != brightnessRange
-                || this.brightnessFadeDifference != brightnessFadeDifference) {
-
-            this.brightnessMin = brightnessMin;
-            this.brightnessRange = brightnessRange;
-            this.brightnessFadeDifference = brightnessFadeDifference;
-            this.brightnessLowestBeat = brightnessFadeDifference * 2;
-            this.brightnessHighestFade = 1d - brightnessLowestBeat;
-
-            forceBrightnessChange = true;
-        }
+        boolean forceBrightnessChange = updateConfigValues();
 
         amplitudeDifferenceHistory.add(amplitudeDifference);
 

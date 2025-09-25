@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="8" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="16" left="16" bottom="16" right="16"/>
     <constraints>
-      <xy x="20" y="20" width="422" height="539"/>
+      <xy x="20" y="20" width="422" height="551"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -95,7 +95,7 @@
             <properties>
               <enabled value="false"/>
               <text value="Scan"/>
-              <toolTipText value="Scan for bridges in your network."/>
+              <toolTipText value="Scan for bridges on your network."/>
             </properties>
           </component>
         </children>
