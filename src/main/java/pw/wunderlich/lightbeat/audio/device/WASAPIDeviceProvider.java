@@ -17,7 +17,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.LogManager;
+import java.util.logging.Handler;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +43,7 @@ public class WASAPIDeviceProvider implements DeviceProvider {
         logger.info("Initializing WASAPI devices...");
 
         // jitsi uses JUL for logging, bridge it to slf4j
-        LogManager.getLogManager().reset();
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
 
         try {
@@ -79,6 +79,10 @@ public class WASAPIDeviceProvider implements DeviceProvider {
         private LBAudioFormat format;
 
         private Field availableField;
+        private Field startedField;
+        private Field eventHandleCmdField;
+        private java.util.logging.Logger julLogger;
+        private Handler deviceInvalidatedHandler;
 
         private boolean exceptionWasThrown = false;
 
@@ -130,7 +134,16 @@ public class WASAPIDeviceProvider implements DeviceProvider {
                             this.format = new LBAudioFormat(audioFormat);
                             availableField = client.getClass().getDeclaredField("availableLength");
                             availableField.setAccessible(true);
+                            // reflect liveness-related fields
+                            startedField = client.getClass().getDeclaredField("started");
+                            startedField.setAccessible(true);
+                            eventHandleCmdField = client.getClass().getDeclaredField("eventHandleCmd");
+                            eventHandleCmdField.setAccessible(true);
+
+                            exceptionWasThrown = false;
                             client.start();
+
+                            installDeviceInvalidationWatcher();
                         } catch (Exception e) {
                             logger.debug("Couldn't initialize with {}", audioFormat);
                         }
@@ -141,7 +154,9 @@ public class WASAPIDeviceProvider implements DeviceProvider {
 
         @Override
         public boolean isOpen() {
-            return client != null && !exceptionWasThrown;
+            return client != null
+                    && !exceptionWasThrown
+                    && getLastActivityTimestampMillis() > System.currentTimeMillis() - 2000L;
         }
 
         @Override
@@ -154,6 +169,63 @@ public class WASAPIDeviceProvider implements DeviceProvider {
                 return (int) availableField.get(client);
             } catch (Exception e) {
                 return 0;
+            }
+        }
+
+        private long getLastActivityTimestampMillis() {
+            if (client == null) return 0L;
+            try {
+                boolean started = (boolean) startedField.get(client);
+                Object eventHandleCmd = eventHandleCmdField.get(client);
+                // Consider the stream "alive" while started and the event thread is present
+                return (started && eventHandleCmd != null) ? System.currentTimeMillis() : 0L;
+            } catch (Exception e) {
+                return 0L;
+            }
+        }
+
+        private void installDeviceInvalidationWatcher() {
+            try {
+                uninstallDeviceInvalidationWatcher();
+
+                julLogger = java.util.logging.Logger.getLogger(
+                        "org.jitsi.impl.neomedia.jmfext.media.protocol.wasapi.AudioCaptureClient");
+
+                deviceInvalidatedHandler = new Handler() {
+                    @Override
+                    public void publish(java.util.logging.LogRecord record) {
+                        if (record == null) return;
+                        final String msg = String.valueOf(record.getMessage());
+                        final Throwable t = record.getThrown();
+                        final String throwableStr = t != null ? String.valueOf(t) : "";
+
+                        // AUDCLNT_E_DEVICE_INVALIDATED = 0x88890004
+                        // Catch both GetNextPacketSize and Read error logs.
+                        boolean isWasapiErrorContext =
+                                msg.contains("IAudioCaptureClient_GetNextPacketSize")
+                                        || msg.contains("IAudioCaptureClient_Read");
+                        if (isWasapiErrorContext
+                                && (msg.contains("0x88890004") || throwableStr.contains("0x88890004"))) {
+                            exceptionWasThrown = true;
+                        }
+                    }
+                    @Override public void flush() {}
+                    @Override public void close() throws SecurityException {}
+                };
+
+                julLogger.addHandler(deviceInvalidatedHandler);
+            } catch (Throwable ignored) {}
+        }
+
+        private void uninstallDeviceInvalidationWatcher() {
+            try {
+                if (julLogger != null && deviceInvalidatedHandler != null) {
+                    julLogger.removeHandler(deviceInvalidatedHandler);
+                }
+            } catch (Throwable ignored) {
+            } finally {
+                deviceInvalidatedHandler = null;
+                julLogger = null;
             }
         }
 
@@ -183,6 +255,8 @@ public class WASAPIDeviceProvider implements DeviceProvider {
             } catch (IOException e) {
                 logger.warn("Couldn't stop audio device, force closing", e);
             }
+
+            uninstallDeviceInvalidationWatcher();
 
             client.close();
             client = null;

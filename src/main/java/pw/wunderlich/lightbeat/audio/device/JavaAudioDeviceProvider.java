@@ -29,6 +29,8 @@ public class JavaAudioDeviceProvider implements DeviceProvider {
                     TargetDataLine dataLine;
                     LBAudioFormat audioFormat;
 
+                    long lastReceived = Long.MAX_VALUE;
+
                     @Override
                     public String getName() {
                         return mixer.getMixerInfo().getName();
@@ -61,7 +63,9 @@ public class JavaAudioDeviceProvider implements DeviceProvider {
 
                     @Override
                     public boolean isOpen() {
-                        return dataLine != null && dataLine.isOpen();
+                        return dataLine != null
+                                && dataLine.isOpen()
+                                && lastReceived > System.currentTimeMillis() - 1000L;
                     }
 
                     @Override
@@ -74,12 +78,13 @@ public class JavaAudioDeviceProvider implements DeviceProvider {
                         if (!isOpen() || dataLine.available() < toRead) {
                             return 0;
                         }
+                        lastReceived = System.currentTimeMillis();
                         return dataLine.read(buffer, 0, toRead);
                     }
 
                     @Override
                     public boolean stop() {
-                        if (!isOpen()) {
+                        if (dataLine == null || !dataLine.isOpen()) {
                             return false;
                         }
                         dataLine.stop();
