@@ -1,111 +1,116 @@
 package pw.wunderlich.lightbeat.hue.bridge.light;
 
 import io.github.zeroone3010.yahueapi.AlertType;
+import io.github.zeroone3010.yahueapi.Light;
 import io.github.zeroone3010.yahueapi.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Sends light updates in a synchronized queue, while waiting for callbacks from the bridge
- * and logging received errors. Every light has its own internal queue.
+ * and logging received errors. Every light has its own UpdateQueue instance.
+ * <br>
+ * Will discard updates that are older than {@link #STALE_THRESHOLD_MS}. The bridge itself
+ * does not reply when an update has successfully propagated through the ZigBee network and
+ * instead only confirms the acceptance of the update. Calling {@link #addUpdate(State, boolean)}
+ * with {@code isEssential = true} will ensure the update will be sent.
  */
 public class UpdateQueue {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdateQueue.class);
 
+    private static final long STALE_THRESHOLD_MS = 250;
+
+    private final Light apiLight;
     private final ScheduledExecutorService executorService;
-    private final Map<Light, Queue<QueueEntry>> queue;
+
+    private final Queue<QueueEntry> queue;
 
 
-    public UpdateQueue(ScheduledExecutorService executorService) {
+    public UpdateQueue(Light apiLight, ScheduledExecutorService executorService) {
+        this.apiLight = apiLight;
         this.executorService = executorService;
-        queue = new ConcurrentHashMap<>();
+        queue = new LinkedList<>();
     }
 
-    public void addUpdate(Light light, State state) {
+    public void addUpdate(State state, boolean isEssential) {
         if (state == null) {
             return;
         }
-
-        if (light == null) {
-            throw new IllegalArgumentException("Light cannot be null");
-        }
-
         synchronized (queue) {
-            QueueEntry entry = new QueueEntry(light, state);
-            if (queue.containsKey(light)) {
-                queue.get(light).add(entry);
-            } else {
-                Queue<QueueEntry> lightQueue = new LinkedList<>();
-                lightQueue.add(entry);
-                queue.put(light, lightQueue);
-                next(light);
+            boolean wasEmpty = queue.isEmpty();
+            queue.add(new QueueEntry(state, isEssential));
+            if (wasEmpty) {
+                next();
             }
         }
     }
 
-    private void next(Light light) {
+    private void next() {
         synchronized (queue) {
-            Queue<QueueEntry> lightQueue = queue.get(light);
-            if (!lightQueue.isEmpty()) {
-                QueueEntry next = lightQueue.poll();
+            if (!queue.isEmpty()) {
+                QueueEntry next = queue.peek();
                 if (executorService.isShutdown()) {
                     next.doUpdate();
                 } else {
                     executorService.schedule(next::doUpdate, 0, TimeUnit.SECONDS);
                 }
-            } else {
-                queue.remove(light);
             }
         }
     }
 
     private class QueueEntry {
-        private final Light light;
         private final State state;
+        private final long creationTimestamp;
+        private final boolean isEssential;
 
-        QueueEntry(Light light, State state) {
-            this.light = light;
+        QueueEntry(State state, boolean isEssential) {
             this.state = state;
+            this.creationTimestamp = System.currentTimeMillis();
+            this.isEssential = isEssential;
         }
 
         void doUpdate() {
-            light.getBase().setState(state);
-            logger.info("Updated light {}", getLightInfo());
-            next(light);
+            if (!this.isEssential && System.currentTimeMillis() - creationTimestamp > STALE_THRESHOLD_MS) {
+                long age = System.currentTimeMillis() - creationTimestamp;
+                logger.warn("Discarding stale light update for {} (age: {}ms).", getLightInfo(), age);
+            } else {
+                apiLight.setState(state);
+                logger.info("Updated light {}", getLightInfo());
+            }
+
+            synchronized (queue) {
+                queue.poll();
+                next();
+            }
         }
 
         private String getLightInfo() {
-
-            State newState = state;
-
             String mode = "null";
-            if (newState.getAlert() != null && !newState.getAlert().equals(AlertType.NONE)) {
-                mode = newState.getAlert().toString();
+            if (state.getAlert() != null && !state.getAlert().equals(AlertType.NONE)) {
+                mode = state.getAlert().toString();
             }
 
             String color = "null";
-            if (newState.getHue() != null) {
-                color = "hue/sat " + newState.getHue() + "/" + newState.getSat();
-            } else if (newState.getXy() != null) {
-                color = "x/y " + newState.getXy().get(0) + "/" + newState.getXy().get(1);
-            } else if (newState.getCt() != null) {
-                color = "ct " + newState.getCt();
+            if (state.getHue() != null) {
+                color = "hue/sat " + state.getHue() + "/" + state.getSat();
+            } else if (state.getXy() != null) {
+                color = "x/y " + state.getXy().get(0) + "/" + state.getXy().get(1);
+            } else if (state.getCt() != null) {
+                color = "ct " + state.getCt();
             }
 
-            return light.getBase().getName()
-                    + " (time " + newState.getTransitiontime()
-                    + " | bri " + newState.getBri()
+            return apiLight.getName()
+                    + " (time " + state.getTransitiontime()
+                    + " | bri " + state.getBri()
                     + " | color " + color
                     + " | mode " + mode
-                    + " | on " + newState.getOn() + ")";
+                    + " | on " + state.getOn() + ")";
         }
     }
 }

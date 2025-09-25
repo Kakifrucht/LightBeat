@@ -8,7 +8,6 @@ import pw.wunderlich.lightbeat.config.Config;
 import pw.wunderlich.lightbeat.config.ConfigNode;
 import pw.wunderlich.lightbeat.hue.bridge.light.LBLight;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
-import pw.wunderlich.lightbeat.hue.bridge.light.UpdateQueue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,12 +49,11 @@ public class LBHueManager implements HueManager {
     public List<Light> getLights(boolean disabledLights) {
         bridgeConnection.refresh();
         List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
-        UpdateQueue updateQueue = new UpdateQueue(executorService);
 
         return bridgeConnection.getLights()
                 .stream()
                 .filter(light -> !disabledLights || !disabledLightsList.contains(light.getId()))
-                .map((light -> new LBLight(light, updateQueue, executorService)))
+                .map((light -> new LBLight(light, executorService)))
                 .collect(Collectors.toUnmodifiableList());
     }
 

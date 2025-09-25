@@ -22,13 +22,14 @@ public class LBLight implements Light {
     private volatile LightStateBuilder currentBuilder;
     private volatile LightStateBuilder builderToCopyAfterTurningOn;
     private volatile boolean isOn;
+    private volatile boolean forceOnStateNextUpdate = false;
 
     private volatile State storedState = null;
 
 
-    public LBLight(io.github.zeroone3010.yahueapi.Light light, UpdateQueue updateQueue, ScheduledExecutorService executorService) {
-        this.light = light;
-        this.updateQueue = updateQueue;
+    public LBLight(io.github.zeroone3010.yahueapi.Light apiLight, ScheduledExecutorService executorService) {
+        this.light = apiLight;
+        this.updateQueue = new UpdateQueue(apiLight, executorService);
 
         this.colorController = new ColorController(this);
         this.brightnessController = new BrightnessController(this);
@@ -37,7 +38,7 @@ public class LBLight implements Light {
         this.currentBuilder = LightStateBuilder.create();
         this.builderToCopyAfterTurningOn = LightStateBuilder.create();
 
-        this.isOn = light.getState().getOn();
+        this.isOn = apiLight.getState().getOn();
     }
 
     @Override
@@ -84,6 +85,7 @@ public class LBLight implements Light {
         if (/* turned */ on) {
             currentBuilder.copyFromBuilder(builderToCopyAfterTurningOn);
             brightnessController.forceBrightnessUpdate();
+            this.forceOnStateNextUpdate = true;
         } else {
             builderToCopyAfterTurningOn = LightStateBuilder.create();
         }
@@ -100,7 +102,8 @@ public class LBLight implements Light {
 
         if (!currentBuilder.isDefault() || brightnessController.isBrightnessWasIncreased()) {
             brightnessController.applyUpdates();
-            updateQueue.addUpdate(this, currentBuilder.getLightState());
+            updateQueue.addUpdate(currentBuilder.getLightState(), forceOnStateNextUpdate);
+            forceOnStateNextUpdate = false;
         }
 
         if (transitionTime > 0) {
@@ -110,7 +113,7 @@ public class LBLight implements Light {
             brightnessController.applyFadeUpdates();
 
             if (!currentBuilder.isDefault()) {
-                updateQueue.addUpdate(this, currentBuilder.getLightState());
+                updateQueue.addUpdate(currentBuilder.getLightState(), false);
             }
         }
 
@@ -126,7 +129,7 @@ public class LBLight implements Light {
     @Override
     public void restoreState() {
         if (storedState != null) {
-            updateQueue.addUpdate(this, storedState);
+            updateQueue.addUpdate(storedState, true);
             storedState = null;
         }
     }

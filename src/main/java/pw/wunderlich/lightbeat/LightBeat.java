@@ -25,8 +25,20 @@ public class LightBeat {
 
     private static final Logger logger = LoggerFactory.getLogger(LightBeat.class);
 
+    /**
+     * Number of threads for the ScheduledExecutorService, used throughout the application.
+     * Count was chosen as a trade-off to be able to handle high light counts to not block
+     * during bridge communication i/o and to not overwhelm the bridge with too many commands.
+     */
+    private static final int THREAD_COUNT = 8;
+
     public static void main(String[] args) {
         new LightBeat();
+    }
+
+    public static String getVersion() {
+        String version = LightBeat.class.getPackage().getImplementationVersion();
+        return Objects.requireNonNullElse(version, "");
     }
 
 
@@ -34,7 +46,7 @@ public class LightBeat {
 
         logger.info("LightBeat v{} starting", getVersion());
 
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(THREAD_COUNT);
         Config config = new LBConfig();
 
         LBAudioReader audioReader = new LBAudioReader(config, executorService);
@@ -66,8 +78,5 @@ public class LightBeat {
         return null;
     }
 
-    public static String getVersion() {
-        String version = LightBeat.class.getPackage().getImplementationVersion();
-        return Objects.requireNonNullElse(version, "");
-    }
+
 }
