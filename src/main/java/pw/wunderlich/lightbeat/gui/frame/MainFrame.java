@@ -265,7 +265,10 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
     @Override
     public void beatReceived(BeatEvent event) {
-        runOnSwingThread(() -> bannerLabel.flipIcon());
+        runOnSwingThread(() -> {
+            bannerLabel.flipIcon();
+            colorsPreviewPanel.repaintShifted();
+        });
         executorService.schedule(() -> runOnSwingThread(() -> bannerLabel.flipIcon()), 100, TimeUnit.MILLISECONDS);
     }
 

@@ -11,6 +11,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,10 +20,20 @@ import java.util.List;
  */
 public class JColorPanel extends JPanel {
 
+    /**
+     * The step by which the hue is shifted when colorSet is null.
+     */
+    private static final float HUE_SHIFT_STEP = 0.05f;
+
     private BufferedImage canvas;
     private List<Color> colorSet;
 
     private boolean drawSaturationGradient = true;
+
+    /**
+     * The current hue shift offset.
+     */
+    private float hueShift = 0.0f;
 
 
     public JColorPanel() {
@@ -62,7 +73,24 @@ public class JColorPanel extends JPanel {
 
     public void setColorSet(ColorSet colorSet) {
         this.colorSet = colorSet.getColors();
+        this.hueShift = 0f;
         drawSaturationGradient = false;
+        repaintCanvas();
+    }
+
+    /**
+     * Repaints the canvas, shifting the drawn colors.
+     * If a ColorSet is active, it rotates the colors (e.g., [c1, c2, c3] becomes [c2, c3, c1]).
+     * If no ColorSet is active (hue gradient), it shifts the hue value by a constant step.
+     */
+    public void repaintShifted() {
+        if (colorSet == null) {
+            hueShift = (hueShift + HUE_SHIFT_STEP) % 1f;
+        } else {
+            if (!colorSet.isEmpty()) {
+                Collections.rotate(colorSet, -1);
+            }
+        }
         repaintCanvas();
     }
 
@@ -79,7 +107,7 @@ public class JColorPanel extends JPanel {
         if (colorSet == null) {
 
             for (int x = 0; x < width; x++) {
-                float hue = (float) x / width;
+                float hue = ((float) x / width + hueShift) % 1f;
                 for (int y = 0; y < height; y++) {
                     int rgb = java.awt.Color.HSBtoRGB(hue, drawSaturationGradient ? (float) (height - y) / height : 1f, 1f);
                     canvas.setRGB(x, y, rgb);
