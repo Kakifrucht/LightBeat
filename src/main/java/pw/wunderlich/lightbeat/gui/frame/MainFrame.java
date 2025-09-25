@@ -456,8 +456,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         glowCheckBox.setEnabled(enabled);
     }
 
-    private void refreshDeviceSelector() {
-
+    private boolean refreshDeviceSelector() {
         List<String> deviceNames = audioReader.getSupportedDevices().stream()
                 .map(AudioDevice::getName)
                 .toList();
@@ -468,9 +467,28 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         } else {
             lastSource = (String) deviceSelectComboBox.getSelectedItem();
         }
-
-        // add mixer names to combobox
         deviceSelectComboBox.removeAllItems();
+
+        if (deviceNames.isEmpty()) {
+            deviceSelectComboBox.addItem("Error: No devices found.");
+            startButton.setEnabled(false);
+            Runnable deviceChecker = new Runnable() {
+                @Override
+                public void run() {
+                    runOnSwingThread(() -> {
+                        boolean devicesFound = refreshDeviceSelector();
+                        if (devicesFound) {
+                            startButton.setEnabled(true);
+                        } else {
+                            executorService.schedule(this, 5, TimeUnit.SECONDS);
+                        }
+                    });
+                }
+            };
+            executorService.schedule(deviceChecker, 5, TimeUnit.SECONDS);
+            return false;
+        }
+
         if (lastSource != null) {
             deviceNames.stream()
                     .filter(name -> name.equals(lastSource))
@@ -485,6 +503,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         if (deviceNames.stream().anyMatch(name -> name.startsWith("Loopback: "))) {
             audioSourceLabel.setText("Select your main audio devices Loopback, \"Stereo Mix\" or a virtual audio cable for best results.");
         }
+        return true;
     }
 
     private void updateLightsPanel() {
