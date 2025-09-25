@@ -86,10 +86,14 @@ public class LBColor implements Color {
         float otherHue = color.getHue();
         float otherSaturation = color.getSaturation();
 
-        return otherHue <= this.hue + derivationBound
-                && otherHue >= this.hue - derivationBound
-                && otherSaturation <= this.saturation + derivationBound
-                && otherSaturation >= this.saturation - derivationBound;
+        // Cyclical comparison for hue (wrap-around on [0,1))
+        double hueDiff = Math.abs(this.hue - otherHue);
+        hueDiff = Math.min(hueDiff, 1.0 - hueDiff);
+
+        // Non-cyclical comparison for saturation (clamped in getDerivedColor)
+        double satDiff = Math.abs(this.saturation - otherSaturation);
+
+        return hueDiff <= derivationBound && satDiff <= derivationBound;
     }
 
     @Override
