@@ -129,7 +129,7 @@ runtime {
     if (isWindowsBuild) {
         launcher {
             def customJvmArgs = new ArrayList(libjitsiAddOpensArgs)
-            if (project.hasProperty('windows-appimage')) {
+            if (project.hasProperty('updatechecker-disabled')) {
                 customJvmArgs.add('-Dupdatechecker.disabled=true')
             }
 
@@ -142,9 +142,9 @@ runtime {
 
     jpackage {
 
-        // Windows MSI & App-Image Configuration
+        // Windows MSI
         if (isWindowsBuild) {
-            installerType = project.hasProperty('windows-appimage') ? 'app-image' : 'msi'
+            installerType = 'msi'
             imageOptions = [
                     '--icon', 'src/main/resources/jpackage/icon.ico',
                     '--add-launcher', "${project.name}-console=src/main/resources/jpackage/debug_build.properties",
@@ -152,7 +152,7 @@ runtime {
             installerOptions = [
                     '--vendor', 'wunderlich.pw',
                     '--win-menu',
-                    '--win-menu-group', 'LightBeat',
+                    '--win-menu-group', project.name,
                     '--win-shortcut',
                     '--win-upgrade-uuid', 'c7d7f7e9-7b5c-4f1a-9a0e-8f2c3d4b5e6f',
             ]
@@ -165,7 +165,7 @@ runtime {
             ]
             installerOptions = [
                     '--vendor', 'wunderlich.pw',
-                    '--mac-package-name', 'LightBeat',
+                    '--mac-package-name', project.name,
             ]
         }
         // Linux DEB Configuration
