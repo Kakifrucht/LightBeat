@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class LBAudioReader implements BeatEventManager, AudioReader {
 
     private static final int AMPLITUDES_PER_SECOND = 50;
-    // Define a specific frequency for the bass cutoff instead of a magic percentage.
+    private static final int MAX_CHUNK_AGE = 4;
     private static final double BASS_CUTOFF_HZ = 200.0;
     private static final double MINIMUM_AMPLITUDE = 0.005d;
 
@@ -42,6 +42,8 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
 
     private AudioDevice audioDevice;
     private BeatInterpreter beatInterpreter;
+    private TimeThreshold nextBeatThreshold;
+
     private ScheduledFuture<?> future;
     private ByteBuffer audioBuffer;
 
@@ -84,9 +86,10 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
         }
 
         this.audioDevice = audioDevice;
-        this.beatInterpreter = new BeatInterpreter(config);
+        this.beatInterpreter = new BeatInterpreter(config, AMPLITUDES_PER_SECOND);
+        this.nextBeatThreshold = new TimeThreshold(TimeUnit.SECONDS.toMillis(1));
 
-        LBAudioFormat audioFormat = audioDevice.getAudioFormat();
+        var audioFormat = audioDevice.getAudioFormat();
         int bytesPerSecond = (int) (audioFormat.sampleRate() * audioFormat.getBytesPerFrame());
         int bytesPerChunk = bytesPerSecond / AMPLITUDES_PER_SECOND;
         int samplesPerChunk = bytesPerChunk / audioFormat.getBytesPerFrame();
@@ -103,59 +106,65 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
             }
 
             int availableBytes = audioDevice.available();
-            if (availableBytes < bytesPerChunk) {
+            int chunksAvailable = availableBytes / bytesPerChunk;
+            if (chunksAvailable == 0) {
                 return;
             }
 
-            int bytesToSkip = availableBytes - bytesPerChunk;
-            while (bytesToSkip > 0) {
-                int amountToRead = Math.min(bytesToSkip, audioBuffer.array().length);
-                int bytesSkipped = audioDevice.read(audioBuffer.array(), amountToRead);
-
-                if (bytesSkipped <= 0) {
-                    logger.warn("Audio stream ended while trying to skip stale data.");
-                    return;
+            BeatEvent lastBeat = null;
+            for (int chunk = 0; chunk < chunksAvailable; chunk++) {
+                int bytesRead = audioDevice.read(audioBuffer.array(), bytesPerChunk);
+                if (bytesRead < bytesPerChunk) {
+                    logger.warn("Only {} bytes were read, expected {} bytes. Stream may be closing.", bytesRead, bytesPerChunk);
+                    continue; // Skip to next iteration
                 }
-                bytesToSkip -= bytesSkipped;
+
+                // Convert to normalized values
+                double[] normalizedAudioBuffer = new double[samplesPerChunk];
+                for (int i = 0; i < normalizedAudioBuffer.length; i++) {
+                    int bytePosition = i * audioFormat.bytesPerSample();
+
+                    if (audioFormat.bytesPerSample() == 2) {
+                        normalizedAudioBuffer[i] = audioBuffer.getShort(bytePosition) / (double) Short.MAX_VALUE;
+                    } else {
+                        normalizedAudioBuffer[i] = audioBuffer.get(bytePosition) / (double) Byte.MAX_VALUE;
+                    }
+                }
+
+                if (config.getBoolean(ConfigNode.BEAT_BASS_ONLY_MODE)) {
+                    lowPassFilter(normalizedAudioBuffer, audioFormat);
+                }
+
+                double rms = Arrays.stream(normalizedAudioBuffer)
+                        .map(val -> val * val)
+                        .average()
+                        .orElse(0d);
+                rms = Math.sqrt(rms);
+
+                BeatEvent event = beatInterpreter.interpretValue(rms >= MINIMUM_AMPLITUDE ? rms : 0d);
+                if (event != null) {
+                    if (chunksAvailable - chunk > MAX_CHUNK_AGE) {
+                        logger.info("Beat received, but it is too old (age > {} chunks)", MAX_CHUNK_AGE);
+                    } else {
+                        lastBeat = event;
+                    }
+                }
             }
 
-            int bytesRead = audioDevice.read(audioBuffer.array(), bytesPerChunk);
-            if (bytesRead < bytesPerChunk) {
-                logger.warn("Only {} bytes were read, expected {} bytes. Stream may be closing.", bytesRead, bytesPerChunk);
+            if (lastBeat == null) {
                 return;
             }
 
-            // Convert to normalized values
-            double[] normalizedAudioBuffer = new double[samplesPerChunk];
-            for (int i = 0; i < normalizedAudioBuffer.length; i++) {
-                int bytePosition = i * audioFormat.bytesPerSample();
-
-                if (audioFormat.bytesPerSample() == 2) {
-                    normalizedAudioBuffer[i] = audioBuffer.getShort(bytePosition) / (double) Short.MAX_VALUE;
-                } else {
-                    normalizedAudioBuffer[i] = audioBuffer.get(bytePosition) / (double) Byte.MAX_VALUE;
-                }
-            }
-
-            if (config.getBoolean(ConfigNode.BEAT_BASS_ONLY_MODE)) {
-                lowPassFilter(normalizedAudioBuffer, audioFormat);
-            }
-
-            double rms = Arrays.stream(normalizedAudioBuffer)
-                    .map(val -> val * val)
-                    .average()
-                    .orElse(0d);
-            rms = Math.sqrt(rms);
-
-            BeatEvent event = beatInterpreter.interpretValue(rms >= MINIMUM_AMPLITUDE ? rms : 0d);
-            if (event != null) {
-                if (event.isSilence()) {
-                    beatEventObservers.forEach(BeatObserver::silenceDetected);
-                } else if (event.isNoBeat()) {
-                    beatEventObservers.forEach(BeatObserver::noBeatReceived);
-                } else {
-                    beatEventObservers.forEach(toNotify -> toNotify.beatReceived(event));
-                }
+            final var beatEvent = lastBeat;
+            if (beatEvent.isSilence()) {
+                beatEventObservers.forEach(BeatObserver::silenceDetected);
+            } else if (beatEvent.isNoBeat()) {
+                beatEventObservers.forEach(BeatObserver::noBeatReceived);
+            } else if (nextBeatThreshold.isMet()) {
+                nextBeatThreshold.setCurrentThreshold(config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN));
+                beatEventObservers.forEach(toNotify -> toNotify.beatReceived(beatEvent));
+            } else {
+                logger.info("Beat received, but it was skipped due to BEAT_MIN_TIME_BETWEEN");
             }
         }, 0L, intervalMillis, TimeUnit.MILLISECONDS);
 

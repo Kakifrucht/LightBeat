@@ -100,7 +100,7 @@
               </grid>
             </constraints>
             <properties>
-              <toolTipText value="&lt;html&gt;For a quick selection left click your desired color.&lt;br&gt;Right clicking opens a more advanced color picker that supports picking a color from anywhere on your Desktop.&lt;br&gt;&lt;br&gt;The brightness of the selected color cannot be changed, as it will be determined during visualisation.&lt;/html&gt;"/>
+              <toolTipText value="&lt;html&gt;For a quick selection left click your desired color.&lt;br&gt;Right clicking opens a more advanced color picker that supports picking a color from anywhere on your Desktop.&lt;br&gt;&lt;br&gt;The brightness of the selected color cannot be changed, as it will be determined during visualization.&lt;/html&gt;"/>
             </properties>
             <border type="none">
               <color color="-16777216"/>

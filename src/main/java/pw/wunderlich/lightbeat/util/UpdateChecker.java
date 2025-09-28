@@ -1,14 +1,15 @@
 package pw.wunderlich.lightbeat.util;
 
-import com.google.common.io.CharStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 /**
  * Checks the GitHub releases API for the given repository to find the latest version.
@@ -87,9 +88,8 @@ public class UpdateChecker {
         int responseCode = connection.getResponseCode();
 
         if (responseCode >= 200 && responseCode < 300) {
-            // Use Guava's CharStreams to simplify reading the response
-            try (InputStreamReader reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)) {
-                String jsonResponse = CharStreams.toString(reader);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+                String jsonResponse = reader.lines().collect(Collectors.joining("\n"));
 
                 // Simple manual JSON parsing to find the "tag_name"
                 String tagNameKey = "\"tag_name\":\"";

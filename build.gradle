@@ -31,13 +31,12 @@ configurations {
 
 dependencies {
     implementation 'io.github.zeroone3010:yetanotherhueapi:2.8.0-lb' // github.com/Kakifrucht/yetanotherhueapi -> install to maven local
-    implementation 'org.slf4j:slf4j-api:1.7.36'
-    implementation 'org.slf4j:slf4j-simple:1.7.36'
-    implementation 'org.slf4j:jul-to-slf4j:1.7.36'
-    implementation 'com.google.guava:guava:33.2.1-jre'
+    implementation 'org.slf4j:slf4j-api:2.0.17'
+    implementation 'org.slf4j:slf4j-simple:2.0.17'
+    implementation 'org.slf4j:jul-to-slf4j:2.0.17'
     implementation 'com.github.wendykierp:JTransforms:3.1'
     implementation 'com.github.weisj:darklaf-core:3.1.1'
-    implementation 'com.jetbrains.intellij.java:java-gui-forms-rt:222.1149'
+    implementation 'com.jetbrains.intellij.java:java-gui-forms-rt:252.26199.158'
 
     compileOnly 'org.jitsi:libjitsi:1.1-34-gb93ce2ee'
     windowsNatives 'org.jitsi:libjitsi:1.1-34-gb93ce2ee'

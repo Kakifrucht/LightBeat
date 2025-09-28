@@ -32,7 +32,9 @@ public class AppTaskOrchestrator implements AutoCloseable {
 
 
     /**
-     * For high-volume, I/O-bound tasks that need to run now.
+     * Submits a task to be executed on a virtual thread.
+     * Thread count will be limited by a semaphore and the set {@link #BRIDGE_CONCURRENCY_LIMIT}.
+     * To be used by threads that access the bridge.
      */
     public void dispatchBridgeCommand(Runnable bridgeTask) {
         workerExecutor.submit(() -> {
@@ -48,7 +50,7 @@ public class AppTaskOrchestrator implements AutoCloseable {
     }
 
     /**
-     * Submits a task to be executed asynchronously on a virtual thread.
+     * Submits a task to be executed on a virtual thread.
      * This bypasses the bridge-specific semaphore and is suitable for general-purpose
      * background tasks that don't need throttling.
      *
@@ -81,8 +83,6 @@ public class AppTaskOrchestrator implements AutoCloseable {
      * @return a ScheduledFuture representing pending completion, which can be used to cancel the periodic execution.
      */
     public ScheduledFuture<?> schedulePeriodicTask(Runnable task, long initialDelay, long period, TimeUnit unit) {
-        // The scheduler's thread simply triggers the submission to the worker executor.
-        // The actual work runs on a lightweight virtual thread.
         return scheduler.scheduleAtFixedRate(
                 () -> workerExecutor.submit(task),
                 initialDelay,

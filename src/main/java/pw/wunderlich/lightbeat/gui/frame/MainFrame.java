@@ -405,7 +405,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                         startButton.setText("Stop");
                         startButton.requestFocus();
 
-                        setInfoLabelText("Some settings cannot be changed during visualisation", true);
+                        setInfoLabelText("Some settings cannot be changed during visualization", true);
                         setElementsEnabled(false);
                         return;
                     }
@@ -441,7 +441,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     }
 
     /**
-     * Toggles interface elements that cannot be changed during visualisation.
+     * Toggles interface elements that cannot be changed during visualization.
      *
      * @param enabled true to set enabled, false to disable
      */

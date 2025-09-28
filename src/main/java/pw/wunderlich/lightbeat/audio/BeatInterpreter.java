@@ -1,13 +1,11 @@
 package pw.wunderlich.lightbeat.audio;
 
-import pw.wunderlich.lightbeat.config.Config;
-import pw.wunderlich.lightbeat.config.ConfigNode;
-import pw.wunderlich.lightbeat.util.TimeThreshold;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayDeque;
-import java.util.Queue;
+import pw.wunderlich.lightbeat.config.Config;
+import pw.wunderlich.lightbeat.config.ConfigNode;
+import pw.wunderlich.lightbeat.util.DoubleAverageBuffer;
+import pw.wunderlich.lightbeat.util.TimeThreshold;
 
 /**
  * Interprets a stream of audio amplitudes (RMS) to detect beat events.
@@ -31,21 +29,19 @@ class BeatInterpreter {
 
     private final Config config;
 
-    private final Queue<AmplitudeSample> amplitudeHistory = new ArrayDeque<>();
+    private final DoubleAverageBuffer amplitudeHistory;
     private boolean isSilent = true;
 
-    private final TimeThreshold nextBeatThreshold = new TimeThreshold(1000L); // Start with a 1s calibration phase
     private final TimeThreshold noBeatThreshold = new TimeThreshold();
     private final TimeThreshold silenceThreshold = new TimeThreshold();
 
     private double peakGateThreshold = 0d;
     private long lastUpdateTime = 0L;
 
-    private record AmplitudeSample(long timestamp, double value) {
-    }
 
-    BeatInterpreter(Config config) {
+    BeatInterpreter(Config config, int updatesPerSecond) {
         this.config = config;
+        this.amplitudeHistory = new DoubleAverageBuffer((int) (AVERAGE_WINDOW_MS / 1000 * updatesPerSecond), false);
     }
 
     /**
@@ -64,26 +60,21 @@ class BeatInterpreter {
             peakGateThreshold = Math.max(0, peakGateThreshold - (PEAK_DECAY_RATE_PER_MS * timeDelta));
         }
 
-        updateHistory(currentTime, amplitude);
-        double average = calculateCurrentAverage();
+        amplitudeHistory.add(amplitude);
+        double average = amplitudeHistory.getCurrentAverage();
 
         double normalizedSensitivity = (config.getInt(ConfigNode.BEAT_SENSITIVITY) - 1) / 9d;
         double beatMultiplier = MAX_MULTIPLIER - (normalizedSensitivity * (MAX_MULTIPLIER - MIN_MULTIPLIER));
         double dynamicThreshold = average * beatMultiplier;
 
         if (amplitude > dynamicThreshold && amplitude > peakGateThreshold) {
-
-            if (nextBeatThreshold.isMet()) {
-                nextBeatThreshold.setCurrentThreshold(config.getInt(ConfigNode.BEAT_MIN_TIME_BETWEEN));
-                noBeatThreshold.setCurrentThreshold(NO_BEAT_RECEIVED_MILLIS);
-                disableSilenceThreshold();
-
-                logger.info("Beat detected at {} (avg {}, dynThresh: {}, peakThresh: {})",
-                        fD(amplitude), fD(average), fD(dynamicThreshold), fD(peakGateThreshold));
-                return new BeatEvent(amplitude, average);
-            }
+            noBeatThreshold.setCurrentThreshold(NO_BEAT_RECEIVED_MILLIS);
+            disableSilenceThreshold();
 
             peakGateThreshold = amplitude * PEAK_DECAY_MULTIPLIER;
+            logger.info("Beat detected at {} (avg {}, dynThresh: {}, peakThresh: {})",
+                    fD(amplitude), fD(average), fD(dynamicThreshold), fD(peakGateThreshold));
+            return new BeatEvent(amplitude, average);
         }
 
         if (amplitude > 0d) {
@@ -106,29 +97,6 @@ class BeatInterpreter {
         }
 
         return null;
-    }
-
-    /**
-     * Adds the new sample and removes any samples older than AVERAGE_WINDOW_MS.
-     */
-    private void updateHistory(long currentTime, double amplitude) {
-        amplitudeHistory.add(new AmplitudeSample(currentTime, amplitude));
-        long cutoffTime = currentTime - AVERAGE_WINDOW_MS;
-        // Remove old samples from the front of the queue
-        while (!amplitudeHistory.isEmpty() && amplitudeHistory.peek().timestamp < cutoffTime) {
-            amplitudeHistory.poll();
-        }
-    }
-
-    private double calculateCurrentAverage() {
-        if (amplitudeHistory.isEmpty()) {
-            return 0.0;
-        }
-        double sum = 0.0;
-        for (AmplitudeSample sample : amplitudeHistory) {
-            sum += sample.value;
-        }
-        return sum / amplitudeHistory.size();
     }
 
     private void disableSilenceThreshold() {
