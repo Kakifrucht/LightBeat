@@ -4,6 +4,7 @@ import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.components.help.HelpButton;
 import com.github.weisj.darklaf.theme.IntelliJTheme;
 import com.github.weisj.darklaf.theme.OneDarkTheme;
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
 import pw.wunderlich.lightbeat.LightBeat;
 import pw.wunderlich.lightbeat.audio.AudioReader;
 import pw.wunderlich.lightbeat.audio.BeatEvent;
@@ -17,7 +18,6 @@ import pw.wunderlich.lightbeat.hue.bridge.HueManager;
 import pw.wunderlich.lightbeat.hue.bridge.color.ColorSet;
 import pw.wunderlich.lightbeat.hue.bridge.color.CustomColorSet;
 import pw.wunderlich.lightbeat.hue.bridge.color.RandomColorSet;
-import pw.wunderlich.lightbeat.hue.bridge.light.Light;
 import pw.wunderlich.lightbeat.hue.visualizer.HueBeatObserver;
 import pw.wunderlich.lightbeat.util.UpdateChecker;
 
@@ -30,18 +30,19 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Main application frame. Interface to set the applications settings and start the magic.
+ * Main application frame. UI to set the application settings and start the magic.
  */
 public class MainFrame extends AbstractFrame implements BeatObserver {
 
     private static final int MINIMUM_BRIGHTNESS_DIFFERENCE = 36;
 
+    private final Config config;
     private final AudioReader audioReader;
     private final BeatEventManager beatEventManager;
+    private final HueManager hueManager;
 
     private JPanel mainPanel;
 
@@ -92,13 +93,15 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     private HueFrame selectionFrame = null;
 
 
-    public MainFrame(Config config, ScheduledExecutorService executorService,
+    public MainFrame(Config config, AppTaskOrchestrator taskOrchestrator,
                      AudioReader audioReader, BeatEventManager beatEventManager,
                      HueManager hueManager, int x, int y) {
-        super(config, executorService, hueManager, x, y);
+        super(taskOrchestrator, x, y);
+        this.config = config;
 
         this.audioReader = audioReader;
         this.beatEventManager = beatEventManager;
+        this.hueManager = hueManager;
 
         // audio source panel
         refreshDeviceSelector();
@@ -269,7 +272,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             bannerLabel.flipIcon();
             colorsPreviewPanel.repaintShifted();
         });
-        executorService.schedule(() -> runOnSwingThread(() -> bannerLabel.flipIcon()), 100, TimeUnit.MILLISECONDS);
+        taskOrchestrator.schedule(() -> runOnSwingThread(() -> bannerLabel.flipIcon()), 100, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -289,7 +292,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             refreshDeviceSelector();
 
             // re-enable start button with small delay
-            executorService.schedule(() -> runOnSwingThread(() -> {
+            taskOrchestrator.schedule(() -> runOnSwingThread(() -> {
                 startButton.setEnabled(true);
                 startButton.requestFocus();
             }), 1, TimeUnit.SECONDS);
@@ -321,7 +324,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
     }
 
     private void scheduleUpdateCheck(String version) {
-        executorService.schedule(() -> {
+        taskOrchestrator.schedule(() -> {
 
             long updateDisableNotificationTime = config.getLong(ConfigNode.UPDATE_DISABLE_NOTIFICATION);
 
@@ -331,7 +334,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 return;
             }
 
-            UpdateChecker updateChecker = new UpdateChecker(version);
+            var updateChecker = new UpdateChecker(version);
             try {
 
                 if (updateChecker.isUpdateAvailable()) {
@@ -358,16 +361,16 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         long locationStore = config.getLong(ConfigNode.WINDOW_LOCATION);
         if (locationStore > 0) {
-            ByteBuffer locationBuffer = ByteBuffer.allocate(8).putLong(locationStore);
+            var locationBuffer = ByteBuffer.allocate(8).putLong(locationStore);
             short storedX = locationBuffer.getShort(0);
             short storedY = locationBuffer.getShort(2);
             short width = locationBuffer.getShort(4);
             short height = locationBuffer.getShort(6);
 
-            Rectangle newBounds = new Rectangle(storedX, storedY, width, height);
+            var newBounds = new Rectangle(storedX, storedY, width, height);
 
             // check if in bounds
-            Rectangle screenBounds = new Rectangle(0, 0, 0, 0);
+            var screenBounds = new Rectangle(0, 0, 0, 0);
             Arrays.stream(GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())
                     .forEach(sd -> screenBounds.add(sd.getDefaultConfiguration().getBounds()));
 
@@ -385,15 +388,15 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         }
 
         runOnSwingThread(() -> {
-            String selectedDeviceName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
-            AudioDevice audioDevice = audioReader.getDeviceByName(selectedDeviceName);
+            var selectedDeviceName = deviceSelectComboBox.getItemAt(deviceSelectComboBox.getSelectedIndex());
+            var audioDevice = audioReader.getDeviceByName(selectedDeviceName);
             if (audioDevice != null) {
                 config.put(ConfigNode.LAST_AUDIO_SOURCE, selectedDeviceName);
 
-                List<Light> lights = hueManager.getLights(false);
+                var lights = hueManager.getLights(false);
                 if (!lights.isEmpty()) {
                     lights.stream().filter(l -> !l.isOn()).forEach(light -> light.setOn(true));
-                    HueBeatObserver beatObserver = new HueBeatObserver(config, executorService, lights);
+                    var beatObserver = new HueBeatObserver(config, taskOrchestrator, lights);
                     this.beatEventManager.registerBeatObserver(beatObserver);
                     this.beatEventManager.registerBeatObserver(this);
 
@@ -480,12 +483,12 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                         if (devicesFound) {
                             startButton.setEnabled(true);
                         } else {
-                            executorService.schedule(this, 5, TimeUnit.SECONDS);
+                            taskOrchestrator.schedule(this, 5, TimeUnit.SECONDS);
                         }
                     });
                 }
             };
-            executorService.schedule(deviceChecker, 5, TimeUnit.SECONDS);
+            taskOrchestrator.schedule(deviceChecker, 5, TimeUnit.SECONDS);
             return false;
         }
 
@@ -510,7 +513,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
 
         lightSelectPanel.removeAll();
 
-        List<String> disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+        var disabledLights = config.getStringList(ConfigNode.LIGHTS_DISABLED);
         hueManager.getBridge()
                 .getLights()
                 .forEach(light -> {

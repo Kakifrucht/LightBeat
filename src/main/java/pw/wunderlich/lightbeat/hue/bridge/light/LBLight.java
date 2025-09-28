@@ -1,11 +1,11 @@
 package pw.wunderlich.lightbeat.hue.bridge.light;
 
 import io.github.zeroone3010.yahueapi.State;
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
 import pw.wunderlich.lightbeat.hue.bridge.light.controller.BrightnessController;
 import pw.wunderlich.lightbeat.hue.bridge.light.controller.ColorController;
 import pw.wunderlich.lightbeat.hue.bridge.light.controller.StrobeController;
 
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Default and thread safe {@link Light} implementation.
@@ -27,13 +27,13 @@ public class LBLight implements Light {
     private volatile State storedState = null;
 
 
-    public LBLight(io.github.zeroone3010.yahueapi.Light apiLight, ScheduledExecutorService executorService) {
+    public LBLight(io.github.zeroone3010.yahueapi.Light apiLight, AppTaskOrchestrator taskOrchestrator) {
         this.light = apiLight;
-        this.updateQueue = new UpdateQueue(apiLight, executorService);
+        this.updateQueue = new UpdateQueue(apiLight, taskOrchestrator);
 
         this.colorController = new ColorController(this);
         this.brightnessController = new BrightnessController(this);
-        this.strobeController = new StrobeController(this, executorService);
+        this.strobeController = new StrobeController(this, taskOrchestrator);
 
         this.currentBuilder = LightStateBuilder.create();
         this.builderToCopyAfterTurningOn = LightStateBuilder.create();

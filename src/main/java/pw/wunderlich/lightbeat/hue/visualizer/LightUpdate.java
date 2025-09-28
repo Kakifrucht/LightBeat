@@ -36,7 +36,7 @@ public class LightUpdate {
         this.lightsTurnedOn.removeIf(light -> !light.isOn());
 
         this.mainLights = new ArrayList<>();
-        mainLights.add(lights.get(0));
+        mainLights.add(lights.getFirst());
 
         double randomThreshold = (double) config.getInt(ConfigNode.LIGHT_AMOUNT_PROBABILITY) / 10d;
         for (int i = 1; i < lights.size() && Math.random() < randomThreshold; i++) {

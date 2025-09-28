@@ -5,11 +5,11 @@ import io.github.zeroone3010.yahueapi.Light;
 import io.github.zeroone3010.yahueapi.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
+import pw.wunderlich.lightbeat.util.TimeThreshold;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Sends light updates in a synchronized queue, while waiting for callbacks from the bridge
@@ -27,15 +27,15 @@ public class UpdateQueue {
     private static final long STALE_THRESHOLD_MS = 250;
 
     private final Light apiLight;
-    private final ScheduledExecutorService executorService;
+    private final AppTaskOrchestrator taskOrchestrator;
 
     private final Queue<QueueEntry> queue;
 
 
-    public UpdateQueue(Light apiLight, ScheduledExecutorService executorService) {
+    public UpdateQueue(Light apiLight, AppTaskOrchestrator taskOrchestrator) {
         this.apiLight = apiLight;
-        this.executorService = executorService;
-        queue = new LinkedList<>();
+        this.taskOrchestrator = taskOrchestrator;
+        this.queue = new LinkedList<>();
     }
 
     public void addUpdate(State state, boolean isEssential) {
@@ -53,31 +53,33 @@ public class UpdateQueue {
 
     private void next() {
         synchronized (queue) {
-            if (!queue.isEmpty()) {
-                QueueEntry next = queue.peek();
-                if (executorService.isShutdown()) {
-                    next.doUpdate();
-                } else {
-                    executorService.schedule(next::doUpdate, 0, TimeUnit.SECONDS);
-                }
+            if (queue.isEmpty()) {
+                return;
+            }
+
+            QueueEntry next = queue.peek();
+            if (taskOrchestrator.isShutdown()) {
+                next.doUpdate();
+            } else {
+                taskOrchestrator.dispatchBridgeCommand(next::doUpdate);
             }
         }
     }
 
     private class QueueEntry {
         private final State state;
-        private final long creationTimestamp;
+        private final TimeThreshold creationTimestamp;
         private final boolean isEssential;
 
         QueueEntry(State state, boolean isEssential) {
             this.state = state;
-            this.creationTimestamp = System.currentTimeMillis();
+            this.creationTimestamp = new TimeThreshold(STALE_THRESHOLD_MS);
             this.isEssential = isEssential;
         }
 
         void doUpdate() {
-            if (!this.isEssential && System.currentTimeMillis() - creationTimestamp > STALE_THRESHOLD_MS) {
-                long age = System.currentTimeMillis() - creationTimestamp;
+            if (!this.isEssential && creationTimestamp.isMet()) {
+                long age = creationTimestamp.getCurrentThreshold() - STALE_THRESHOLD_MS;
                 logger.warn("Discarding stale light update for {} (age: {}ms).", getLightInfo(), age);
             } else {
                 apiLight.setState(state);

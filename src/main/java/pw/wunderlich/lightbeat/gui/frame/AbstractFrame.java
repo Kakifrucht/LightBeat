@@ -2,8 +2,7 @@ package pw.wunderlich.lightbeat.gui.frame;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pw.wunderlich.lightbeat.config.Config;
-import pw.wunderlich.lightbeat.hue.bridge.HueManager;
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,7 +13,6 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -24,9 +22,7 @@ public abstract class AbstractFrame implements HueFrame {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractFrame.class);
 
-    final ScheduledExecutorService executorService;
-    final Config config;
-    final HueManager hueManager;
+    final AppTaskOrchestrator taskOrchestrator;
 
     final JFrame frame = new JFrame();
 
@@ -34,23 +30,20 @@ public abstract class AbstractFrame implements HueFrame {
     int x;
     int y;
 
-
-    AbstractFrame(Config config, ScheduledExecutorService executorService, HueManager hueManager, int x, int y) {
-        this(config, executorService, hueManager, null, x, y);
+    AbstractFrame(String title, int x, int y) {
+        this(null, title, x, y);
     }
 
-    AbstractFrame(Config config, String title, int x, int y) {
-        this(config, null, null, title, x, y);
+    AbstractFrame(AppTaskOrchestrator taskOrchestrator, int x, int y) {
+        this(taskOrchestrator, null, x, y);
     }
 
-    AbstractFrame(Config config, ScheduledExecutorService executorService, HueManager hueManager, String frameTitle, int x, int y) {
+    AbstractFrame(AppTaskOrchestrator taskOrchestrator, String frameTitle, int x, int y) {
         this.frameTitle = "LightBeat" + (frameTitle != null ? (" - " + frameTitle) : "" );
         this.x = x;
         this.y = y;
 
-        this.config = config;
-        this.executorService = executorService;
-        this.hueManager = hueManager;
+        this.taskOrchestrator = taskOrchestrator;
     }
 
     void drawFrame(Container mainContainer, boolean isPrimaryFrame) {
@@ -83,7 +76,7 @@ public abstract class AbstractFrame implements HueFrame {
                     Dimension size = component.getSize();
                     Dimension minimumSize = component.getMinimumSize();
                     if (size.getWidth() < minimumSize.getWidth() || size.getHeight() < minimumSize.getHeight()) {
-                        executorService.schedule(() -> runOnSwingThread(frame::pack), 500, TimeUnit.MILLISECONDS);
+                        taskOrchestrator.schedule(() -> runOnSwingThread(frame::pack), 500, TimeUnit.MILLISECONDS);
                     }
                 }
             });
@@ -92,42 +85,23 @@ public abstract class AbstractFrame implements HueFrame {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     dispose();
-                    if (isPrimaryFrame) {
-                        SwingWorker<Boolean, Void> shutdownWorker = new SwingWorker<>() {
-                            @Override
-                            protected Boolean doInBackground() {
-                                logger.info("Attempting graceful shutdown of executor service...");
-                                executorService.shutdown();
-                                try {
-                                    return executorService.awaitTermination(5, TimeUnit.SECONDS);
-                                } catch (InterruptedException ex) {
-                                    Thread.currentThread().interrupt();
-                                    logger.warn("Shutdown wait was interrupted.");
-                                    return false;
-                                }
-                            }
-
-                            @Override
-                            protected void done() {
-                                try {
-                                    boolean terminatedGracefully = get();
-                                    if (terminatedGracefully) {
-                                        logger.info("All tasks completed gracefully.");
-                                    } else {
-                                        logger.warn("Graceful shutdown timed out or was interrupted. Forcing shutdown...");
-                                        executorService.shutdownNow();
-                                    }
-                                } catch (Exception ex) {
-                                    logger.error("An error occurred during the shutdown process.", ex);
-                                } finally {
-                                    logger.info("Shutdown sequence complete. Terminating JVM.");
-                                    Runtime.getRuntime().exit(0);
-                                }
-                            }
-                        };
-
-                        shutdownWorker.execute();
+                    if (!isPrimaryFrame) {
+                        return;
                     }
+
+                    new SwingWorker<>() {
+                        @Override
+                        protected Void doInBackground() {
+                            taskOrchestrator.shutdown();
+                            return null;
+                        }
+
+                        @Override
+                        protected void done() {
+                            logger.info("Shutdown sequence complete. Terminating JVM.");
+                            Runtime.getRuntime().exit(0);
+                        }
+                    }.execute();
                 }
             });
 

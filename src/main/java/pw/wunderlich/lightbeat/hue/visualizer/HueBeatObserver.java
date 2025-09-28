@@ -2,6 +2,7 @@ package pw.wunderlich.lightbeat.hue.visualizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
 import pw.wunderlich.lightbeat.audio.BeatEvent;
 import pw.wunderlich.lightbeat.audio.BeatObserver;
 import pw.wunderlich.lightbeat.config.Config;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Receives {@link BeatEvent}'s dispatched by the audio module.
@@ -44,7 +44,7 @@ public class HueBeatObserver implements BeatObserver {
     private long lastBeatTimeStamp = System.currentTimeMillis();
 
 
-    public HueBeatObserver(Config config, ScheduledExecutorService scheduledExecutorService, List<Light> lights) {
+    public HueBeatObserver(Config config, AppTaskOrchestrator taskOrchestrator, List<Light> lights) {
 
         this.config = config;
         this.lights = lights;
@@ -62,7 +62,7 @@ public class HueBeatObserver implements BeatObserver {
         }
 
         if (config.getBoolean(ConfigNode.EFFECT_COLOR_STROBE)) {
-            effectPipe.add(new ColorStrobeEffect(scheduledExecutorService, 0.8d, 0.15d));
+            effectPipe.add(new ColorStrobeEffect(taskOrchestrator, 0.8d, 0.15d));
         }
 
         effectPipe.add(new ColorFlipEffect(0.7d, 0.15d));

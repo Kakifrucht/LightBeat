@@ -13,8 +13,6 @@ import pw.wunderlich.lightbeat.hue.bridge.LBHueManager;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Entry point for application. Starts modules to bootstrap the application.
@@ -24,13 +22,6 @@ import java.util.concurrent.ScheduledExecutorService;
 public class LightBeat {
 
     private static final Logger logger = LoggerFactory.getLogger(LightBeat.class);
-
-    /**
-     * Number of threads for the ScheduledExecutorService, used throughout the application.
-     * Count was chosen as a trade-off to be able to handle high light counts to not block
-     * during bridge communication i/o and to not overwhelm the bridge with too many commands.
-     */
-    private static final int THREAD_COUNT = 8;
 
     public static void main(String[] args) {
         new LightBeat();
@@ -46,14 +37,14 @@ public class LightBeat {
 
         logger.info("LightBeat v{} starting", getVersion());
 
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(THREAD_COUNT);
+        final var taskOrchestrator = new AppTaskOrchestrator();
         Config config = new LBConfig();
 
-        LBAudioReader audioReader = new LBAudioReader(config, executorService);
-        HueManager hueManager = new LBHueManager(config, executorService);
+        LBAudioReader audioReader = new LBAudioReader(config, taskOrchestrator);
+        HueManager hueManager = new LBHueManager(config, taskOrchestrator);
 
         // enter swing UI
-        new FrameManager(config, executorService, audioReader, audioReader, hueManager);
+        new FrameManager(config, taskOrchestrator, audioReader, audioReader, hueManager);
 
         List<AccessPoint> accessPoints = hueManager.getPreviousBridges();
         if (accessPoints.isEmpty()) {
@@ -64,7 +55,7 @@ public class LightBeat {
                 hueManager.doBridgesScan();
             }
         } else {
-            hueManager.setAttemptConnection(accessPoints.get(0));
+            hueManager.setAttemptConnection(accessPoints.getFirst());
         }
     }
 
@@ -77,6 +68,4 @@ public class LightBeat {
         }
         return null;
     }
-
-
 }

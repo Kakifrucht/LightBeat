@@ -1,5 +1,6 @@
 package pw.wunderlich.lightbeat.hue.visualizer.effect;
 
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
 import pw.wunderlich.lightbeat.hue.bridge.color.Color;
 import pw.wunderlich.lightbeat.hue.bridge.color.ColorSet;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
@@ -7,7 +8,6 @@ import pw.wunderlich.lightbeat.hue.visualizer.LightUpdate;
 import pw.wunderlich.lightbeat.util.TimeThreshold;
 
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -19,7 +19,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
     private static final long COLOR_CHANGE_IN_MILLIS = 5000L;
     private static final long MAXIMUM_STROBE_DELAY_MILLIS = 1000L;
 
-    private final ScheduledExecutorService executorService;
+    private final AppTaskOrchestrator taskOrchestrator;
     private final TimeThreshold newColorThreshold = new TimeThreshold();
     private Color[] colors;
 
@@ -27,10 +27,9 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
     private Light currentLight;
 
 
-    public ColorStrobeEffect(ScheduledExecutorService executorService, double brightnessThreshold, double activationProbability) {
+    public ColorStrobeEffect(AppTaskOrchestrator taskOrchestrator, double brightnessThreshold, double activationProbability) {
         super(brightnessThreshold, activationProbability);
-
-        this.executorService = executorService;
+        this.taskOrchestrator = taskOrchestrator;
     }
 
     @Override
@@ -64,7 +63,7 @@ public class ColorStrobeEffect extends AbstractThresholdEffect {
             delay /= 2;
         }
 
-        currentFuture = executorService.scheduleAtFixedRate(new Runnable() {
+        currentFuture = taskOrchestrator.schedulePeriodicTask(new Runnable() {
 
             int currentColor = 0;
 

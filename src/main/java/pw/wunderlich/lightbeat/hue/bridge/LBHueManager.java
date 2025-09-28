@@ -4,6 +4,7 @@ import io.github.zeroone3010.yahueapi.HueBridge;
 import io.github.zeroone3010.yahueapi.discovery.HueBridgeDiscoveryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
 import pw.wunderlich.lightbeat.config.Config;
 import pw.wunderlich.lightbeat.config.ConfigNode;
 import pw.wunderlich.lightbeat.hue.bridge.light.LBLight;
@@ -13,9 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -27,7 +25,7 @@ public class LBHueManager implements HueManager {
     private static final String CONFIG_BRIDGE_PREFIX = "bridge.entry.";
 
     private final Config config;
-    private final ScheduledExecutorService executorService;
+    private final AppTaskOrchestrator taskOrchestrator;
 
     private BridgeConnection bridgeConnection;
     private ManagerState currentState = ManagerState.NOT_CONNECTED;
@@ -35,9 +33,9 @@ public class LBHueManager implements HueManager {
     private HueStateObserver stateObserver;
 
 
-    public LBHueManager(Config config, ScheduledExecutorService executorService) {
+    public LBHueManager(Config config, AppTaskOrchestrator taskOrchestrator) {
         this.config = config;
-        this.executorService = executorService;
+        this.taskOrchestrator = taskOrchestrator;
     }
 
     @Override
@@ -48,12 +46,12 @@ public class LBHueManager implements HueManager {
     @Override
     public List<Light> getLights(boolean disabledLights) {
         bridgeConnection.refresh();
-        List<String> disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
+        var disabledLightsList = config.getStringList(ConfigNode.LIGHTS_DISABLED);
 
         return bridgeConnection.getLights()
                 .stream()
                 .filter(light -> !disabledLights || !disabledLightsList.contains(light.getId()))
-                .map((light -> new LBLight(light, executorService)))
+                .map((light -> new LBLight(light, taskOrchestrator)))
                 .collect(Collectors.toUnmodifiableList());
     }
 
@@ -71,9 +69,9 @@ public class LBHueManager implements HueManager {
                     if (bridgeData.isEmpty()) {
                         return null;
                     } else if (bridgeData.size() == 1) { // only ip
-                        return new AccessPoint(bridgeIp, bridgeData.get(0));
+                        return new AccessPoint(bridgeIp, bridgeData.getFirst());
                     } else {
-                        return new AccessPoint(bridgeIp, bridgeData.get(0), bridgeData.get(1), bridgeData.get(2));
+                        return new AccessPoint(bridgeIp, bridgeData.getFirst(), bridgeData.get(1), bridgeData.get(2));
                     }
                 }).filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -81,33 +79,35 @@ public class LBHueManager implements HueManager {
 
     @Override
     public void doBridgesScan() {
-        if (!currentState.equals(ManagerState.SCANNING_FOR_BRIDGES)) {
-            Future<List<HueBridge>> bridgesFuture = new HueBridgeDiscoveryService()
-                    .discoverBridges(bridge -> logger.info("Discovered bridge at {}", bridge.getIp()));
-
-            executorService.schedule(() -> {
-                List<HueBridge> bridgesFound;
-                try {
-                    bridgesFound = bridgesFuture.get();
-                } catch (InterruptedException e) {
-                    return;
-                } catch (Exception e) {
-                    logger.warn("Exception during scan for bridges", e);
-                    bridgesFound = Collections.emptyList();
-                }
-
-                logger.info("Access point scan finished, found {} bridges", bridgesFound.size());
-                currentState = ManagerState.NOT_CONNECTED;
-
-                List<AccessPoint> accessPoints = bridgesFound.stream()
-                        .map(bridge -> new AccessPoint(bridge.getIp(), null, bridge.getName()))
-                        .collect(Collectors.toList());
-                stateObserver.displayFoundBridges(accessPoints);
-            }, 0, TimeUnit.SECONDS);
-
-            stateObserver.isScanningForBridges();
-            currentState = ManagerState.SCANNING_FOR_BRIDGES;
+        if (currentState.equals(ManagerState.SCANNING_FOR_BRIDGES)) {
+            return;
         }
+
+        var bridgesFuture = new HueBridgeDiscoveryService()
+                .discoverBridges(bridge -> logger.info("Discovered bridge at {}", bridge.getIp()));
+
+        taskOrchestrator.dispatch(() -> {
+            List<HueBridge> bridgesFound;
+            try {
+                bridgesFound = bridgesFuture.get();
+            } catch (InterruptedException e) {
+                return;
+            } catch (Exception e) {
+                logger.warn("Exception during scan for bridges", e);
+                bridgesFound = Collections.emptyList();
+            }
+
+            logger.info("Access point scan finished, found {} bridges", bridgesFound.size());
+            currentState = ManagerState.NOT_CONNECTED;
+
+            List<AccessPoint> accessPoints = bridgesFound.stream()
+                    .map(bridge -> new AccessPoint(bridge.getIp(), null, bridge.getName()))
+                    .collect(Collectors.toList());
+            stateObserver.displayFoundBridges(accessPoints);
+        });
+
+        stateObserver.isScanningForBridges();
+        currentState = ManagerState.SCANNING_FOR_BRIDGES;
     }
 
     @Override
@@ -120,12 +120,12 @@ public class LBHueManager implements HueManager {
             public void connectionSuccess(String key, String name, String certificateHash) {
                 logger.info("Connected to bridge {} at {} with key {}", name, bridgeIp, key);
 
-                List<String> bridgeList = new ArrayList<>(config.getStringList(ConfigNode.BRIDGE_LIST));
+                var bridgeList = new ArrayList<>(config.getStringList(ConfigNode.BRIDGE_LIST));
                 bridgeList.remove(bridgeIp);
-                bridgeList.add(0, bridgeIp);
+                bridgeList.addFirst(bridgeIp);
                 config.putList(ConfigNode.BRIDGE_LIST, bridgeList);
 
-                List<String> bridgeData = new ArrayList<>();
+                var bridgeData = new ArrayList<>();
                 bridgeData.add(key);
                 bridgeData.add(name);
                 bridgeData.add(certificateHash);
@@ -161,7 +161,7 @@ public class LBHueManager implements HueManager {
                 stateObserver.pushlinkHasFailed();
             }
         };
-        bridgeConnection = new BridgeConnection(accessPoint, executorService, listener);
+        bridgeConnection = new BridgeConnection(accessPoint, taskOrchestrator, listener);
     }
 
     @Override

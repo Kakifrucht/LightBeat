@@ -5,10 +5,10 @@ import io.github.zeroone3010.yahueapi.Light;
 import io.github.zeroone3010.yahueapi.LightType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
 
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -28,24 +28,23 @@ public class BridgeConnection {
     private static final String APP_NAME = "LightBeat";
     private static final int CONNECTION_CHECK_SECONDS = 10;
 
-    private final ScheduledExecutorService executorService;
+    private final AppTaskOrchestrator taskOrchestrator;
     private final ConnectionListener connectionListener;
 
     private Hue hue;
 
-    private final ScheduledFuture<?> preconnectPushlinkTask;
     private ScheduledFuture<?> heartbeatTask;
     private boolean isConnected = false;
 
 
-    public BridgeConnection(AccessPoint accessPoint, ScheduledExecutorService executorService, ConnectionListener listener) {
+    public BridgeConnection(AccessPoint accessPoint, AppTaskOrchestrator taskOrchestrator, ConnectionListener listener) {
 
-        this.executorService = executorService;
+        this.taskOrchestrator = taskOrchestrator;
         this.connectionListener = listener;
 
         // check if is bridge
         Future<String> certificateHashFuture = Hue.hueBridgeConnectionBuilder(accessPoint.ip()).getVerifiedBridgeCertificateHash();
-        preconnectPushlinkTask = executorService.schedule(() -> {
+        taskOrchestrator.dispatch(() -> {
             String certificateHash;
             try {
                 certificateHash = certificateHashFuture.get(5, TimeUnit.SECONDS);
@@ -89,8 +88,7 @@ public class BridgeConnection {
                 }
                 connectionListener.pushlinkFailed();
             }
-
-        }, 0, TimeUnit.SECONDS);
+        });
     }
 
     private void scheduleHeartbeat(AccessPoint accessPoint, String certificateHash) {
@@ -104,7 +102,7 @@ public class BridgeConnection {
         this.hue = new Hue(accessPoint.ip(), accessPoint.key());
         hue.setCaching(true);
 
-        heartbeatTask = executorService.scheduleAtFixedRate(() -> {
+        heartbeatTask = taskOrchestrator.schedulePeriodicTask(() -> {
             try {
                 hue.refresh();
             } catch (Exception e) {
@@ -155,13 +153,10 @@ public class BridgeConnection {
     }
 
     /**
-     * Disconnect from bridge by stopping any active threads. This will not trigger a call
+     * Disconnect from bridge by stopping the heartbeat task. This will not trigger a call
      * through the {@link ConnectionListener} interface given via the constructor.
      */
     void disconnect() {
-        if (preconnectPushlinkTask != null && !preconnectPushlinkTask.isDone()) {
-            preconnectPushlinkTask.cancel(true);
-        }
         if (isConnected) {
             heartbeatTask.cancel(true);
         }

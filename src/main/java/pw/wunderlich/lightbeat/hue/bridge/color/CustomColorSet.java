@@ -11,6 +11,8 @@ import java.util.*;
  */
 public class CustomColorSet implements ColorSet {
 
+    private static final int MIN_LENGTH = 12;
+
     private final Config config;
     private final String name;
     private final List<Color> colors = new ArrayList<>();
@@ -28,7 +30,7 @@ public class CustomColorSet implements ColorSet {
         }
 
         List<Color> colorsCopy = new ArrayList<>(colors);
-        while (colors.size() < 12) {
+        while (colors.size() < MIN_LENGTH) {
             colors.addAll(colorsCopy);
         }
     }
@@ -37,12 +39,11 @@ public class CustomColorSet implements ColorSet {
     public synchronized Color getNextColor() {
 
         if (colorQueue.isEmpty()) {
-
-            Collections.shuffle(colors);
-
-            for (Color color : colors) {
-                colorQueue.add(color.getDerivedColor(getColorRandomizationRange()));
-            }
+            List<Color> colorList = new ArrayList<>(colors);
+            Collections.shuffle(colorList);
+            colors.stream()
+                    .map(c -> c.getDerivedColor(getColorRandomizationRange()))
+                    .forEach(colorQueue::add);
         }
 
         return colorQueue.poll();

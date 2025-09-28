@@ -52,4 +52,8 @@ public class TimeThreshold {
     public boolean isMet() {
         return isEnabled() && currentThreshold <= System.currentTimeMillis();
     }
+
+    public long getCurrentThreshold() {
+        return currentThreshold;
+    }
 }

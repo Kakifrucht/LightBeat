@@ -43,7 +43,7 @@ public class AlertEffect extends AbstractRandomEffect {
         List<Light> lightsTurnedOn = lightUpdate.getLightsTurnedOn();
         if (!lightsTurnedOn.isEmpty()) {
             lightsTurnedOn
-                    .get(0)
+                    .getFirst()
                     .getBrightnessController()
                     .setAlertMode();
         }

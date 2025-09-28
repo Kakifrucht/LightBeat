@@ -14,7 +14,7 @@ public class RandomColorSet implements ColorSet {
 
 
     @Override
-    public Color getNextColor() {
+    public synchronized Color getNextColor() {
 
         if (randomColors == null || randomColors.isEmpty()) {
 

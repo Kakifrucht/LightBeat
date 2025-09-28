@@ -1,18 +1,18 @@
 package pw.wunderlich.lightbeat.hue.bridge.light.controller;
 
-import pw.wunderlich.lightbeat.hue.visualizer.effect.LightEffect;
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
 import pw.wunderlich.lightbeat.hue.bridge.light.Light;
+import pw.wunderlich.lightbeat.hue.visualizer.effect.LightEffect;
 
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Controls the lights strobing ability.
+ * Controls the lights' strobing ability.
  */
 public class StrobeController extends AbstractController {
 
-    private final ScheduledExecutorService executorService;
+    private final AppTaskOrchestrator taskOrchestrator;
 
     private volatile ScheduledFuture<?> currentStrobe;
 
@@ -20,9 +20,9 @@ public class StrobeController extends AbstractController {
     private volatile Boolean setOn;
 
 
-    public StrobeController(Light currentLight, ScheduledExecutorService executorService) {
+    public StrobeController(Light currentLight, AppTaskOrchestrator taskOrchestrator) {
         super(currentLight);
-        this.executorService = executorService;
+        this.taskOrchestrator = taskOrchestrator;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class StrobeController extends AbstractController {
             boolean onAfterStrobe = controlledLight.isOn();
             controlledLight.setOn(!onAfterStrobe);
 
-            currentStrobe = executorService.schedule(() -> {
+            currentStrobe = taskOrchestrator.schedule(() -> {
 
                 controlledLight.setOn(onAfterStrobe);
                 controlledLight.doLightUpdate(1);

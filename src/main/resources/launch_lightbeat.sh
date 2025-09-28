@@ -36,9 +36,9 @@ show_download_and_exit() {
         *)       ARCH_PARAM="any";;
     esac
 
-    DOWNLOAD_URL="https://adoptium.net/en-GB/temurin/releases?version=17&os=${OS_PARAM}&arch=${ARCH_PARAM}"
+    DOWNLOAD_URL="https://adoptium.net/en-GB/temurin/releases?version=21&os=${OS_PARAM}&arch=${ARCH_PARAM}"
 
-    echo "Please download and install Java 17 (JRE) or later from the link below:"
+    echo "Please download and install Java 21 (JRE) or later from the link below:"
     echo "$DOWNLOAD_URL"
     printf "Press [Enter] to close this window. "; read dummy_var
     exit 1
@@ -57,8 +57,8 @@ fi
 JAVA_VERSION=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
 MAJOR_VERSION=$(echo "$JAVA_VERSION" | cut -d. -f1)
 
-if [ "$MAJOR_VERSION" -lt 17 ]; then
-    show_download_and_exit "You have Java version $JAVA_VERSION, but LightBeat requires Java 17 or higher."
+if [ "$MAJOR_VERSION" -lt 21 ]; then
+    show_download_and_exit "You have Java version $JAVA_VERSION, but LightBeat requires Java 21 or higher."
 fi
 
 echo "Searching for application JAR file..."

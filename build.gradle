@@ -10,10 +10,9 @@ group = 'pw.wunderlich.lightbeat'
 version = '1.7.1-SNAPSHOT'
 description = 'LightBeat'
 
-// Set Java version compatibility
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 application {
@@ -21,8 +20,8 @@ application {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
+    mavenLocal()
 }
 
 configurations {

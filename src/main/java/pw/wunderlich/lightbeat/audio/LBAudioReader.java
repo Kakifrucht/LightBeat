@@ -1,18 +1,19 @@
 package pw.wunderlich.lightbeat.audio;
 
-import pw.wunderlich.lightbeat.audio.device.*;
-import pw.wunderlich.lightbeat.config.Config;
-import pw.wunderlich.lightbeat.config.ConfigNode;
 import org.jtransforms.fft.DoubleFFT_1D;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
+import pw.wunderlich.lightbeat.audio.device.*;
+import pw.wunderlich.lightbeat.config.Config;
+import pw.wunderlich.lightbeat.config.ConfigNode;
+import pw.wunderlich.lightbeat.util.TimeThreshold;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -35,7 +36,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     private static final Logger logger = LoggerFactory.getLogger(LBAudioReader.class);
 
     private final Config config;
-    private final ScheduledExecutorService executorService;
+    private final AppTaskOrchestrator taskOrchestrator;
     private final List<DeviceProvider> deviceProviders = new ArrayList<>();
     private final List<BeatObserver> beatEventObservers = new ArrayList<>();
 
@@ -45,9 +46,9 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     private ByteBuffer audioBuffer;
 
 
-    public LBAudioReader(Config config, ScheduledExecutorService executorService) {
+    public LBAudioReader(Config config, AppTaskOrchestrator taskOrchestrator) {
         this.config = config;
-        this.executorService = executorService;
+        this.taskOrchestrator = taskOrchestrator;
 
         if (WASAPIDeviceProvider.isWindows()) {
             deviceProviders.add(new WASAPIDeviceProvider());
@@ -94,7 +95,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
         audioBuffer.order(audioFormat.littleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
 
         final long intervalMillis = 1000 / AMPLITUDES_PER_SECOND;
-        future = executorService.scheduleAtFixedRate(() -> {
+        future = taskOrchestrator.schedulePeriodicTask(() -> {
             if (!isOpen()) {
                 logger.error("Selected audio stream is no longer available");
                 stop();
@@ -156,7 +157,6 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
                     beatEventObservers.forEach(toNotify -> toNotify.beatReceived(event));
                 }
             }
-
         }, 0L, intervalMillis, TimeUnit.MILLISECONDS);
 
         logger.info("Now listening to audio input from device {} ({})", audioDevice.getName(), audioFormat);
@@ -165,7 +165,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
 
     /**
      * Applies a low-pass filter using FFT, cutting off frequencies above BASS_CUTOFF_HZ.
-     * This implementation is now robust against changes in sample rate or chunk size.
+     * This implementation is robust against changes in sample rate or chunk size.
      */
     private void lowPassFilter(double[] normalizedSampleArray, LBAudioFormat format) {
         int sampleCount = normalizedSampleArray.length;

@@ -74,7 +74,7 @@ public class ColorSelectionFrame extends AbstractFrame {
     }
 
     private ColorSelectionFrame(Config config, String title, MainFrame mainFrame) {
-        super(config, title, mainFrame.getJFrame().getX() + 10, mainFrame.getJFrame().getY() + 10);
+        super(title, mainFrame.getJFrame().getX() + 10, mainFrame.getJFrame().getY() + 10);
 
         MouseAdapter colorSelectEventAdapter = new MouseAdapter() {
 

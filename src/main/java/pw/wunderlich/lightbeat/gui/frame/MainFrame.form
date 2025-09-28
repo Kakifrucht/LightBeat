@@ -253,7 +253,7 @@
                   </component>
                   <component id="4ef72" class="pw.wunderlich.lightbeat.gui.swing.JConfigCheckBox" binding="colorStrobeCheckbox" custom-create="true">
                     <constraints>
-                      <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <text value="Color Strobe"/>
@@ -444,7 +444,7 @@
                   </component>
                   <component id="aa401" class="pw.wunderlich.lightbeat.gui.swing.JConfigCheckBox" binding="strobeCheckBox" custom-create="true" default-binding="true">
                     <constraints>
-                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                      <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
                     </constraints>
                     <properties>
                       <text value="Strobe"/>

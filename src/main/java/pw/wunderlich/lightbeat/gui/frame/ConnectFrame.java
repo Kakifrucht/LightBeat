@@ -1,6 +1,7 @@
 package pw.wunderlich.lightbeat.gui.frame;
 
 import com.github.weisj.darklaf.components.loading.LoadingIndicator;
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
 import pw.wunderlich.lightbeat.hue.bridge.AccessPoint;
 import pw.wunderlich.lightbeat.hue.bridge.BridgeConnection;
 import pw.wunderlich.lightbeat.hue.bridge.HueManager;
@@ -15,7 +16,6 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +25,8 @@ import java.util.concurrent.TimeUnit;
 public class ConnectFrame extends AbstractFrame implements HueStateObserver {
 
     private static final int MANUAL_FIELD_MIN_LENGTH = 6;
+
+    private final HueManager hueManager;
 
     private JPanel mainPanel;
 
@@ -42,8 +44,9 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     private List<AccessPoint> currentAccessPoints = null;
 
 
-    public ConnectFrame(ScheduledExecutorService executorService, HueManager hueManager, int x, int y) {
-        super(null, executorService, hueManager, "Connect", x, y);
+    public ConnectFrame(AppTaskOrchestrator taskOrchestrator, HueManager hueManager, int x, int y) {
+        super(taskOrchestrator, "Connect", x, y);
+        this.hueManager = hueManager;
 
         selectBridgeBox.addActionListener(e -> {
 
@@ -60,7 +63,7 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
         manualField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
-                executorService.schedule(() -> runOnSwingThread(() -> {
+                taskOrchestrator.schedule(() -> runOnSwingThread(() -> {
                     boolean isEnabled = isManualFieldFilled();
                     connectButton.setEnabled(isEnabled);
 
@@ -132,15 +135,13 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     @Override
     public void requestPushlink() {
 
-        pushlinkProgressTask = executorService.scheduleAtFixedRate(() -> {
-
+        pushlinkProgressTask = taskOrchestrator.schedulePeriodicTask(() -> {
             int currentValue = pushlinkProgressBar.getValue();
             if (currentValue > 0) {
                 runOnSwingThread(() -> pushlinkProgressBar.setValue(currentValue - 1));
             } else {
                 pushlinkProgressTask.cancel(false);
             }
-
         }, 1, 1, TimeUnit.SECONDS);
 
         runOnSwingThread(() -> {
