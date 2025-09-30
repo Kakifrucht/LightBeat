@@ -19,17 +19,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * Default {@link AudioReader} implementation, that also serves as an {@link BeatEventManager}.
- * Get a list of supported audio devices with {@link #getSupportedDevices()}, which can be used to start
- * the scheduled beat detection thread via {@link #start(AudioDevice)}. Can filter out all frequencies
- * but bass frequency via FFT, if config option {@link ConfigNode#BEAT_BASS_ONLY_MODE} is set to
- * true. Classes can register to receive {@link BeatEvent BeatEvents} by calling
- * {@link #registerBeatObserver(BeatObserver)}, that are called whenever a beat was detected.
+ * Default {@link AudioReader} implementation that also serves as an {@link BeatEventManager}.
+ * This implementation uses a listener-based approach to process audio data as it becomes available.
+ * It can filter frequencies for bass detection and notifies registered {@link BeatObserver}s when a beat is detected.
  */
 public class LBAudioReader implements BeatEventManager, AudioReader {
 
     private static final int AMPLITUDES_PER_SECOND = 50;
-    private static final int MAX_CHUNK_AGE = 4;
     private static final double BASS_CUTOFF_HZ = 200.0;
     private static final double MINIMUM_AMPLITUDE = 0.005d;
 
@@ -43,9 +39,12 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     private AudioDevice audioDevice;
     private BeatInterpreter beatInterpreter;
     private TimeThreshold nextBeatThreshold;
+    private ScheduledFuture<?> healthCheckFuture;
 
-    private ScheduledFuture<?> future;
-    private ByteBuffer audioBuffer;
+    private ByteBuffer remainderBuffer;
+    private LBAudioFormat audioFormat;
+    private int bytesPerChunk;
+    private int samplesPerChunk;
 
 
     public LBAudioReader(Config config, AppTaskOrchestrator taskOrchestrator) {
@@ -53,9 +52,9 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
         this.taskOrchestrator = taskOrchestrator;
 
         if (WASAPIDeviceProvider.isWindows()) {
-            deviceProviders.add(new WASAPIDeviceProvider());
+            deviceProviders.add(new WASAPIDeviceProvider(taskOrchestrator));
         }
-        deviceProviders.add(new JavaAudioDeviceProvider());
+        deviceProviders.add(new JavaAudioDeviceProvider(taskOrchestrator));
     }
 
     @Override
@@ -79,83 +78,112 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
             stop();
         }
 
+        this.audioDevice = audioDevice;
+        this.audioDevice.setAudioListener(this::onDataAvailable);
+
         boolean started = audioDevice.start();
         if (!started) {
-            logger.warn("Couldn't read from selected audio device {}", audioDevice.getName());
+            logger.warn("Couldn't start selected audio device {}", audioDevice.getName());
+            this.audioDevice.setAudioListener(null);
+            this.audioDevice = null;
             return false;
         }
 
-        this.audioDevice = audioDevice;
         this.beatInterpreter = new BeatInterpreter(config, AMPLITUDES_PER_SECOND);
         this.nextBeatThreshold = new TimeThreshold(TimeUnit.SECONDS.toMillis(1));
+        this.audioFormat = audioDevice.getAudioFormat();
 
-        var audioFormat = audioDevice.getAudioFormat();
         int bytesPerSecond = (int) (audioFormat.sampleRate() * audioFormat.getBytesPerFrame());
-        int bytesPerChunk = bytesPerSecond / AMPLITUDES_PER_SECOND;
-        int samplesPerChunk = bytesPerChunk / audioFormat.getBytesPerFrame();
+        this.bytesPerChunk = bytesPerSecond / AMPLITUDES_PER_SECOND;
+        this.samplesPerChunk = bytesPerChunk / audioFormat.getBytesPerFrame();
 
-        audioBuffer = ByteBuffer.allocate(bytesPerChunk);
-        audioBuffer.order(audioFormat.littleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
+        // Initialize a buffer to hold unprocessed data between listener calls.
+        // Its size is exactly one chunk, as it will only hold trailing data smaller than a chunk.
+        this.remainderBuffer = ByteBuffer.allocate(bytesPerChunk);
+        this.remainderBuffer.order(audioFormat.littleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
 
-        final long intervalMillis = 1000 / AMPLITUDES_PER_SECOND;
-        future = taskOrchestrator.schedulePeriodicTask(() -> {
-            if (!isOpen()) {
-                logger.error("Selected audio stream is no longer available");
-                stop();
+        // Start a health check to ensure the device remains open.
+        healthCheckFuture = taskOrchestrator.schedulePeriodicTask(() -> {
+            if (audioDevice.isOpen()) {
                 return;
             }
+            logger.error("Audio stream '{}' is no longer available. Stopping reader.", audioDevice.getName());
+            stop();
+        }, 1, 1, TimeUnit.SECONDS);
 
-            int availableBytes = audioDevice.available();
-            int chunksAvailable = availableBytes / bytesPerChunk;
-            if (chunksAvailable == 0) {
-                return;
+        logger.info("Now listening to audio input from device {} ({})", audioDevice.getName(), audioFormat);
+        return true;
+    }
+
+    private synchronized void onDataAvailable(byte[] data, int length) {
+        if (!isOpen()) {
+            return;
+        }
+
+        // Create a read-only buffer for the new data to process it without copying everything.
+        ByteBuffer newData = ByteBuffer.wrap(data, 0, length).order(remainderBuffer.order());
+
+        byte[] chunkData = new byte[bytesPerChunk];
+        BeatEvent beatEvent = null;
+
+        // Process chunks as long as we have enough combined data (remainder and new data).
+        while (remainderBuffer.position() + newData.remaining() >= bytesPerChunk) {
+            int bytesFromRemainder = remainderBuffer.position();
+            int bytesFromNewData = bytesPerChunk - bytesFromRemainder;
+
+            // Read the old remainder first.
+            if (bytesFromRemainder > 0) {
+                remainderBuffer.flip();
+                remainderBuffer.get(chunkData, 0, bytesFromRemainder);
+                remainderBuffer.clear();
             }
 
-            BeatEvent lastBeat = null;
-            for (int chunk = 0; chunk < chunksAvailable; chunk++) {
-                int bytesRead = audioDevice.read(audioBuffer.array(), bytesPerChunk);
-                if (bytesRead < bytesPerChunk) {
-                    logger.warn("Only {} bytes were read, expected {} bytes. Stream may be closing.", bytesRead, bytesPerChunk);
-                    continue; // Skip to next iteration
-                }
+            newData.get(chunkData, bytesFromRemainder, bytesFromNewData);
 
-                // Convert to normalized values
-                double[] normalizedAudioBuffer = new double[samplesPerChunk];
-                for (int i = 0; i < normalizedAudioBuffer.length; i++) {
-                    int bytePosition = i * audioFormat.bytesPerSample();
+            ByteBuffer chunkByteBuffer = ByteBuffer.wrap(chunkData)
+                    .order(audioFormat.littleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
 
-                    if (audioFormat.bytesPerSample() == 2) {
-                        normalizedAudioBuffer[i] = audioBuffer.getShort(bytePosition) / (double) Short.MAX_VALUE;
-                    } else {
-                        normalizedAudioBuffer[i] = audioBuffer.get(bytePosition) / (double) Byte.MAX_VALUE;
-                    }
-                }
-
-                if (config.getBoolean(ConfigNode.BEAT_BASS_ONLY_MODE)) {
-                    lowPassFilter(normalizedAudioBuffer, audioFormat);
-                }
-
-                double rms = Arrays.stream(normalizedAudioBuffer)
-                        .map(val -> val * val)
-                        .average()
-                        .orElse(0d);
-                rms = Math.sqrt(rms);
-
-                BeatEvent event = beatInterpreter.interpretValue(rms >= MINIMUM_AMPLITUDE ? rms : 0d);
-                if (event != null) {
-                    if (chunksAvailable - chunk > MAX_CHUNK_AGE) {
-                        logger.info("Beat received, but it is too old (age > {} chunks)", MAX_CHUNK_AGE);
-                    } else {
-                        lastBeat = event;
-                    }
+            double[] normalizedAudioBuffer = new double[samplesPerChunk];
+            for (int i = 0; i < normalizedAudioBuffer.length; i++) {
+                int bytePosition = i * audioFormat.bytesPerSample();
+                if (audioFormat.bytesPerSample() == 2) {
+                    normalizedAudioBuffer[i] = chunkByteBuffer.getShort(bytePosition) / (double) Short.MAX_VALUE;
+                } else {
+                    normalizedAudioBuffer[i] = chunkByteBuffer.get(bytePosition) / (double) Byte.MAX_VALUE;
                 }
             }
 
-            if (lastBeat == null) {
-                return;
+            if (config.getBoolean(ConfigNode.BEAT_BASS_ONLY_MODE)) {
+                lowPassFilter(normalizedAudioBuffer, audioFormat);
             }
 
-            final var beatEvent = lastBeat;
+            double rms = Arrays.stream(normalizedAudioBuffer)
+                    .map(val -> val * val)
+                    .average()
+                    .orElse(0d);
+            rms = Math.sqrt(rms);
+
+            var beatEventInner = beatInterpreter.interpretValue(rms >= MINIMUM_AMPLITUDE ? rms : 0d);
+            if (beatEventInner != null) {
+                beatEvent = beatEventInner;
+            }
+        }
+
+        if (newData.hasRemaining()) {
+            remainderBuffer.put(newData);
+        }
+
+        if (beatEvent != null) {
+            notifyObservers(beatEvent);
+        }
+    }
+
+    /**
+     * Notifies registered observers about a detected beat event.
+     * This is dispatched on the task orchestrator to avoid blocking the audio thread.
+     */
+    private void notifyObservers(final BeatEvent beatEvent) {
+        taskOrchestrator.dispatch(() -> {
             if (beatEvent.isSilence()) {
                 beatEventObservers.forEach(BeatObserver::silenceDetected);
             } else if (beatEvent.isNoBeat()) {
@@ -166,15 +194,11 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
             } else {
                 logger.info("Beat received, but it was skipped due to BEAT_MIN_TIME_BETWEEN");
             }
-        }, 0L, intervalMillis, TimeUnit.MILLISECONDS);
-
-        logger.info("Now listening to audio input from device {} ({})", audioDevice.getName(), audioFormat);
-        return true;
+        });
     }
 
     /**
      * Applies a low-pass filter using FFT, cutting off frequencies above BASS_CUTOFF_HZ.
-     * This implementation is robust against changes in sample rate or chunk size.
      */
     private void lowPassFilter(double[] normalizedSampleArray, LBAudioFormat format) {
         int sampleCount = normalizedSampleArray.length;
@@ -183,11 +207,11 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
         DoubleFFT_1D fft = new DoubleFFT_1D(sampleCount);
         fft.realForward(normalizedSampleArray);
 
-        // Calculate the frequency represented by each bin in the FFT output.
         double freqPerBin = format.sampleRate() / sampleCount;
         int cutoffBin = (int) (BASS_CUTOFF_HZ / freqPerBin);
 
-        for (int i = cutoffBin; i < sampleCount / 2; i++) {
+        // Zero out high-frequency components
+        for (int i = cutoffBin * 2; i < sampleCount; i++) {
             normalizedSampleArray[i] = 0d;
         }
 
@@ -201,19 +225,28 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
 
     @Override
     public void stop() {
-        if (audioDevice != null && future != null) {
-            future.cancel(true);
-
-            BeatObserver.StopStatus status = audioDevice.isOpen() ? BeatObserver.StopStatus.USER : BeatObserver.StopStatus.ERROR;
-            beatEventObservers.forEach(beatObserver -> beatObserver.audioReaderStopped(status));
-
-            audioDevice.stop();
-            audioDevice = null;
-            audioBuffer = null;
-
-            beatEventObservers.clear();
-            logger.info("No longer listening to audio input");
+        if (audioDevice == null) {
+            return;
         }
+
+        if (healthCheckFuture != null) {
+            healthCheckFuture.cancel(true);
+            healthCheckFuture = null;
+        }
+
+        BeatObserver.StopStatus status = audioDevice.isOpen() ? BeatObserver.StopStatus.USER : BeatObserver.StopStatus.ERROR;
+
+        audioDevice.setAudioListener(null);
+        audioDevice.stop();
+        audioDevice = null;
+        remainderBuffer = null;
+
+        // Dispatch the final notification to observers to ensure thread safety
+        taskOrchestrator.dispatch(() -> {
+            beatEventObservers.forEach(beatObserver -> beatObserver.audioReaderStopped(status));
+            beatEventObservers.clear();
+        });
+        logger.info("No longer listening to audio input");
     }
 
     @Override

@@ -10,8 +10,10 @@ import org.jitsi.utils.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+import pw.wunderlich.lightbeat.AppTaskOrchestrator;
 
 import javax.media.format.AudioFormat;
+import javax.media.protocol.BufferTransferHandler;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -32,14 +34,16 @@ public class WASAPIDeviceProvider implements DeviceProvider {
         return System.getProperty("os.name").startsWith("Windows");
     }
 
-
+    private final AppTaskOrchestrator taskOrchestrator;
     private WASAPISystem wasapiSystem;
 
-    public WASAPIDeviceProvider() {
+
+    public WASAPIDeviceProvider(AppTaskOrchestrator taskOrchestrator) {
         if (!isWindows()) {
             throw new IllegalStateException("WASAPI can only be used on Windows");
         }
 
+        this.taskOrchestrator = taskOrchestrator;
         logger.info("Initializing WASAPI devices...");
 
         // jitsi uses JUL for logging, bridge it to slf4j
@@ -74,9 +78,9 @@ public class WASAPIDeviceProvider implements DeviceProvider {
     class WASAPIAudioDevice implements AudioDevice {
 
         private final CaptureDeviceInfo2 device;
-
         private AudioCaptureClient client;
         private LBAudioFormat format;
+        private AudioDataListener listener;
 
         private Field availableField;
         private Field startedField;
@@ -85,6 +89,7 @@ public class WASAPIDeviceProvider implements DeviceProvider {
         private Handler deviceInvalidatedHandler;
 
         private boolean exceptionWasThrown = false;
+        private byte[] readBuffer = new byte[4096];
 
 
         private WASAPIAudioDevice(CaptureDeviceInfo2 device) {
@@ -102,11 +107,38 @@ public class WASAPIDeviceProvider implements DeviceProvider {
         }
 
         @Override
-        public boolean start() {
+        public void setAudioListener(AudioDataListener listener) {
+            this.listener = listener;
+        }
 
+        @Override
+        public boolean start() {
             if (client != null) {
                 return false;
             }
+
+            BufferTransferHandler transferHandler = stream -> taskOrchestrator.dispatch(() -> {
+                if (listener == null || client == null || !isOpen()) {
+                    return;
+                }
+                try {
+                    int availableBytes = (int) availableField.get(client);
+                    if (availableBytes > 0) {
+                        if (availableBytes > readBuffer.length) {
+                            readBuffer = new byte[availableBytes];
+                        }
+                        int bytesRead = client.read(readBuffer, 0, availableBytes);
+                        if (bytesRead > 0) {
+                            listener.onDataAvailable(readBuffer, bytesRead);
+                        }
+                    }
+                } catch (Exception e) {
+                    if (isOpen()) {
+                        logger.warn("Couldn't read from WASAPI audio device", e);
+                        exceptionWasThrown = true;
+                    }
+                }
+            });
 
             Arrays.stream(device.getFormats())
                     .filter(AudioFormat.class::isInstance)
@@ -129,7 +161,7 @@ public class WASAPIDeviceProvider implements DeviceProvider {
                                     WASAPI.AUDCLNT_SHAREMODE_SHARED | WASAPI.AUDCLNT_STREAMFLAGS_LOOPBACK,
                                     1,
                                     audioFormat,
-                                    stream -> {}
+                                    transferHandler // Pass our active handler here
                             );
                             this.format = new LBAudioFormat(audioFormat);
                             availableField = client.getClass().getDeclaredField("availableLength");
@@ -144,6 +176,7 @@ public class WASAPIDeviceProvider implements DeviceProvider {
                             client.start();
 
                             installDeviceInvalidationWatcher();
+                            logger.info("Started WASAPI device: {}", getName());
                         } catch (Exception e) {
                             logger.debug("Couldn't initialize with {}", audioFormat);
                         }
@@ -157,19 +190,6 @@ public class WASAPIDeviceProvider implements DeviceProvider {
             return client != null
                     && !exceptionWasThrown
                     && getLastActivityTimestampMillis() > System.currentTimeMillis() - 2000L;
-        }
-
-        @Override
-        public int available() {
-            if (client == null) {
-                return 0;
-            }
-
-            try {
-                return (int) availableField.get(client);
-            } catch (Exception e) {
-                return 0;
-            }
         }
 
         private long getLastActivityTimestampMillis() {
@@ -230,21 +250,6 @@ public class WASAPIDeviceProvider implements DeviceProvider {
         }
 
         @Override
-        public int read(byte[] buffer, int toRead) {
-            if (!isOpen()) {
-                return 0;
-            }
-
-            try {
-                return client.read(buffer, 0, toRead);
-            } catch (IOException e) {
-                logger.warn("Couldn't read from audio device", e);
-                exceptionWasThrown = true;
-                return 0;
-            }
-        }
-
-        @Override
         public boolean stop() {
             if (client == null) {
                 return false;
@@ -260,6 +265,7 @@ public class WASAPIDeviceProvider implements DeviceProvider {
 
             client.close();
             client = null;
+            logger.info("Stopped WASAPI device: {}", getName());
             return true;
         }
     }

@@ -1,45 +1,60 @@
 package pw.wunderlich.lightbeat.audio.device;
 
 /**
- * AudioDevice that can be read from via {@link #read(byte[], int)}.
- * Audio devices have a {@link #getName() name} and fixed {@link #getAudioFormat() audio format}.
+ * An audio device that pushes data to a registered listener.
+ * Audio devices have a {@link #getName() name} and a fixed {@link #getAudioFormat() audio format}.
+ * The user must register a listener via {@link #setAudioListener(AudioDataListener)} and then
+ * call {@link #start()} to begin receiving data.
  */
 public interface AudioDevice {
+
+    /**
+     * A listener that receives audio data from a device.
+     */
+    @FunctionalInterface
+    interface AudioDataListener {
+        /**
+         * Called when new audio data is available from the device.
+         *
+         * @param data   A byte array containing the audio data. This buffer may be reused by the device,
+         *               so a copy should be made if the data needs to be stored.
+         * @param length The number of valid bytes in the data array.
+         */
+        void onDataAvailable(byte[] data, int length);
+    }
 
     String getName();
 
     LBAudioFormat getAudioFormat();
 
     /**
-     * Start this audio device to read data from it.
-     * @return true if audio device was opened successfully
+     * Registers a listener to receive audio data.
+     * Set to null to unregister.
+     *
+     * @param listener The listener to be called when audio data is available.
+     */
+    void setAudioListener(AudioDataListener listener);
+
+    /**
+     * Starts this audio device, which will begin capturing audio and invoking the registered listener.
+     *
+     * @return true if the audio device was started successfully.
      * @see #stop()
      */
     boolean start();
 
     /**
-     * Indicates whether the audio device can be read from via {@link #read(byte[], int)}.
-     * @return true if device
+     * Indicates whether the audio device is currently started and capturing audio.
+     *
+     * @return true if the device is open and running.
      */
     boolean isOpen();
 
     /**
-     * @return amount of bytes that can be read via {@link #read(byte[], int)}
-     */
-    int available();
-
-    /**
-     * Read data from device. Audio device must be started via {@link #start()} first.
+     * Stops this audio device, closing the stream and freeing its resources.
+     * The registered listener will no longer be called.
      *
-     * @param buffer byte array to put data in
-     * @param toRead how much data should be read in bytes
-     * @return how many bytes have been read
-     */
-    int read(byte[] buffer, int toRead);
-
-    /**
-     * Stop this audio device, closing the stream and freeing its resources.
-     * @return true if device was successfully stopped
+     * @return true if the device was successfully stopped.
      * @see #start()
      */
     boolean stop();
