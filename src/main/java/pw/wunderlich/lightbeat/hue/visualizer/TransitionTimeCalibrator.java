@@ -6,7 +6,7 @@ import pw.wunderlich.lightbeat.util.DoubleAverageBuffer;
 
 /**
  * Dynamically calibrates the transition time used for the light fade effect for a light.
- * Define the maxTransitionTime in the constructor, which will be the highest value returned by
+ * Define the maxTransitionTime through the config, which will be the highest value returned by
  * {@link #getTransitionTime(long)}. It will reach this transition time when the given time is
  * at least twice as long as the average of previously received values
  * (history size defined by {@link #HISTORY_SIZE}).

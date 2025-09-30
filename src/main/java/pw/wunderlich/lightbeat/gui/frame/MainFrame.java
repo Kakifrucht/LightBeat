@@ -292,10 +292,12 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
             refreshDeviceSelector();
 
             // re-enable start button with small delay
-            taskOrchestrator.schedule(() -> runOnSwingThread(() -> {
-                startButton.setEnabled(true);
-                startButton.requestFocus();
-            }), 1, TimeUnit.SECONDS);
+            if (!taskOrchestrator.isShutdown()) {
+                taskOrchestrator.schedule(() -> runOnSwingThread(() -> {
+                    startButton.setEnabled(true);
+                    startButton.requestFocus();
+                }), 1, TimeUnit.SECONDS);
+            }
 
             if (status.equals(StopStatus.ERROR)) {
                 showErrorMessage("Selected audio source could not be read");

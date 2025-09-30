@@ -46,50 +46,42 @@ public class UpdateQueue {
             boolean wasEmpty = queue.isEmpty();
             queue.add(new QueueEntry(state, isEssential));
             if (wasEmpty) {
-                next();
+                var cmdFuture = taskOrchestrator.dispatchBridgeCommand(this::processQueue);
+                if (cmdFuture == null && isEssential) {
+                    // task orchestrator shut down, just do it on the current thread as we are shutting down
+                    processQueue();
+                }
             }
         }
     }
 
-    private void next() {
-        synchronized (queue) {
-            if (queue.isEmpty()) {
-                return;
+    private void processQueue() {
+        while (true) {
+            final QueueEntry entryToProcess;
+            synchronized (queue) {
+                entryToProcess = queue.poll();
+                if (entryToProcess == null) {
+                    break;
+                }
             }
 
-            QueueEntry next = queue.peek();
-            if (taskOrchestrator.isShutdown()) {
-                next.doUpdate();
+            if (entryToProcess.staleThreshold.isMet()) {
+                long age = entryToProcess.staleThreshold.getCurrentThreshold() - STALE_THRESHOLD_MS;
+                logger.warn("Discarding stale light update for {} (age: {}ms).", entryToProcess.getLightInfo(), age);
             } else {
-                taskOrchestrator.dispatchBridgeCommand(next::doUpdate);
+                apiLight.setState(entryToProcess.state);
+                logger.info("Updated light {}", entryToProcess.getLightInfo());
             }
         }
     }
 
     private class QueueEntry {
         private final State state;
-        private final TimeThreshold creationTimestamp;
-        private final boolean isEssential;
+        private final TimeThreshold staleThreshold;
 
         QueueEntry(State state, boolean isEssential) {
             this.state = state;
-            this.creationTimestamp = new TimeThreshold(STALE_THRESHOLD_MS);
-            this.isEssential = isEssential;
-        }
-
-        void doUpdate() {
-            if (!this.isEssential && creationTimestamp.isMet()) {
-                long age = creationTimestamp.getCurrentThreshold() - STALE_THRESHOLD_MS;
-                logger.warn("Discarding stale light update for {} (age: {}ms).", getLightInfo(), age);
-            } else {
-                apiLight.setState(state);
-                logger.info("Updated light {}", getLightInfo());
-            }
-
-            synchronized (queue) {
-                queue.poll();
-                next();
-            }
+            this.staleThreshold = isEssential ? new TimeThreshold() : new TimeThreshold(STALE_THRESHOLD_MS);
         }
 
         private String getLightInfo() {

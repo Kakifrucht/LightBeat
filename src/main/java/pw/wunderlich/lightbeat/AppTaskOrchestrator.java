@@ -35,19 +35,27 @@ public class AppTaskOrchestrator implements AutoCloseable {
      * Submits a task to be executed on a virtual thread.
      * Thread count will be limited by a semaphore and the set {@link #BRIDGE_CONCURRENCY_LIMIT}.
      * To be used by threads that access the bridge.
+     *
+     * @param bridgeTask The task to be executed.
+     * @return a Future representing pending completion of the task
      */
-    public void dispatchBridgeCommand(Runnable bridgeTask) {
-        workerExecutor.submit(() -> {
-            try {
-                bridgeAccessLimiter.acquire();
-                bridgeTask.run();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } finally {
-                bridgeAccessLimiter.release();
-            }
-        });
+    public Future<?> dispatchBridgeCommand(Runnable bridgeTask) {
+        try {
+            return dispatch(() -> {
+                try {
+                    bridgeAccessLimiter.acquire();
+                    bridgeTask.run();
+                } catch (Exception e) {
+                    logger.warn("Could not schedule bridge command", e);
+                } finally {
+                    bridgeAccessLimiter.release();
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            return null;
+        }
     }
+
 
     /**
      * Submits a task to be executed on a virtual thread.
@@ -114,17 +122,16 @@ public class AppTaskOrchestrator implements AutoCloseable {
         } catch (InterruptedException e) {
             logger.warn("Shutdown await was interrupted. Forcing shutdown...");
             forceShutdown();
-            Thread.currentThread().interrupt();
         }
-    }
-
-    public boolean isShutdown() {
-        return workerExecutor.isShutdown() || scheduler.isShutdown();
     }
 
     private void forceShutdown() {
         workerExecutor.shutdownNow();
         scheduler.shutdownNow();
+    }
+
+    public boolean isShutdown() {
+        return workerExecutor.isShutdown() || scheduler.isShutdown();
     }
 
     @Override

@@ -8,10 +8,8 @@ import pw.wunderlich.lightbeat.config.ConfigNode;
 import pw.wunderlich.lightbeat.config.LBConfig;
 import pw.wunderlich.lightbeat.gui.FrameManager;
 import pw.wunderlich.lightbeat.hue.bridge.AccessPoint;
-import pw.wunderlich.lightbeat.hue.bridge.HueManager;
 import pw.wunderlich.lightbeat.hue.bridge.LBHueManager;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -38,17 +36,17 @@ public class LightBeat {
         logger.info("LightBeat v{} starting", getVersion());
 
         final var taskOrchestrator = new AppTaskOrchestrator();
-        Config config = new LBConfig();
+        final var config = new LBConfig();
 
-        LBAudioReader audioReader = new LBAudioReader(config, taskOrchestrator);
-        HueManager hueManager = new LBHueManager(config, taskOrchestrator);
+        final var audioReader = new LBAudioReader(config, taskOrchestrator);
+        final var hueManager = new LBHueManager(config, taskOrchestrator);
 
         // enter swing UI
         new FrameManager(config, taskOrchestrator, audioReader, audioReader, hueManager);
 
-        List<AccessPoint> accessPoints = hueManager.getPreviousBridges();
+        final var accessPoints = hueManager.getPreviousBridges();
         if (accessPoints.isEmpty()) {
-            AccessPoint accessPoint = getLastConnectedLegacy(config);
+            var accessPoint = getLastConnectedLegacy(config);
             if (accessPoint != null) {
                 hueManager.setAttemptConnection(accessPoint);
             } else {
