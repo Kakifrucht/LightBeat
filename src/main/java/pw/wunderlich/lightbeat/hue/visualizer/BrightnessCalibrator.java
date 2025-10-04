@@ -98,6 +98,10 @@ class BrightnessCalibrator {
         return getBrightnessData(0d, false);
     }
 
+    void clearHistory() {
+        this.amplitudeDifferenceHistory.clear();
+    }
+
     private BrightnessData getBrightnessData(double brightnessPercentage, boolean forceBrightnessChange) {
 
         double brightnessDifference = brightnessPercentage - currentBrightnessPercentage;

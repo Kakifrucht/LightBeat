@@ -461,7 +461,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         glowCheckBox.setEnabled(enabled);
     }
 
-    private boolean refreshDeviceSelector() {
+    private void refreshDeviceSelector() {
         List<String> deviceNames = audioReader.getSupportedDevices().stream()
                 .map(AudioDevice::getName)
                 .toList();
@@ -481,8 +481,9 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 @Override
                 public void run() {
                     runOnSwingThread(() -> {
-                        boolean devicesFound = refreshDeviceSelector();
+                        boolean devicesFound = !audioReader.getSupportedDevices().isEmpty();
                         if (devicesFound) {
+                            refreshDeviceSelector();
                             startButton.setEnabled(true);
                         } else {
                             taskOrchestrator.schedule(this, 5, TimeUnit.SECONDS);
@@ -491,7 +492,7 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
                 }
             };
             taskOrchestrator.schedule(deviceChecker, 5, TimeUnit.SECONDS);
-            return false;
+            return;
         }
 
         if (lastSource != null) {
@@ -508,7 +509,6 @@ public class MainFrame extends AbstractFrame implements BeatObserver {
         if (deviceNames.stream().anyMatch(name -> name.startsWith("Loopback: "))) {
             audioSourceLabel.setText("Select your main audio devices Loopback, \"Stereo Mix\" or a virtual audio cable for best results.");
         }
-        return true;
     }
 
     private void updateLightsPanel() {

@@ -169,7 +169,8 @@ public class ConnectFrame extends AbstractFrame implements HueStateObserver {
     public void connectionWasLost(AccessPoint accessPoint, BridgeConnection.ConnectionListener.Error error) {
         String message = switch (error) {
             case CONNECTION_LOST -> "Connection was lost";
-            case EXCEPTION, NOT_A_BRIDGE -> "Connection could not be established";
+            case EXCEPTION -> "Connection could not be established";
+            case NOT_A_BRIDGE -> "Endpoint is not a Hue bridge";
             case WRONG_CERTIFICATE -> "The security certificate could not be verified.";
             case NO_LIGHTS -> "This bridge has no valid lights exposed";
         };
