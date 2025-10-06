@@ -20,6 +20,7 @@ import pw.wunderlich.lightbeat.hue.bridge.HueStateObserver;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Manages the applications main frame, only showing one main frame at a time, which are either
@@ -37,7 +38,8 @@ public class FrameManager implements HueStateObserver {
     private final BeatEventManager beatEventManager;
     private final HueManager hueManager;
 
-    private HueFrame currentFrame;
+    private volatile HueFrame currentFrame;
+    private final Object frameLock = new Object();
     private int lastX = 100;
     private int lastY = 100;
 
@@ -55,6 +57,16 @@ public class FrameManager implements HueStateObserver {
 
         boolean lightTheme = this.config.getBoolean(ConfigNode.WINDOW_LIGHT_THEME);
         LafManager.installTheme(lightTheme ? new IntelliJTheme() : new OneDarkTheme());
+
+        // show connect frame with delay, prevents "flashing" the frame when it connects quickly on launch.
+        // if in the meantime we have successfully connected this does nothing, only main frame shows.
+        taskOrchestrator.schedule(() -> {
+            synchronized (frameLock) {
+                if (currentFrame == null) {
+                    showConnectFrame().isAttemptingConnection();
+                }
+            }
+        }, 2, TimeUnit.SECONDS);
     }
 
     @Override
@@ -100,29 +112,33 @@ public class FrameManager implements HueStateObserver {
     }
 
     private HueStateObserver showConnectFrame() {
-        if (currentFrame instanceof ConnectFrame) {
+        synchronized (frameLock) {
+            if (currentFrame instanceof ConnectFrame) {
+                return (HueStateObserver) currentFrame;
+            }
+
+            disposeCurrentWindow();
+            try {
+                currentFrame = new ConnectFrame(taskOrchestrator, hueManager, lastX, lastY);
+            } catch (Throwable t) {
+                logger.error("Exception thrown during frame creation", t);
+            }
             return (HueStateObserver) currentFrame;
         }
-
-        disposeCurrentWindow();
-        try {
-            currentFrame = new ConnectFrame(taskOrchestrator, hueManager, lastX, lastY);
-        } catch (Throwable t) {
-            logger.error("Exception thrown during frame creation", t);
-        }
-        return (HueStateObserver) currentFrame;
     }
 
     private void showMainFrame() {
-        if (currentFrame instanceof MainFrame) {
-            return;
-        }
+        synchronized (frameLock) {
+            if (currentFrame instanceof MainFrame) {
+                return;
+            }
 
-        disposeCurrentWindow();
-        try {
-            currentFrame = new MainFrame(config, taskOrchestrator, audioReader, beatEventManager, hueManager, lastX, lastY);
-        } catch (Throwable t) {
-            logger.error("Exception thrown during frame creation", t);
+            disposeCurrentWindow();
+            try {
+                currentFrame = new MainFrame(config, taskOrchestrator, audioReader, beatEventManager, hueManager, lastX, lastY);
+            } catch (Throwable t) {
+                logger.error("Exception thrown during frame creation", t);
+            }
         }
     }
 
