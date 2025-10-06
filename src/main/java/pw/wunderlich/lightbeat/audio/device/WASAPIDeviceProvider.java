@@ -5,17 +5,15 @@ import org.jitsi.impl.neomedia.device.CaptureDeviceInfo2;
 import org.jitsi.impl.neomedia.device.WASAPISystem;
 import org.jitsi.impl.neomedia.jmfext.media.protocol.wasapi.AudioCaptureClient;
 import org.jitsi.impl.neomedia.jmfext.media.protocol.wasapi.WASAPI;
-import org.jitsi.service.libjitsi.LibJitsi;
-import org.jitsi.utils.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 import pw.wunderlich.lightbeat.AppTaskOrchestrator;
 
 import javax.media.format.AudioFormat;
 import javax.media.protocol.BufferTransferHandler;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,10 +21,11 @@ import java.util.logging.Handler;
 import java.util.stream.Collectors;
 
 /**
- * Provides {@link AudioDevice}'s for WASAPI loopback devices.
- * Only supported on Windows.
+ * Provides {@link AudioDevice}'s for WASAPI devices on Windows.
+ * This provider discovers both standard capture devices (microphones)
+ * and offers a special loopback capture for each playback device.
  */
-public class WASAPIDeviceProvider implements DeviceProvider {
+public class WASAPIDeviceProvider extends BaseJmfDeviceProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(WASAPIDeviceProvider.class);
 
@@ -34,48 +33,58 @@ public class WASAPIDeviceProvider implements DeviceProvider {
         return System.getProperty("os.name").startsWith("Windows");
     }
 
-    private final AppTaskOrchestrator taskOrchestrator;
-    private WASAPISystem wasapiSystem;
-
 
     public WASAPIDeviceProvider(AppTaskOrchestrator taskOrchestrator) {
+        super(taskOrchestrator);
         if (!isWindows()) {
             throw new IllegalStateException("WASAPI can only be used on Windows");
         }
-
-        this.taskOrchestrator = taskOrchestrator;
-        logger.info("Initializing WASAPI devices...");
-
-        // jitsi uses JUL for logging, bridge it to slf4j
-        SLF4JBridgeHandler.removeHandlersForRootLogger();
-        SLF4JBridgeHandler.install();
-
-        try {
-            LibJitsi.start();
-            WASAPISystem.initializeDeviceSystems(MediaType.AUDIO);
-            wasapiSystem = (WASAPISystem) AudioSystem.getAudioSystem(AudioSystem.LOCATOR_PROTOCOL_WASAPI);
-            if (wasapiSystem == null) {
-                logger.warn("Couldn't initialize libjitsi, WASAPI loopback won't be supported");
-            }
-        } catch (Exception e) {
-            logger.warn("Couldn't initialize WASAPI devices", e);
-        } catch (NoClassDefFoundError e) {
-            logger.warn("libjitsi not included in .jar, skipping WASAPI init");
-        }
     }
 
+    @Override
+    protected String getAudioSystemProtocol() {
+        return AudioSystem.LOCATOR_PROTOCOL_WASAPI;
+    }
+
+    @Override
+    protected String getAudioSystemName() {
+        return "WASAPI";
+    }
+
+    @Override
     public List<AudioDevice> getAudioDevices() {
-        if (wasapiSystem == null) {
+        if (audioSystem == null) {
             return Collections.emptyList();
         }
 
-        return wasapiSystem.getDevices(AudioSystem.DataFlow.PLAYBACK)
+        var captureDevices = getDevices(AudioSystem.DataFlow.CAPTURE);
+        var loopbackDevices = getDevices(AudioSystem.DataFlow.PLAYBACK);
+        logger.info("Found {} WASAPI capture devices, created {} WASAPI loopback devices.", captureDevices.size(), loopbackDevices.size());
+
+        var allDevices = new ArrayList<>(captureDevices);
+        allDevices.addAll(loopbackDevices);
+        return allDevices;
+    }
+
+    @Override
+    protected AudioDevice createAudioDevice(CaptureDeviceInfo2 deviceInfo) {
+        return new PushModelAudioDevice(deviceInfo, deviceInfo.getName());
+    }
+
+    private List<AudioDevice> getDevices(AudioSystem.DataFlow dataFlow) {
+        return audioSystem.getDevices(dataFlow)
                 .stream()
-                .map(WASAPIAudioDevice::new)
+                .map(deviceInfo -> {
+                    if (dataFlow.equals(AudioSystem.DataFlow.CAPTURE)) {
+                        return createAudioDevice(deviceInfo);
+                    } else {
+                        return new WASAPILoopbackAudioDevice(deviceInfo);
+                    }
+                })
                 .collect(Collectors.toList());
     }
 
-    class WASAPIAudioDevice implements AudioDevice {
+    class WASAPILoopbackAudioDevice implements AudioDevice {
 
         private final CaptureDeviceInfo2 device;
         private AudioCaptureClient client;
@@ -83,16 +92,13 @@ public class WASAPIDeviceProvider implements DeviceProvider {
         private AudioDataListener listener;
 
         private Field availableField;
-        private Field startedField;
-        private Field eventHandleCmdField;
         private java.util.logging.Logger julLogger;
         private Handler deviceInvalidatedHandler;
 
         private boolean exceptionWasThrown = false;
         private byte[] readBuffer = new byte[4096];
 
-
-        private WASAPIAudioDevice(CaptureDeviceInfo2 device) {
+        private WASAPILoopbackAudioDevice(CaptureDeviceInfo2 device) {
             this.device = device;
         }
 
@@ -121,6 +127,7 @@ public class WASAPIDeviceProvider implements DeviceProvider {
                 if (listener == null || client == null || !isOpen()) {
                     return;
                 }
+
                 try {
                     int availableBytes = (int) availableField.get(client);
                     if (availableBytes > 0) {
@@ -155,30 +162,25 @@ public class WASAPIDeviceProvider implements DeviceProvider {
                         }
                         try {
                             client = new AudioCaptureClient(
-                                    wasapiSystem,
+                                    (WASAPISystem) audioSystem,
                                     device.getLocator(),
                                     AudioSystem.DataFlow.PLAYBACK,
                                     WASAPI.AUDCLNT_SHAREMODE_SHARED | WASAPI.AUDCLNT_STREAMFLAGS_LOOPBACK,
                                     1,
                                     audioFormat,
-                                    transferHandler // Pass our active handler here
+                                    transferHandler
                             );
                             this.format = new LBAudioFormat(audioFormat);
                             availableField = client.getClass().getDeclaredField("availableLength");
                             availableField.setAccessible(true);
-                            // reflect liveness-related fields
-                            startedField = client.getClass().getDeclaredField("started");
-                            startedField.setAccessible(true);
-                            eventHandleCmdField = client.getClass().getDeclaredField("eventHandleCmd");
-                            eventHandleCmdField.setAccessible(true);
 
                             exceptionWasThrown = false;
                             client.start();
 
                             installDeviceInvalidationWatcher();
-                            logger.info("Started WASAPI device: {}", getName());
+                            logger.info("Started WASAPI loopback device: {}", getName());
                         } catch (Exception e) {
-                            logger.debug("Couldn't initialize with {}", audioFormat);
+                            logger.debug("Couldn't initialize loopback with {}", audioFormat, e);
                         }
                     });
 
@@ -187,30 +189,14 @@ public class WASAPIDeviceProvider implements DeviceProvider {
 
         @Override
         public boolean isOpen() {
-            return client != null
-                    && !exceptionWasThrown
-                    && getLastActivityTimestampMillis() > System.currentTimeMillis() - 2000L;
-        }
-
-        private long getLastActivityTimestampMillis() {
-            if (client == null) return 0L;
-            try {
-                boolean started = (boolean) startedField.get(client);
-                Object eventHandleCmd = eventHandleCmdField.get(client);
-                // Consider the stream "alive" while started and the event thread is present
-                return (started && eventHandleCmd != null) ? System.currentTimeMillis() : 0L;
-            } catch (Exception e) {
-                return 0L;
-            }
+            return client != null && !exceptionWasThrown;
         }
 
         private void installDeviceInvalidationWatcher() {
             try {
                 uninstallDeviceInvalidationWatcher();
-
                 julLogger = java.util.logging.Logger.getLogger(
                         "org.jitsi.impl.neomedia.jmfext.media.protocol.wasapi.AudioCaptureClient");
-
                 deviceInvalidatedHandler = new Handler() {
                     @Override
                     public void publish(java.util.logging.LogRecord record) {
@@ -219,8 +205,6 @@ public class WASAPIDeviceProvider implements DeviceProvider {
                         final Throwable t = record.getThrown();
                         final String throwableStr = t != null ? String.valueOf(t) : "";
 
-                        // AUDCLNT_E_DEVICE_INVALIDATED = 0x88890004
-                        // Catch both GetNextPacketSize and Read error logs.
                         boolean isWasapiErrorContext =
                                 msg.contains("IAudioCaptureClient_GetNextPacketSize")
                                         || msg.contains("IAudioCaptureClient_Read");
@@ -232,7 +216,6 @@ public class WASAPIDeviceProvider implements DeviceProvider {
                     @Override public void flush() {}
                     @Override public void close() throws SecurityException {}
                 };
-
                 julLogger.addHandler(deviceInvalidatedHandler);
             } catch (Throwable ignored) {}
         }
@@ -265,7 +248,7 @@ public class WASAPIDeviceProvider implements DeviceProvider {
 
             client.close();
             client = null;
-            logger.info("Stopped WASAPI device: {}", getName());
+            logger.info("Stopped WASAPI loopback device: {}", getName());
             return true;
         }
     }

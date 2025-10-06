@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'pw.wunderlich.lightbeat'
-version = '1.7.1-SNAPSHOT'
+version = '1.8.0-SNAPSHOT'
 description = 'LightBeat'
 
 java {
@@ -25,7 +25,6 @@ repositories {
 }
 
 configurations {
-    windowsNatives
     mockitoAgent
 }
 
@@ -37,9 +36,7 @@ dependencies {
     implementation 'com.github.wendykierp:JTransforms:3.1'
     implementation 'com.github.weisj:darklaf-core:3.1.1'
     implementation 'com.jetbrains.intellij.java:java-gui-forms-rt:252.26199.158'
-
-    compileOnly 'org.jitsi:libjitsi:1.1-34-gb93ce2ee'
-    windowsNatives 'org.jitsi:libjitsi:1.1-34-gb93ce2ee'
+    implementation 'org.jitsi:libjitsi:1.1-34-gb93ce2ee'
 
     testImplementation platform('org.junit:junit-bom:5.13.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -69,9 +66,7 @@ if (!isWindowsBuild && !isMacBuild && !isLinuxBuild) {
 
 def libjitsiAddOpensArgs = [ '--add-opens', 'java.base/java.lang=ALL-UNNAMED' ]
 runShadow {
-    if (isWindowsBuild) {
-        jvmArgs libjitsiAddOpensArgs
-    }
+    jvmArgs libjitsiAddOpensArgs
 }
 
 shadowJar {
@@ -84,16 +79,6 @@ shadowJar {
     }
     exclude 'jpackage/*'
     exclude '*.sh'
-
-    if (isWindowsBuild) {
-        // For Windows, include the Jitsi native libraries
-        configurations = [project.configurations.runtimeClasspath, project.configurations.windowsNatives]
-        exclude 'linux-*/**'
-        exclude 'darwin-*/**'
-    } else {
-        // For Mac/Linux, use only the runtime classpath
-        configurations = [project.configurations.runtimeClasspath]
-    }
 }
 
 tasks.register('bundleReleaseZip', Zip) {
@@ -128,15 +113,13 @@ jpackageImage {
 }
 
 runtime {
-    if (isWindowsBuild) {
-        launcher {
-            def customJvmArgs = new ArrayList(libjitsiAddOpensArgs)
-            if (project.hasProperty('updatechecker-disabled')) {
-                customJvmArgs.add('-Dupdatechecker.disabled=true')
-            }
-
-            jvmArgs = customJvmArgs
+    launcher {
+        def customJvmArgs = new ArrayList(libjitsiAddOpensArgs)
+        if (project.hasProperty('updatechecker-disabled')) {
+            customJvmArgs.add('-Dupdatechecker.disabled=true')
         }
+
+        jvmArgs = customJvmArgs
     }
 
     modules = ['jdk.crypto.ec']

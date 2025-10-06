@@ -33,7 +33,10 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
 
     private final Config config;
     private final AppTaskOrchestrator taskOrchestrator;
-    private final List<DeviceProvider> deviceProviders = new ArrayList<>();
+
+    private final DeviceProvider jitsiDeviceProvider;
+    private final DeviceProvider javaSoundApiProvider;
+
     private final List<BeatObserver> beatEventObservers = new ArrayList<>();
 
     private AudioDevice audioDevice;
@@ -50,18 +53,32 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     public LBAudioReader(Config config, AppTaskOrchestrator taskOrchestrator) {
         this.config = config;
         this.taskOrchestrator = taskOrchestrator;
+        this.javaSoundApiProvider = new JavaAudioDeviceProvider(taskOrchestrator);
 
         if (WASAPIDeviceProvider.isWindows()) {
-            deviceProviders.add(new WASAPIDeviceProvider(taskOrchestrator));
+            this.jitsiDeviceProvider = new WASAPIDeviceProvider(taskOrchestrator);
+        } else if (CoreAudioDeviceProvider.isMac()) {
+            this.jitsiDeviceProvider = new CoreAudioDeviceProvider(taskOrchestrator);
+        } else if (PulseAudioDeviceProvider.isLinux()) {
+            this.jitsiDeviceProvider = new PulseAudioDeviceProvider(taskOrchestrator);
+        } else {
+            this.jitsiDeviceProvider = null;
         }
-        deviceProviders.add(new JavaAudioDeviceProvider(taskOrchestrator));
     }
 
     @Override
     public List<AudioDevice> getSupportedDevices() {
-        return deviceProviders.stream()
-                .flatMap(deviceProvider -> deviceProvider.getAudioDevices().stream())
-                .collect(Collectors.toList());
+        List<AudioDevice> devices = null;
+        if (jitsiDeviceProvider != null) {
+            devices = jitsiDeviceProvider.getAudioDevices();
+        }
+
+        if (devices == null || devices.isEmpty()) {
+            logger.info("Using Java Sound API as fallback, expect higher audio latency");
+            return javaSoundApiProvider.getAudioDevices();
+        }
+        
+        return devices;
     }
 
     @Override
