@@ -98,20 +98,24 @@ shadowJar {
 
 tasks.register('bundleReleaseZip', Zip) {
     dependsOn shadowJar
-
     group = 'Distribution'
-    description = 'Bundles the application JAR and launcher script into a ZIP file.'
-
-    from shadowJar.archiveFile
-    from('src/main/resources/launch_lightbeat.sh') {
-        filePermissions {
-            unix('0755')
-        }
-    }
-    from('THIRD_PARTY_LICENSES.md')
+    description = 'Bundles the application into a portable ZIP file with an app subfolder.'
 
     archiveFileName = "LightBeat-${project.version}.zip"
     destinationDirectory = layout.buildDirectory.dir('distributions')
+
+    rootSpec.into(project.name) {
+        into('app') {
+            from(shadowJar.archiveFile)
+        }
+        from('src/main/resources/launch_lightbeat.sh') {
+            filePermissions {
+                unix('0755')
+            }
+        }
+        from('src/main/resources/launch_lightbeat.bat')
+        from('THIRD_PARTY_LICENSES.md')
+    }
 }
 
 jpackageImage {
