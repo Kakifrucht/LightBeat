@@ -33,7 +33,8 @@ public class LBConfig implements Config {
             final String OLD_PACKAGE_PATH = "/io/lightbeat/config";
             final String MIGRATION_FLAG_KEY = "migration_complete";
 
-            if (!preferences.getBoolean(MIGRATION_FLAG_KEY, false)) {
+            if (!preferences.getBoolean(MIGRATION_FLAG_KEY, false)
+                    && Preferences.userRoot().nodeExists(OLD_PACKAGE_PATH)) {
                 Preferences oldPrefs = Preferences.userRoot().node(OLD_PACKAGE_PATH);
                 if (oldPrefs.keys().length > 0) {
                     logger.info("Old settings found. Starting migration from {}.", OLD_PACKAGE_PATH);
