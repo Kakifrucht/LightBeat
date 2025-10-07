@@ -14,6 +14,9 @@
 #   ./launch_lightbeat.sh --no-log
 #   (Launches the application without creating a log file)
 #
+#   ./launch_lightbeat.sh --dump-all-devices
+#   (Launches in debug mode, listing all audio devices from all providers)
+#
 # -----------------------------------
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -137,10 +140,24 @@ download_and_unpack_jdk() {
 
 echo "Launching LightBeat"
 
+# --- Process Command-Line Flags ---
 LOGGING_ENABLED=true
-if [ "$1" = "--no-log" ]; then
-    LOGGING_ENABLED=false
+JAVA_OPTS=""
+for arg in "$@"; do
+  case $arg in
+    --no-log)
+      LOGGING_ENABLED=false
+      ;;
+    --dump-all-devices)
+      JAVA_OPTS="-Dlightbeat.audio.dumpAll=true"
+      ;;
+  esac
+done
+if [ "$LOGGING_ENABLED" = false ]; then
     echo "Log file creation has been disabled."
+fi
+if [ -n "$JAVA_OPTS" ]; then
+    echo "Debug mode enabled: Dumping all audio devices."
 fi
 
 # 1. Find a suitable JDK
@@ -195,9 +212,9 @@ set +e # Disable exit on error
 
 # 5. Launch the application
 if [ "$LOGGING_ENABLED" = true ]; then
-    nohup "$JAVA_EXECUTABLE" --add-opens 'java.base/java.lang=ALL-UNNAMED' -jar "$JAR_FILE" >"$LOG_FILE" 2>&1 &
+    nohup "$JAVA_EXECUTABLE" $JAVA_OPTS --add-opens 'java.base/java.lang=ALL-UNNAMED' -jar "$JAR_FILE" >"$LOG_FILE" 2>&1 &
 else
-    nohup "$JAVA_EXECUTABLE" --add-opens 'java.base/java.lang=ALL-UNNAMED' -jar "$JAR_FILE" >/dev/null 2>&1 &
+    nohup "$JAVA_EXECUTABLE" $JAVA_OPTS --add-opens 'java.base/java.lang=ALL-UNNAMED' -jar "$JAR_FILE" >/dev/null 2>&1 &
 fi
 APP_PID=$!
 

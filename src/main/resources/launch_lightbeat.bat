@@ -4,10 +4,26 @@ setlocal
 :: ============================================================================
 :: Configuration
 :: ============================================================================
-:: Set the minimum required major Java version (e.g., 11, 17, 21)
 set "REQUIRED_JAVA_VERSION=21"
 set "APP_DIR=app"
 set "JAR_PATTERN=LightBeat-*-all.jar"
+
+:: ============================================================================
+:: Argument Parsing
+:: ============================================================================
+set "JAVA_OPTS="
+:parse_args_loop
+if "%~1"=="" goto :args_parsed
+
+if /i "%~1"=="--dump-all-devices" (
+    set "JAVA_OPTS=-Dlightbeat.audio.dumpAll=true"
+    echo "Debug mode enabled: Dumping all audio devices."
+)
+rem
+
+shift
+goto :parse_args_loop
+:args_parsed
 
 echo Checking for Java...
 where java >nul 2>nul
@@ -70,7 +86,7 @@ echo Found application: %LATEST_JAR%
 echo.
 echo Launching %LATEST_JAR%...
 echo.
-java --add-opens 'java.base/java.lang=ALL-UNNAMED' -jar "%APP_DIR%\%LATEST_JAR%"
+java %JAVA_OPTS% --add-opens "java.base/java.lang=ALL-UNNAMED" -jar "%APP_DIR%\%LATEST_JAR%"
 
 echo.
 echo Application has finished.
@@ -88,12 +104,22 @@ echo.
 echo Please install or update your Java Development Kit (JDK).
 echo.
 echo Recommended Download (Adoptium Temurin JDK):
-set "OS_PARAM=windows"
-if "%PROCESSOR_ARCHITECTURE%"=="AMD64" set "OS_PARAM=windows&architecture=x64"
-if "%PROCESSOR_ARCHITECTURE%"=="x86" set "OS_PARAM=windows&architecture=x86"
-echo https://adoptium.net/temurin/releases?version=%REQUIRED_JAVA_VERSION%^&os=%OS_PARAM%
+set "NATIVE_ARCH=%PROCESSOR_ARCHITECTURE%"
+if defined PROCESSOR_ARCHITEW6432 set "NATIVE_ARCH=%PROCESSOR_ARCHITEW6432%"
+
+set "ARCH_PARAM="
+if /i "%NATIVE_ARCH%" == "AMD64" set "ARCH_PARAM=x64"
+if /i "%NATIVE_ARCH%" == "ARM64" set "ARCH_PARAM=aarch64"
+
+if not defined ARCH_PARAM (
+    echo https://adoptium.net/temurin/releases?version=%REQUIRED_JAVA_VERSION%
+) else (
+    echo https://adoptium.net/temurin/releases?version=%REQUIRED_JAVA_VERSION%^&os=windows^&architecture=%ARCH_PARAM%
+)
 echo.
-echo Alternatively use the LightBeat .msi installer on the website.
+if /i "%ARCH_PARAM%" == "x64" (
+    echo Alternatively use the LightBeat .msi installer on the website.
+)
 echo ============================================================================
 echo.
 pause
