@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 public class UpdateChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdateChecker.class);
+
+    private static final boolean UPDATE_CHECKER_DISABLED = Boolean.getBoolean("lightbeat.updatechecker.disabled");
     // URL to get the latest release information from the GitHub API
     private static final String URL_STRING = "https://api.github.com/repos/Kakifrucht/LightBeat/releases/latest";
 
@@ -36,9 +38,7 @@ public class UpdateChecker {
      * @return true if an update is found, false otherwise.
      */
     public boolean isUpdateAvailable() {
-
-        String updateCheckerProperty = System.getProperty("updatechecker.disabled");
-        if ("true".equalsIgnoreCase(updateCheckerProperty)) {
+        if (UPDATE_CHECKER_DISABLED) {
             logger.info("Update checker is disabled via system property.");
             return false;
         }

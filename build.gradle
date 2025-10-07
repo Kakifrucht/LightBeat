@@ -119,7 +119,7 @@ runtime {
     launcher {
         def customJvmArgs = new ArrayList(libjitsiAddOpensArgs)
         if (project.hasProperty('updatechecker-disabled')) {
-            customJvmArgs.add('-Dupdatechecker.disabled=true')
+            customJvmArgs.add('-Dlightbeat.updatechecker.disabled=true')
         }
 
         jvmArgs = customJvmArgs
