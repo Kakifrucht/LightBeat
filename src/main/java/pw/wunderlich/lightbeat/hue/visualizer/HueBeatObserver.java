@@ -97,6 +97,7 @@ public class HueBeatObserver implements BeatObserver {
         noBeatReceived();
         amplitudeHistory.clear();
         brightnessCalibrator.clearHistory();
+        transitionTimeCalibrator.clearHistory();
     }
 
     @Override

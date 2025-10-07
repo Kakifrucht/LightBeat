@@ -51,4 +51,8 @@ class TransitionTimeCalibrator {
         double percentage = Math.min(timeSinceLastBeat / timeToGetMaxTransition, 1d);
         return Math.max((int) Math.round(percentage * maxTransitionTime), MIN_TRANSITION_TIME);
     }
+
+    void clearHistory() {
+        buffer.clear();
+    }
 }
