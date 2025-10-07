@@ -1,8 +1,10 @@
-package pw.wunderlich.lightbeat.audio.device;
+package pw.wunderlich.lightbeat.audio.device.provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pw.wunderlich.lightbeat.AppTaskOrchestrator;
+import pw.wunderlich.lightbeat.audio.device.AudioDevice;
+import pw.wunderlich.lightbeat.audio.device.LBAudioFormat;
 
 import javax.sound.sampled.*;
 import java.util.Arrays;
@@ -17,10 +19,10 @@ import java.util.stream.Collectors;
  */
 public class JavaAudioDeviceProvider implements DeviceProvider {
 
+    private static final Logger logger = LoggerFactory.getLogger(JavaAudioDeviceProvider.class);
+
     private static final float SAMPLE_RATE = 44100f;
     private static final int BYTES_PER_SAMPLE = 2;
-
-    private static final Logger logger = LoggerFactory.getLogger(JavaAudioDeviceProvider.class);
 
     private final AudioFormat format = new AudioFormat(SAMPLE_RATE, BYTES_PER_SAMPLE * 8, 1, true, false);
     private final Line.Info lineInfo = new Line.Info(TargetDataLine.class);
@@ -33,11 +35,13 @@ public class JavaAudioDeviceProvider implements DeviceProvider {
 
     @Override
     public List<AudioDevice> getAudioDevices() {
-        return Arrays.stream(AudioSystem.getMixerInfo())
+        List<AudioDevice> devices = Arrays.stream(AudioSystem.getMixerInfo())
                 .map(AudioSystem::getMixer)
                 .filter(mixer -> mixer.isLineSupported(lineInfo))
                 .map(JavaAudioDevice::new)
                 .collect(Collectors.toList());
+        logger.info("Found {} JavaAudio capture devices", devices.size());
+        return devices;
     }
 
 
@@ -61,7 +65,7 @@ public class JavaAudioDeviceProvider implements DeviceProvider {
 
         @Override
         public String getName() {
-            return mixer.getMixerInfo().getName();
+            return "JavaAudio: " + mixer.getMixerInfo().getName();
         }
 
         @Override

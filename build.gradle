@@ -67,6 +67,9 @@ if (!isWindowsBuild && !isMacBuild && !isLinuxBuild) {
 def libjitsiAddOpensArgs = [ '--add-opens', 'java.base/java.lang=ALL-UNNAMED' ]
 runShadow {
     jvmArgs libjitsiAddOpensArgs
+    if (project.hasProperty('dumpAll')) {
+        systemProperty 'lightbeat.audio.dumpAll', 'true'
+    }
 }
 
 shadowJar {

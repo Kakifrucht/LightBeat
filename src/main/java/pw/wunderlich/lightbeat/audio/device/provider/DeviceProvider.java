@@ -1,4 +1,6 @@
-package pw.wunderlich.lightbeat.audio.device;
+package pw.wunderlich.lightbeat.audio.device.provider;
+
+import pw.wunderlich.lightbeat.audio.device.AudioDevice;
 
 import java.util.List;
 

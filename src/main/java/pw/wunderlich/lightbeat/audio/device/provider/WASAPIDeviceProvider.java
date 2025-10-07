@@ -1,4 +1,4 @@
-package pw.wunderlich.lightbeat.audio.device;
+package pw.wunderlich.lightbeat.audio.device.provider;
 
 import org.jitsi.impl.neomedia.device.AudioSystem;
 import org.jitsi.impl.neomedia.device.CaptureDeviceInfo2;
@@ -7,7 +7,9 @@ import org.jitsi.impl.neomedia.jmfext.media.protocol.wasapi.AudioCaptureClient;
 import org.jitsi.impl.neomedia.jmfext.media.protocol.wasapi.WASAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pw.wunderlich.lightbeat.AppTaskOrchestrator;
+import pw.wunderlich.lightbeat.audio.device.AudioDevice;
+import pw.wunderlich.lightbeat.audio.device.LBAudioFormat;
+import pw.wunderlich.lightbeat.audio.device.PushModelAudioDevice;
 
 import javax.media.format.AudioFormat;
 import javax.media.protocol.BufferTransferHandler;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.logging.Handler;
 import java.util.stream.Collectors;
 
@@ -25,7 +28,7 @@ import java.util.stream.Collectors;
  * This provider discovers both standard capture devices (microphones)
  * and offers a special loopback capture for each playback device.
  */
-public class WASAPIDeviceProvider extends BaseJmfDeviceProvider {
+public class WASAPIDeviceProvider extends LibJitsiDeviceProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(WASAPIDeviceProvider.class);
 
@@ -34,8 +37,8 @@ public class WASAPIDeviceProvider extends BaseJmfDeviceProvider {
     }
 
 
-    public WASAPIDeviceProvider(AppTaskOrchestrator taskOrchestrator) {
-        super(taskOrchestrator);
+    public WASAPIDeviceProvider(Executor executor) {
+        super(executor);
         if (!isWindows()) {
             throw new IllegalStateException("WASAPI can only be used on Windows");
         }
@@ -68,7 +71,7 @@ public class WASAPIDeviceProvider extends BaseJmfDeviceProvider {
 
     @Override
     protected AudioDevice createAudioDevice(CaptureDeviceInfo2 deviceInfo) {
-        return new PushModelAudioDevice(deviceInfo, deviceInfo.getName());
+        return new PushModelAudioDevice(executor, deviceInfo.getLocator(), deviceInfo.getName());
     }
 
     private List<AudioDevice> getDevices(AudioSystem.DataFlow dataFlow) {
@@ -123,7 +126,7 @@ public class WASAPIDeviceProvider extends BaseJmfDeviceProvider {
                 return false;
             }
 
-            BufferTransferHandler transferHandler = stream -> taskOrchestrator.dispatch(() -> {
+            BufferTransferHandler transferHandler = stream -> executor.execute(() -> {
                 if (listener == null || client == null || !isOpen()) {
                     return;
                 }

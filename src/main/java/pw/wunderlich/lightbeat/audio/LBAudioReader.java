@@ -34,8 +34,7 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     private final Config config;
     private final AppTaskOrchestrator taskOrchestrator;
 
-    private final DeviceProvider jitsiDeviceProvider;
-    private final DeviceProvider javaSoundApiProvider;
+    private final List<DeviceProvider> deviceProviders;
 
     private final List<BeatObserver> beatEventObservers = new ArrayList<>();
 
@@ -53,31 +52,29 @@ public class LBAudioReader implements BeatEventManager, AudioReader {
     public LBAudioReader(Config config, AppTaskOrchestrator taskOrchestrator) {
         this.config = config;
         this.taskOrchestrator = taskOrchestrator;
-        this.javaSoundApiProvider = new JavaAudioDeviceProvider(taskOrchestrator);
 
+        this.deviceProviders = new ArrayList<>();
         if (WASAPIDeviceProvider.isWindows()) {
-            this.jitsiDeviceProvider = new WASAPIDeviceProvider(taskOrchestrator);
+            deviceProviders.add(new WASAPIDeviceProvider(taskOrchestrator));
         } else if (CoreAudioDeviceProvider.isMac()) {
-            this.jitsiDeviceProvider = new CoreAudioDeviceProvider(taskOrchestrator);
+            deviceProviders.add(new CoreAudioDeviceProvider(taskOrchestrator));
         } else if (PulseAudioDeviceProvider.isLinux()) {
-            this.jitsiDeviceProvider = new PulseAudioDeviceProvider(taskOrchestrator);
-        } else {
-            this.jitsiDeviceProvider = null;
+            deviceProviders.add(new PulseAudioDeviceProvider(taskOrchestrator));
         }
+        // fallbacks, first port audio (also libjitsi wrapped), then java audio
+        deviceProviders.add(new PortAudioDeviceProvider(taskOrchestrator));
+        deviceProviders.add(new JavaAudioDeviceProvider(taskOrchestrator));
     }
 
     @Override
     public List<AudioDevice> getSupportedDevices() {
-        List<AudioDevice> devices = null;
-        if (jitsiDeviceProvider != null) {
-            devices = jitsiDeviceProvider.getAudioDevices();
+        List<AudioDevice> devices = new ArrayList<>();
+        for (DeviceProvider deviceProvider : deviceProviders) {
+            devices.addAll(deviceProvider.getAudioDevices());
+            if (!devices.isEmpty() && !DUMP_ALL_DEVICES) {
+                break;
+            }
         }
-
-        if (devices == null || devices.isEmpty()) {
-            logger.info("Using Java Sound API as fallback, expect higher audio latency");
-            return javaSoundApiProvider.getAudioDevices();
-        }
-        
         return devices;
     }
 

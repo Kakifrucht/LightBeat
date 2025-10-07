@@ -1,5 +1,6 @@
 package pw.wunderlich.lightbeat;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,7 @@ import java.util.concurrent.*;
  * Provides methods to dispatch immediate tasks, schedule delayed or periodic tasks, and ensures
  * graceful shutdown of executors.
  */
-public class AppTaskOrchestrator implements AutoCloseable {
+public class AppTaskOrchestrator implements Executor, AutoCloseable {
 
     private static final Logger logger = LoggerFactory.getLogger(AppTaskOrchestrator.class);
 
@@ -56,6 +57,10 @@ public class AppTaskOrchestrator implements AutoCloseable {
         }
     }
 
+    @Override
+    public void execute(@NotNull Runnable command) {
+        dispatch(command);
+    }
 
     /**
      * Submits a task to be executed on a virtual thread.

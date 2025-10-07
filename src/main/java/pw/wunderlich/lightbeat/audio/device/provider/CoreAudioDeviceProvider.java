@@ -1,15 +1,17 @@
-package pw.wunderlich.lightbeat.audio.device;
+package pw.wunderlich.lightbeat.audio.device.provider;
 
 import org.jitsi.impl.neomedia.device.AudioSystem;
 import org.jitsi.impl.neomedia.device.CaptureDeviceInfo2;
 import pw.wunderlich.lightbeat.AppTaskOrchestrator;
+import pw.wunderlich.lightbeat.audio.device.AudioDevice;
+import pw.wunderlich.lightbeat.audio.device.PushModelAudioDevice;
 
 /**
  * Provides {@link AudioDevice}'s for CoreAudio devices on macOS.
  * This provider discovers all available input devices, including virtual
  * ones like BlackHole which can be used for loopback.
  */
-public class CoreAudioDeviceProvider extends BaseJmfDeviceProvider {
+public class CoreAudioDeviceProvider extends LibJitsiDeviceProvider {
 
     public static boolean isMac() {
         return System.getProperty("os.name").toLowerCase().contains("mac");
@@ -35,6 +37,6 @@ public class CoreAudioDeviceProvider extends BaseJmfDeviceProvider {
 
     @Override
     protected AudioDevice createAudioDevice(CaptureDeviceInfo2 deviceInfo) {
-        return new PushModelAudioDevice(deviceInfo, deviceInfo.getName());
+        return new PushModelAudioDevice(executor, deviceInfo.getLocator(), deviceInfo.getName());
     }
 }
